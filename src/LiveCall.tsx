@@ -19,7 +19,6 @@ const ElevenLabsCallView = () => {
   // Configuration States
   const [difficulty, setDifficulty] = useState<'friendly' | 'tough'>('friendly');
   const [language, setLanguage] = useState<'English' | 'Spanish'>('English');
-  const [callObjective, setCallObjective] = useState<'sell' | 'buy'>('sell');
   const [machineModel, setMachineModel] = useState('Kleemann MOBIREX MR 130');
   const [customMachine, setCustomMachine] = useState('');
   const [isCustomMachine, setIsCustomMachine] = useState(false);
@@ -88,8 +87,7 @@ const ElevenLabsCallView = () => {
           first_message: greeting,
           machine_model: finalMachine || "Kleemann MOBIREX MR 130",
           contact_name: contactName || "Carlos",
-          company_name: companyName || "Canteras del Norte",
-          call_objective: callObjective
+          company_name: companyName || "Canteras del Norte"
         }
       });
     } catch (error) {
@@ -118,30 +116,9 @@ const ElevenLabsCallView = () => {
     try {
       const finalMachine = isCustomMachine ? customMachine : machineModel;
       
-      const roleText = callObjective === 'sell'
-        ? `SELL a construction machine: "${finalMachine}" to a prospect named "${contactName}" representing "${companyName}"`
-        : `BUY a construction machine: "${finalMachine}" from a prospect named "${contactName}" representing "${companyName}" (who owns/sells the machine)`;
-
-      const partnerRoleLabel = callObjective === 'sell' ? 'Prospect (Buyer)' : 'Prospect (Seller)';
       const transcriptText = transcripts
-        .map(t => `${t.role === 'user' ? 'Trainee (Sales Rep)' : partnerRoleLabel}: ${t.text}`)
+        .map(t => `${t.role === 'user' ? 'Trainee (Sales Rep)' : 'Prospect'}: ${t.text}`)
         .join('\n');
-
-      const checklistInstructions = callObjective === 'sell'
-        ? `- introductionBypass: Did they introduce themselves and bypass the operator/gatekeeper successfully if needed?
-- needsQualification: Did they qualify the buyer's actual needs (e.g. projects, crushing volume, stone materials)?
-- machineSpecs: Did they explain the specs and condition of the machine ("${finalMachine}")?
-- priceLogistics: Did they discuss price and delivery/freight logistics?
-- objectionHandling: Did they address and try to overcome the prospect's objections (e.g. already equipped, used machinery risk, parts availability, brush-offs)?
-- followUpSecure: Did they successfully get the prospect's personal contact details (WhatsApp or email) to send details/photos/quote?
-- nextSteps: Did they establish clear next steps for a follow-up or callback?`
-        : `- introductionBypass: Did they introduce themselves and establish contact with the decision-maker or equipment owner?
-- needsQualification: Did they qualify the machine's condition, hours/mileage, maintenance history, and reason for selling?
-- machineSpecs: Did they ask for specific machine details, configuration, options, and verify the serial/data plate?
-- priceLogistics: Did they discuss the seller's asking price, price flexibility, and logistics for inspection/pickup?
-- objectionHandling: Did they handle the seller's objections (e.g. not ready to sell, wants too much money, prefers auction, too busy)?
-- followUpSecure: Did they successfully get the prospect's personal contact details (WhatsApp or email) to receive pictures, maintenance records, or send a purchase offer?
-- nextSteps: Did they establish clear next steps for scheduling an inspection, sending a formal offer, or a follow-up call?`;
 
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -150,14 +127,22 @@ const ElevenLabsCallView = () => {
           messages: [
             {
               role: 'user',
-              content: `Please evaluate this sales call transcript. The representative is trying to ${roleText}.
+              content: `Please evaluate this sales/purchasing call transcript. The representative is contacting a prospect named "${contactName}" representing "${companyName}" regarding construction machinery (such as "${finalMachine}").
+During the call, the representative might try to SELL a machine, BUY a machine from the prospect, or pivot/transition between buying and selling if the prospect expresses no interest in the initial objective (e.g., if the prospect doesn't want to sell, pivoting to see if they want to buy, or vice versa).
+
 The entire call was conducted in ${language}. You must write all critique details (strengths, weaknesses, objectionsHandled feedback, recommendations) in the user's primary language: Spanish.
 
 Review the following transcript of the call:
 ${transcriptText}
 
 Verify the following items and build the checklist of what details the trainee gathered/asked:
-${checklistInstructions}
+- introductionBypass: Did they introduce themselves and establish contact with the decision-maker or equipment owner?
+- qualification: Did they qualify the customer's needs, equipment usage, or machine condition?
+- pivotHandling: If the prospect was not interested in the initial option (e.g., refused to sell or buy), did the trainee successfully pivot to the opposite transaction (e.g. asking to buy their machines instead, or offering to sell them one)? If no rejection or pivot was needed, mark as true.
+- machineSpecs: Did they discuss or ask for machine specifications, condition, hours, or model details ("${finalMachine}")?
+- priceLogistics: Did they discuss price (quotes, trade-in, offers) and shipping/freight/inspection logistics?
+- objectionHandling: Did they address and try to overcome the prospect's objections (e.g., no budget, wants auction, no interest in selling)?
+- contactNextSteps: Did they successfully get follow-up contact details (WhatsApp/email) and agree on clear next steps?
 
 You must return ONLY a JSON object with this exact structure:
 {
@@ -167,12 +152,12 @@ You must return ONLY a JSON object with this exact structure:
   "weaknesses": ["Weakness 1 in Spanish", "Weakness 2 in Spanish", ...],
   "checklist": {
     "introductionBypass": boolean,
-    "needsQualification": boolean,
+    "qualification": boolean,
+    "pivotHandling": boolean,
     "machineSpecs": boolean,
     "priceLogistics": boolean,
     "objectionHandling": boolean,
-    "followUpSecure": boolean,
-    "nextSteps": boolean
+    "contactNextSteps": boolean
   },
   "objectionsHandled": [
     { "objection": "Name of objection (e.g. Used risk) in Spanish", "handledWell": boolean, "feedback": "Brief feedback in Spanish" }
@@ -336,23 +321,15 @@ You must return ONLY a JSON object with this exact structure:
                 <h3 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">Sales Process Checklist</h3>
                 
                 <div className="space-y-3">
-                  {(callObjective === 'sell' ? [
-                    { key: 'introductionBypass', label: 'Introducción y Bypass' },
-                    { key: 'needsQualification', label: 'Calificación de Necesidades' },
-                    { key: 'machineSpecs', label: 'Presentación de la Máquina' },
-                    { key: 'priceLogistics', label: 'Discusión de Precio y Logística' },
+                  {[
+                    { key: 'introductionBypass', label: 'Introducción y Conexión' },
+                    { key: 'qualification', label: 'Calificación de Situación' },
+                    { key: 'pivotHandling', label: 'Manejo de Transición / Pivot' },
+                    { key: 'machineSpecs', label: 'Detalles de la Máquina' },
+                    { key: 'priceLogistics', label: 'Precio y Logística' },
                     { key: 'objectionHandling', label: 'Manejo de Objeciones' },
-                    { key: 'followUpSecure', label: 'Contacto de Seguimiento' },
-                    { key: 'nextSteps', label: 'Próximos Pasos Acordados' }
-                  ] : [
-                    { key: 'introductionBypass', label: 'Identificación de Decisor' },
-                    { key: 'needsQualification', label: 'Estado y Motivo de Venta' },
-                    { key: 'machineSpecs', label: 'Especificaciones y Horas' },
-                    { key: 'priceLogistics', label: 'Precio Pretendido y Ubicación' },
-                    { key: 'objectionHandling', label: 'Objeciones del Vendedor' },
-                    { key: 'followUpSecure', label: 'Contacto para Fotos/Oferta' },
-                    { key: 'nextSteps', label: 'Pasos para Inspección/Oferta' }
-                  ]).map((item) => {
+                    { key: 'contactNextSteps', label: 'Contacto y Próximos Pasos' }
+                  ].map((item) => {
                     const checked = evaluation.checklist?.[item.key] === true;
                     return (
                       <div key={item.key} className="flex items-center justify-between text-sm">
@@ -515,33 +492,6 @@ You must return ONLY a JSON object with this exact structure:
             <div className="text-left space-y-3 w-full bg-slate-50 p-4 rounded-2xl border border-slate-100">
               <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Sim Config</h4>
               
-              {/* Objetivo (Venta / Compra) */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Call Objective / Objetivo</label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setCallObjective('sell')}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all ${
-                      callObjective === 'sell'
-                        ? 'bg-blue-50 border-blue-300 text-blue-700'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    We Sell (Vender)
-                  </button>
-                  <button
-                    onClick={() => setCallObjective('buy')}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all ${
-                      callObjective === 'buy'
-                        ? 'bg-purple-50 border-purple-300 text-purple-700'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    We Buy (Comprar)
-                  </button>
-                </div>
-              </div>
-
               {/* Idioma */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase">Language / Idioma</label>
