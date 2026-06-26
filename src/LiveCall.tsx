@@ -19,6 +19,7 @@ const ElevenLabsCallView = () => {
   // Configuration States
   const [difficulty, setDifficulty] = useState<'friendly' | 'tough'>('friendly');
   const [language, setLanguage] = useState<'English' | 'Spanish'>('English');
+  const [callObjective, setCallObjective] = useState<'sell' | 'buy'>('sell');
   const [machineModel, setMachineModel] = useState('Kleemann MOBIREX MR 130');
   const [customMachine, setCustomMachine] = useState('');
   const [isCustomMachine, setIsCustomMachine] = useState(false);
@@ -76,8 +77,8 @@ const ElevenLabsCallView = () => {
       
       // Determine the first message greeting in the correct language
       const greeting = language === 'English'
-        ? `Good morning, thank you for calling ${companyName}. How can I help you?`
-        : `Buenos días, gracias por llamar a ${companyName}. ¿En qué le puedo ayudar?`;
+        ? `Good morning, ${companyName}, this is ${contactName}. How can I help you?`
+        : `Buenos días, ${companyName}, habla ${contactName}. ¿En qué le puedo ayudar?`;
 
       await conversation.startSession({
         agentId: "agent_2501kw2zhyq8ewg9ntqm1613vhek",
@@ -87,7 +88,8 @@ const ElevenLabsCallView = () => {
           first_message: greeting,
           machine_model: finalMachine || "Kleemann MOBIREX MR 130",
           contact_name: contactName || "Carlos",
-          company_name: companyName || "Canteras del Norte"
+          company_name: companyName || "Canteras del Norte",
+          call_objective: callObjective
         }
       });
     } catch (error) {
@@ -115,9 +117,31 @@ const ElevenLabsCallView = () => {
 
     try {
       const finalMachine = isCustomMachine ? customMachine : machineModel;
+      
+      const roleText = callObjective === 'sell'
+        ? `SELL a construction machine: "${finalMachine}" to a prospect named "${contactName}" representing "${companyName}"`
+        : `BUY a construction machine: "${finalMachine}" from a prospect named "${contactName}" representing "${companyName}" (who owns/sells the machine)`;
+
+      const partnerRoleLabel = callObjective === 'sell' ? 'Prospect (Buyer)' : 'Prospect (Seller)';
       const transcriptText = transcripts
-        .map(t => `${t.role === 'user' ? 'Trainee (Sales Rep)' : 'Prospect (Buyer)'}: ${t.text}`)
+        .map(t => `${t.role === 'user' ? 'Trainee (Sales Rep)' : partnerRoleLabel}: ${t.text}`)
         .join('\n');
+
+      const checklistInstructions = callObjective === 'sell'
+        ? `- introductionBypass: Did they introduce themselves and bypass the operator/gatekeeper successfully if needed?
+- needsQualification: Did they qualify the buyer's actual needs (e.g. projects, crushing volume, stone materials)?
+- machineSpecs: Did they explain the specs and condition of the machine ("${finalMachine}")?
+- priceLogistics: Did they discuss price and delivery/freight logistics?
+- objectionHandling: Did they address and try to overcome the prospect's objections (e.g. already equipped, used machinery risk, parts availability, brush-offs)?
+- followUpSecure: Did they successfully get the prospect's personal contact details (WhatsApp or email) to send details/photos/quote?
+- nextSteps: Did they establish clear next steps for a follow-up or callback?`
+        : `- introductionBypass: Did they introduce themselves and establish contact with the decision-maker or equipment owner?
+- needsQualification: Did they qualify the machine's condition, hours/mileage, maintenance history, and reason for selling?
+- machineSpecs: Did they ask for specific machine details, configuration, options, and verify the serial/data plate?
+- priceLogistics: Did they discuss the seller's asking price, price flexibility, and logistics for inspection/pickup?
+- objectionHandling: Did they handle the seller's objections (e.g. not ready to sell, wants too much money, prefers auction, too busy)?
+- followUpSecure: Did they successfully get the prospect's personal contact details (WhatsApp or email) to receive pictures, maintenance records, or send a purchase offer?
+- nextSteps: Did they establish clear next steps for scheduling an inspection, sending a formal offer, or a follow-up call?`;
 
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -126,20 +150,14 @@ const ElevenLabsCallView = () => {
           messages: [
             {
               role: 'user',
-              content: `Please evaluate this sales call transcript. The representative is trying to SELL a construction machine: "${finalMachine}" to a prospect named "${contactName}" representing "${companyName}".
+              content: `Please evaluate this sales call transcript. The representative is trying to ${roleText}.
 The entire call was conducted in ${language}. You must write all critique details (strengths, weaknesses, objectionsHandled feedback, recommendations) in the user's primary language: Spanish.
 
 Review the following transcript of the call:
 ${transcriptText}
 
 Verify the following items and build the checklist of what details the trainee gathered/asked:
-- introductionBypass: Did they introduce themselves and bypass the operator/gatekeeper successfully if needed?
-- needsQualification: Did they qualify the buyer's actual needs (e.g. projects, crushing volume, stone materials)?
-- machineSpecs: Did they explain the specs and condition of the machine ("${finalMachine}")?
-- priceLogistics: Did they discuss price and delivery/freight logistics?
-- objectionHandling: Did they address and try to overcome the prospect's objections (e.g. already equipped, used machinery risk, parts availability, brush-offs)?
-- followUpSecure: Did they successfully get the prospect's personal contact details (WhatsApp or email) to send details/photos/quote?
-- nextSteps: Did they establish clear next steps for a follow-up or callback?
+${checklistInstructions}
 
 You must return ONLY a JSON object with this exact structure:
 {
@@ -318,7 +336,7 @@ You must return ONLY a JSON object with this exact structure:
                 <h3 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">Sales Process Checklist</h3>
                 
                 <div className="space-y-3">
-                  {[
+                  {(callObjective === 'sell' ? [
                     { key: 'introductionBypass', label: 'Introducción y Bypass' },
                     { key: 'needsQualification', label: 'Calificación de Necesidades' },
                     { key: 'machineSpecs', label: 'Presentación de la Máquina' },
@@ -326,7 +344,15 @@ You must return ONLY a JSON object with this exact structure:
                     { key: 'objectionHandling', label: 'Manejo de Objeciones' },
                     { key: 'followUpSecure', label: 'Contacto de Seguimiento' },
                     { key: 'nextSteps', label: 'Próximos Pasos Acordados' }
-                  ].map((item) => {
+                  ] : [
+                    { key: 'introductionBypass', label: 'Identificación de Decisor' },
+                    { key: 'needsQualification', label: 'Estado y Motivo de Venta' },
+                    { key: 'machineSpecs', label: 'Especificaciones y Horas' },
+                    { key: 'priceLogistics', label: 'Precio Pretendido y Ubicación' },
+                    { key: 'objectionHandling', label: 'Objeciones del Vendedor' },
+                    { key: 'followUpSecure', label: 'Contacto para Fotos/Oferta' },
+                    { key: 'nextSteps', label: 'Pasos para Inspección/Oferta' }
+                  ]).map((item) => {
                     const checked = evaluation.checklist?.[item.key] === true;
                     return (
                       <div key={item.key} className="flex items-center justify-between text-sm">
@@ -480,7 +506,7 @@ You must return ONLY a JSON object with this exact structure:
             </div>
             <h2 className="text-xl font-bold text-slate-800">Live Voice Call</h2>
             <p className="text-slate-500 text-xs">
-              Simulate a phone call. Choose parameters below and try to sell the machine.
+              Simulate a phone call. Choose parameters below and practice buying or selling a machine.
             </p>
           </div>
 
@@ -489,6 +515,33 @@ You must return ONLY a JSON object with this exact structure:
             <div className="text-left space-y-3 w-full bg-slate-50 p-4 rounded-2xl border border-slate-100">
               <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Sim Config</h4>
               
+              {/* Objetivo (Venta / Compra) */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Call Objective / Objetivo</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setCallObjective('sell')}
+                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all ${
+                      callObjective === 'sell'
+                        ? 'bg-blue-50 border-blue-300 text-blue-700'
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    We Sell (Vender)
+                  </button>
+                  <button
+                    onClick={() => setCallObjective('buy')}
+                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all ${
+                      callObjective === 'buy'
+                        ? 'bg-purple-50 border-purple-300 text-purple-700'
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    We Buy (Comprar)
+                  </button>
+                </div>
+              </div>
+
               {/* Idioma */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase">Language / Idioma</label>
