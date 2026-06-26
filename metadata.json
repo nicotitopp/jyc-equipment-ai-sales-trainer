@@ -1,0 +1,8 @@
+{
+  "name": "JYC Equipment AI Sales Trainer",
+  "description": "An AI-powered sales training application for JYC Equipment, complete with coaching, roleplaying, and call simulations.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
