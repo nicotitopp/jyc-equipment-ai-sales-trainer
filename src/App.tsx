@@ -1,14 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Mode, Message } from './types';
 import { getSystemInstruction } from './instructions';
-import { Send, User, Bot, RefreshCw, GraduationCap, Briefcase, ClipboardCheck, PhoneCall, Loader2, Menu, X, Mic, Volume2, VolumeX, MicOff } from 'lucide-react';
+import { Send, User, Bot, RefreshCw, GraduationCap, Briefcase, ClipboardCheck, PhoneCall, Loader2, Menu, X, Mic, Volume2, VolumeX, MicOff, UploadCloud } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import LiveCall from './LiveCall';
+import RealCallAudit from './RealCallAudit';
 
 const MODES: { id: Mode; label: string; icon: React.ReactNode; description: string }[] = [
   { id: 'Coach', label: 'Coach', icon: <GraduationCap className="w-5 h-5" />, description: 'Get explanations and practical examples.' },
   { id: 'Live Call Simulation', label: 'Live Call', icon: <PhoneCall className="w-5 h-5" />, description: 'Simulate a full end-to-end sales call.' },
+  { id: 'Real Call Audit', label: 'Audit Call', icon: <UploadCloud className="w-5 h-5" />, description: 'Upload a recording of a real call to get feedback.' },
 ];
 
 export default function App() {
@@ -270,6 +272,8 @@ export default function App() {
 
         {mode === 'Live Call Simulation' ? (
           <LiveCall />
+        ) : mode === 'Real Call Audit' ? (
+          <RealCallAudit />
         ) : (
           <>
             {/* Chat Area */}
