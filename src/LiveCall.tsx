@@ -76,8 +76,8 @@ const ElevenLabsCallView = () => {
       
       // Determine the first message greeting in the correct language
       const greeting = language === 'English'
-        ? `Good morning, ${companyName}, this is ${contactName}. How can I help you?`
-        : `Buenos días, ${companyName}, habla ${contactName}. ¿En qué le puedo ayudar?`;
+        ? `Good morning, thank you for calling ${companyName}. How can I help you?`
+        : `Buenos días, gracias por llamar a ${companyName}. ¿En qué le puedo ayudar?`;
 
       await conversation.startSession({
         agentId: "agent_2501kw2zhyq8ewg9ntqm1613vhek",
@@ -127,8 +127,8 @@ const ElevenLabsCallView = () => {
           messages: [
             {
               role: 'user',
-              content: `Please evaluate this sales/purchasing call transcript. The representative is contacting a prospect named "${contactName}" representing "${companyName}" regarding construction machinery (such as "${finalMachine}").
-During the call, the representative might try to SELL a machine, BUY a machine from the prospect, or pivot/transition between buying and selling if the prospect expresses no interest in the initial objective (e.g., if the prospect doesn't want to sell, pivoting to see if they want to buy, or vice versa).
+              content: `Please evaluate this sales/purchasing cold call transcript. The representative is a buyer from JYC Equipment contacting a prospect named "${contactName}" representing "${companyName}" regarding used heavy machinery (such as "${finalMachine}").
+The representative's primary goal is to BUY used heavy equipment (forklifts, wheel loaders, crushers, etc.) from the company.
 
 The entire call was conducted in ${language}. You must write all critique details (strengths, weaknesses, objectionsHandled feedback, recommendations) in the user's primary language: Spanish.
 
@@ -136,13 +136,13 @@ Review the following transcript of the call:
 ${transcriptText}
 
 Verify the following items and build the checklist of what details the trainee gathered/asked:
-- introductionBypass: Did they introduce themselves and establish contact with the decision-maker or equipment owner?
-- qualification: Did they qualify the customer's needs, equipment usage, or machine condition?
-- pivotHandling: If the prospect was not interested in the initial option (e.g., refused to sell or buy), did the trainee successfully pivot to the opposite transaction (e.g. asking to buy their machines instead, or offering to sell them one)? If no rejection or pivot was needed, mark as true.
-- machineSpecs: Did they discuss or ask for machine specifications, condition, hours, or model details ("${finalMachine}")?
-- priceLogistics: Did they discuss price (quotes, trade-in, offers) and shipping/freight/inspection logistics?
-- objectionHandling: Did they address and try to overcome the prospect's objections (e.g., no budget, wants auction, no interest in selling)?
-- contactNextSteps: Did they successfully get follow-up contact details (WhatsApp/email) and agree on clear next steps?
+- gatekeeperBypass: Did they introduce themselves to the operator and successfully reach/bypass to the Key Person (KP) Carlos?
+- kpOpening: Did they use the correct script opening with the KP (asked if it was a bad time, introduced JYC Equipment, and checked if they have any equipment for sale right now or coming up this year)?
+- equipmentQualification: IF the prospect has equipment for sale: did they ask the qualification questions (Make, Model, Year, Condition/Repairs)? (If no equipment was available, mark as true if they confirmed this).
+- futureReference: IF the prospect does NOT have equipment for sale: did they ask the reference questions to gather company information (process for surplus, if they buy used, branches, loaders/forklifts used)? (If equipment was available, mark as true).
+- priceAndAssets: Did they ask for a target price and request pictures of the machine, the data plate, and the hour meter?
+- objectionHandling: Did they address and try to overcome the prospect's objections (e.g., they prefer auctions, want to trade-in, have bank leases, already sold, or want a price first)?
+- nextStepsSecure: Did they successfully get the prospect's personal contact details (WhatsApp or email) and establish clear next steps for a follow-up or callback?
 
 You must return ONLY a JSON object with this exact structure:
 {
@@ -151,16 +151,16 @@ You must return ONLY a JSON object with this exact structure:
   "strengths": ["Strength 1 in Spanish", "Strength 2 in Spanish", ...],
   "weaknesses": ["Weakness 1 in Spanish", "Weakness 2 in Spanish", ...],
   "checklist": {
-    "introductionBypass": boolean,
-    "qualification": boolean,
-    "pivotHandling": boolean,
-    "machineSpecs": boolean,
-    "priceLogistics": boolean,
+    "gatekeeperBypass": boolean,
+    "kpOpening": boolean,
+    "equipmentQualification": boolean,
+    "futureReference": boolean,
+    "priceAndAssets": boolean,
     "objectionHandling": boolean,
-    "contactNextSteps": boolean
+    "nextStepsSecure": boolean
   },
   "objectionsHandled": [
-    { "objection": "Name of objection (e.g. Used risk) in Spanish", "handledWell": boolean, "feedback": "Brief feedback in Spanish" }
+    { "objection": "Name of objection (e.g. Auction, Lease, Trade-in) in Spanish", "handledWell": boolean, "feedback": "Brief feedback in Spanish" }
   ],
   "recommendations": ["Recommendation 1 in Spanish", "Recommendation 2 in Spanish", ...]
 }`
@@ -322,13 +322,13 @@ You must return ONLY a JSON object with this exact structure:
                 
                 <div className="space-y-3">
                   {[
-                    { key: 'introductionBypass', label: 'Introducción y Conexión' },
-                    { key: 'qualification', label: 'Calificación de Situación' },
-                    { key: 'pivotHandling', label: 'Manejo de Transición / Pivot' },
-                    { key: 'machineSpecs', label: 'Detalles de la Máquina' },
-                    { key: 'priceLogistics', label: 'Precio y Logística' },
-                    { key: 'objectionHandling', label: 'Manejo de Objeciones' },
-                    { key: 'contactNextSteps', label: 'Contacto y Próximos Pasos' }
+                    { key: 'gatekeeperBypass', label: 'Bypass de Operador / KP' },
+                    { key: 'kpOpening', label: 'Apertura con KP y Gancho' },
+                    { key: 'equipmentQualification', label: 'Calificación de Equipo (Si hay)' },
+                    { key: 'futureReference', label: 'Preguntas de Referencia (Si no hay)' },
+                    { key: 'priceAndAssets', label: 'Precio Pretendido e Imágenes' },
+                    { key: 'objectionHandling', label: 'Manejo de Objeciones (Script)' },
+                    { key: 'nextStepsSecure', label: 'Contacto y Siguientes Pasos' }
                   ].map((item) => {
                     const checked = evaluation.checklist?.[item.key] === true;
                     return (
