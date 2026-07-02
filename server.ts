@@ -10,7 +10,8 @@ async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   // API Routes
   app.post("/api/chat", async (req, res) => {
@@ -81,7 +82,7 @@ async function startServer() {
 
   app.post("/api/audit-audio", async (req, res) => {
     try {
-      const { audioBase64, mimeType, contactName, companyName, language } = req.body;
+      const { audioBase64, mimeType } = req.body;
 
       if (!audioBase64 || !mimeType) {
         return res.status(400).json({ error: "Missing audio data or mime type" });
@@ -105,15 +106,14 @@ async function startServer() {
               }
             },
             {
-              text: `Please listen to and evaluate this cold call audio recording. The representative (Trainee) is a buyer from JYC Equipment contacting a prospect named "${contactName}" representing "${companyName}" regarding used heavy machinery.
+              text: `Please listen to and evaluate this cold call audio recording. The representative (Trainee) is a buyer from JYC Equipment contacting a prospect (Key Person) representing a business regarding used heavy machinery.
 The representative's primary goal is to BUY used heavy equipment (forklifts, wheel loaders, excavators, crushers, etc.) from the company.
 
 First, transcribe the entire call dialogue accurately as a list of spoken lines, separating the "Trainee" and the "Prospect", and include it in the "transcript" property of the output JSON.
-
-Then, evaluate the call against the JYC cold call purchasing script. Write all critique details (summary, strengths, weaknesses, objectionsHandled feedback, recommendations) in the user's primary language: Spanish.
+Listen to the audio to determine the language spoken, but write all critique details (summary, strengths, weaknesses, objectionsHandled feedback, recommendations) in Spanish.
 
 Verify the following items and build the checklist of what details the trainee gathered/asked:
-- gatekeeperBypass: Did they introduce themselves to the operator and successfully reach/bypass to the Key Person (KP) named "${contactName}"?
+- gatekeeperBypass: Did they introduce themselves to the operator and successfully reach/bypass to the Key Person (KP) of the company?
 - kpOpening: Did they use the correct script opening with the KP (asked if it was a bad time, introduced JYC Equipment, and checked if they have any equipment for sale right now or coming up this year)?
 - equipmentQualification: IF the prospect has equipment for sale: did they ask the qualification questions (Make, Model, Year, Condition/Repairs) for the machine mentioned by the prospect? (If no equipment was available, mark as true if they confirmed this).
 - futureReference: IF the prospect does NOT have equipment for sale: did they ask the reference questions to gather company information (process for surplus, if they buy used, branches, loaders/forklifts used)? (If equipment was available, mark as true).

@@ -4,10 +4,6 @@ import Scorecard from './Scorecard';
 
 export default function RealCallAudit() {
   const [file, setFile] = useState<File | null>(null);
-  const [contactName, setContactName] = useState('Dave');
-  const [companyName, setCompanyName] = useState('Pine Bluff Sand');
-  const [language, setLanguage] = useState<'English' | 'Spanish'>('English');
-  
   // Auditing States
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -84,10 +80,7 @@ export default function RealCallAudit() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               audioBase64: base64Data,
-              mimeType: mimeType,
-              contactName: contactName || "Dave",
-              companyName: companyName || "Pine Bluff Sand",
-              language: language
+              mimeType: mimeType
             })
           });
 
@@ -175,58 +168,6 @@ export default function RealCallAudit() {
         ) : (
           <div className="space-y-6">
             
-            {/* Form Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              
-              <div className="space-y-1 text-left">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Language / Idioma</label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setLanguage('English')}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
-                      language === 'English'
-                        ? 'bg-blue-50 border-blue-300 text-blue-700 font-bold'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    English
-                  </button>
-                  <button
-                    onClick={() => setLanguage('Spanish')}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
-                      language === 'Spanish'
-                        ? 'bg-amber-50 border-amber-300 text-amber-700 font-bold'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    Español
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-1 text-left">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Contact Name (KP)</label>
-                <input
-                  type="text"
-                  value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
-                  placeholder="e.g. Carlos"
-                  className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="space-y-1 text-left">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Company Name</label>
-                <input
-                  type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="e.g. Pine Bluff Sand"
-                  className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-              </div>
-
-            </div>
 
             {/* Dropzone */}
             <div 
