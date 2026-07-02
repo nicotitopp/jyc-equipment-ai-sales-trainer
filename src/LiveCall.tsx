@@ -19,9 +19,6 @@ const ElevenLabsCallView = () => {
   // Configuration States
   const [difficulty, setDifficulty] = useState<'friendly' | 'tough'>('friendly');
   const [language, setLanguage] = useState<'English' | 'Spanish'>('English');
-  const [machineModel, setMachineModel] = useState('Kleemann MOBIREX MR 130');
-  const [customMachine, setCustomMachine] = useState('');
-  const [isCustomMachine, setIsCustomMachine] = useState(false);
   const [contactName, setContactName] = useState('Carlos');
   const [companyName, setCompanyName] = useState('Canteras del Norte');
 
@@ -72,8 +69,6 @@ const ElevenLabsCallView = () => {
       setShowEvaluation(false);
       await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      const finalMachine = isCustomMachine ? customMachine : machineModel;
-      
       // Determine the first message greeting in the correct language
       const greeting = language === 'English'
         ? `Good morning, thank you for calling ${companyName}. How can I help you?`
@@ -85,7 +80,6 @@ const ElevenLabsCallView = () => {
           difficulty: difficulty,
           language: language,
           first_message: greeting,
-          machine_model: finalMachine || "Kleemann MOBIREX MR 130",
           contact_name: contactName || "Carlos",
           company_name: companyName || "Canteras del Norte"
         }
@@ -114,8 +108,6 @@ const ElevenLabsCallView = () => {
     setShowEvaluation(true);
 
     try {
-      const finalMachine = isCustomMachine ? customMachine : machineModel;
-      
       const transcriptText = transcripts
         .map(t => `${t.role === 'user' ? 'Trainee (Sales Rep)' : 'Prospect'}: ${t.text}`)
         .join('\n');
@@ -127,8 +119,8 @@ const ElevenLabsCallView = () => {
           messages: [
             {
               role: 'user',
-              content: `Please evaluate this sales/purchasing cold call transcript. The representative is a buyer from JYC Equipment contacting a prospect named "${contactName}" representing "${companyName}" regarding used heavy machinery (such as "${finalMachine}").
-The representative's primary goal is to BUY used heavy equipment (forklifts, wheel loaders, crushers, etc.) from the company.
+              content: `Please evaluate this sales/purchasing cold call transcript. The representative is a buyer from JYC Equipment contacting a prospect named "${contactName}" representing "${companyName}" regarding used heavy machinery.
+The representative's primary goal is to BUY used heavy equipment (forklifts, wheel loaders, excavators, crushers, etc.) from the company.
 
 The entire call was conducted in ${language}. You must write all critique details (strengths, weaknesses, objectionsHandled feedback, recommendations) in the user's primary language: Spanish.
 
@@ -136,9 +128,9 @@ Review the following transcript of the call:
 ${transcriptText}
 
 Verify the following items and build the checklist of what details the trainee gathered/asked:
-- gatekeeperBypass: Did they introduce themselves to the operator and successfully reach/bypass to the Key Person (KP) Carlos?
+- gatekeeperBypass: Did they introduce themselves to the operator and successfully reach/bypass to the Key Person (KP) named "${contactName}"?
 - kpOpening: Did they use the correct script opening with the KP (asked if it was a bad time, introduced JYC Equipment, and checked if they have any equipment for sale right now or coming up this year)?
-- equipmentQualification: IF the prospect has equipment for sale: did they ask the qualification questions (Make, Model, Year, Condition/Repairs)? (If no equipment was available, mark as true if they confirmed this).
+- equipmentQualification: IF the prospect has equipment for sale: did they ask the qualification questions (Make, Model, Year, Condition/Repairs) for the machine mentioned by the prospect? (If no equipment was available, mark as true if they confirmed this).
 - futureReference: IF the prospect does NOT have equipment for sale: did they ask the reference questions to gather company information (process for surplus, if they buy used, branches, loaders/forklifts used)? (If equipment was available, mark as true).
 - priceAndAssets: Did they ask for a target price and request pictures of the machine, the data plate, and the hour meter?
 - objectionHandling: Did they address and try to overcome the prospect's objections (e.g., they prefer auctions, want to trade-in, have bank leases, already sold, or want a price first)?
@@ -546,36 +538,6 @@ You must return ONLY a JSON object with this exact structure:
                 </div>
               </div>
 
-              {/* Máquina */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Machine to Sell</label>
-                <select
-                  value={isCustomMachine ? 'custom' : machineModel}
-                  onChange={(e) => {
-                    if (e.target.value === 'custom') {
-                      setIsCustomMachine(true);
-                    } else {
-                      setIsCustomMachine(false);
-                      setMachineModel(e.target.value);
-                    }
-                  }}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                >
-                  <option value="Kleemann MOBIREX MR 130">Kleemann MOBIREX MR 130 (Crusher)</option>
-                  <option value="Toyota 8FGU25 Forklift">Toyota 8FGU25 Forklift</option>
-                  <option value="Caterpillar 320 Excavator">Caterpillar 320 Excavator</option>
-                  <option value="custom">Other (Customize...)</option>
-                </select>
-                {isCustomMachine && (
-                  <input
-                    type="text"
-                    placeholder="e.g., Bobcat S450 Skid Steer"
-                    value={customMachine}
-                    onChange={(e) => setCustomMachine(e.target.value)}
-                    className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 mt-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                )}
-              </div>
 
               {/* Detalles adicionales */}
               <div className="grid grid-cols-2 gap-2">
