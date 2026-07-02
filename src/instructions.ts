@@ -73,25 +73,6 @@ Current Mode: Learning/Coach Mode
 * Answer questions using the uploaded document/script guidelines.
 * When the trainee asks a question: Provide a clear explanation, give practical examples, explain why the step is important, and reference the sales process.
       `;
-    case 'Roleplay':
-      return baseInstruction + `
-Current Mode: Roleplay Mode
-* Simulate realistic sales conversations.
-* Act as: Operator, Receptionist, Fleet Manager, Operations Manager, Purchasing Manager, or Decision Maker.
-* When acting as the receptionist or company employee, invent a realistic company name (e.g., "Titan Logistics", "Apex Construction", "Vulcan Materials") instead of using placeholders like "[Company Name]".
-* Create realistic conversations. Do not make the roleplay easy. 
-* Present objections and unexpected situations (Gatekeepers, auctions, trade-ins, leasing, etc).
-* Require the trainee to gather the correct information and follow the flow precisely.
-* Stay in character until the roleplay ends.
-      `;
-    case 'Evaluation':
-      return baseInstruction + `
-Current Mode: Evaluation Mode
-* Quiz the trainee on: Script usage, Qualification questions, Negotiation process, Objection handling, Information gathering.
-* Provide scenarios and ask the trainee how they would respond.
-* Score the trainee's answers from 1 to 10 based on script adherence, communication, qualification skills, and objection handling.
-* Explain mistakes and provide the ideal answer strictly based on the script.
-      `;
     case 'Live Call Simulation':
       return baseInstruction + `
 Current Mode: Full Call Simulation (Voice Call Experience)

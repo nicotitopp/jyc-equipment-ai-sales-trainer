@@ -8,8 +8,6 @@ import LiveCall from './LiveCall';
 
 const MODES: { id: Mode; label: string; icon: React.ReactNode; description: string }[] = [
   { id: 'Coach', label: 'Coach', icon: <GraduationCap className="w-5 h-5" />, description: 'Get explanations and practical examples.' },
-  { id: 'Roleplay', label: 'Roleplay', icon: <Briefcase className="w-5 h-5" />, description: 'Practice with realistic buyer personas.' },
-  { id: 'Evaluation', label: 'Evaluation', icon: <ClipboardCheck className="w-5 h-5" />, description: 'Test your knowledge on the script and process.' },
   { id: 'Live Call Simulation', label: 'Live Call', icon: <PhoneCall className="w-5 h-5" />, description: 'Simulate a full end-to-end sales call.' },
 ];
 
@@ -20,12 +18,6 @@ export default function App() {
   const [modeMessages, setModeMessages] = useState<Record<string, Message[]>>({
     'Coach': [
       { role: 'model', content: "Hello! I am your JYC Equipment AI Sales Trainer.\n\nI'm ready to help you learn the ropes. We can start by practicing how to qualify equipment, handling objections, or just discussing the sales process.\n\nWhat would you like to focus on today?" }
-    ],
-    'Roleplay': [
-      { role: 'model', content: "Switched to **Roleplay** mode.\n\nLet's get started!" }
-    ],
-    'Evaluation': [
-      { role: 'model', content: "Switched to **Evaluation** mode.\n\nLet's get started!" }
     ]
   });
 
