@@ -124,6 +124,8 @@ Verify the following items and build the checklist of what details the trainee g
 You must return ONLY a JSON object with this exact structure:
 {
   "score": number, // 0 to 100
+  "contactName": "The name of the Key Person/Prospect detected in the call (or 'Unknown' if none)",
+  "companyName": "The name of the company detected in the call (or 'Unknown' if none)",
   "summary": "Brief summary of the call performance in Spanish.",
   "strengths": ["Strength 1 in Spanish", "Strength 2 in Spanish", ...],
   "weaknesses": ["Weakness 1 in Spanish", "Weakness 2 in Spanish", ...],

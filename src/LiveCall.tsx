@@ -11,7 +11,7 @@ interface TranscriptItem {
   text: string;
 }
 
-const ElevenLabsCallView = () => {
+const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (score: number, evaluation: any, contactName: string, companyName: string) => void }) => {
   const [transcripts, setTranscripts] = useState<TranscriptItem[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -182,6 +182,7 @@ You must return ONLY a JSON object with this exact structure:
       }
 
       setEvaluation(parsedData);
+      onEvaluationComplete?.(parsedData.score, parsedData, contactName || "Dave", companyName || "Pine Bluff Sand");
     } catch (error: any) {
       console.error("Evaluation error:", error);
       setEvaluation({
@@ -423,10 +424,10 @@ You must return ONLY a JSON object with this exact structure:
   );
 };
 
-export default function LiveCall() {
+export default function LiveCall({ onEvaluationComplete }: { onEvaluationComplete?: (score: number, evaluation: any, contactName: string, companyName: string) => void }) {
   return (
     <ConversationProvider>
-      <ElevenLabsCallView />
+      <ElevenLabsCallView onEvaluationComplete={onEvaluationComplete} />
     </ConversationProvider>
   );
 }

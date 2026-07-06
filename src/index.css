@@ -41,3 +41,43 @@ body {
 .markdown-body em {
   font-style: italic;
 }
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  /* Hide everything */
+  body * {
+    visibility: hidden;
+  }
+  /* Make print area visible */
+  #scorecard-print-area, #scorecard-print-area * {
+    visibility: visible;
+  }
+  #scorecard-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  /* General print improvements */
+  .bg-slate-50, .bg-white, .bg-emerald-50\/50, .bg-rose-50\/50, .bg-slate-50 {
+    background-color: white !important;
+    background: white !important;
+  }
+  .shadow-sm, .shadow-md {
+    box-shadow: none !important;
+  }
+  .border, .border-slate-200, .border-slate-100 {
+    border-color: #e2e8f0 !important;
+  }
+}

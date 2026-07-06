@@ -1,20 +1,61 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mode, Message } from './types';
+import { Mode, Message, HistoryItem } from './types';
 import { getSystemInstruction } from './instructions';
-import { Send, User, Bot, RefreshCw, GraduationCap, Briefcase, ClipboardCheck, PhoneCall, Loader2, Menu, X, Mic, Volume2, VolumeX, MicOff, UploadCloud } from 'lucide-react';
+import { Send, User, Bot, RefreshCw, GraduationCap, Briefcase, ClipboardCheck, PhoneCall, Loader2, Menu, X, Mic, Volume2, VolumeX, MicOff, UploadCloud, BarChart3 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import LiveCall from './LiveCall';
 import RealCallAudit from './RealCallAudit';
+import Playbook from './Playbook';
+import HistoryDashboard from './HistoryDashboard';
 
 const MODES: { id: Mode; label: string; icon: React.ReactNode; description: string }[] = [
-  { id: 'Coach', label: 'Coach', icon: <GraduationCap className="w-5 h-5" />, description: 'Get explanations and practical examples.' },
+  { id: 'Coach', label: 'Coach', icon: <GraduationCap className="w-5 h-5" />, description: 'Get explanations and playbook guidance.' },
   { id: 'Live Call Simulation', label: 'Live Call', icon: <PhoneCall className="w-5 h-5" />, description: 'Simulate a full end-to-end sales call.' },
   { id: 'Real Call Audit', label: 'Audit Call', icon: <UploadCloud className="w-5 h-5" />, description: 'Upload a recording of a real call to get feedback.' },
+  { id: 'History', label: 'History', icon: <BarChart3 className="w-5 h-5" />, description: 'View your simulation and upload audit logs.' },
 ];
 
 export default function App() {
   const [mode, setMode] = useState<Mode>('Coach');
+
+  // Load initial history from localStorage
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('jyc_sales_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const appendToHistory = (score: number, evaluation: any, contactName: string, companyName: string, type: 'Live Call' | 'Audio Upload') => {
+    const newItem: HistoryItem = {
+      id: Date.now().toString() + Math.random().toString().substring(2, 6),
+      date: new Date().toLocaleDateString('es-ES', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      type,
+      contactName,
+      companyName,
+      score,
+      evaluation
+    };
+    setHistory(prev => {
+      const updated = [...prev, newItem];
+      localStorage.setItem('jyc_sales_history', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleClearHistory = () => {
+    localStorage.removeItem('jyc_sales_history');
+    setHistory([]);
+  };
 
   // Store separate message histories for each chat mode
   const [modeMessages, setModeMessages] = useState<Record<string, Message[]>>({
@@ -94,7 +135,7 @@ export default function App() {
   };
 
   const handleReset = () => {
-    if (mode === 'Live Call Simulation') return;
+    if (mode !== 'Coach') return;
     const initialMessage = mode === 'Coach'
       ? "Hello! I am your JYC Equipment AI Sales Trainer.\n\nI'm ready to help you learn the ropes. We can start by practicing how to qualify equipment, handling objections, or just discussing the sales process.\n\nWhat would you like to focus on today?"
       : `Conversation reset. We are in **${mode}** mode.\n\nWhat would you like to do?`;
@@ -271,77 +312,90 @@ export default function App() {
         </header>
 
         {mode === 'Live Call Simulation' ? (
-          <LiveCall />
+          <LiveCall onEvaluationComplete={(score, evalData, contact, company) => appendToHistory(score, evalData, contact, company, 'Live Call')} />
         ) : mode === 'Real Call Audit' ? (
-          <RealCallAudit />
+          <RealCallAudit onEvaluationComplete={(score, evalData, contact, company) => appendToHistory(score, evalData, contact, company, 'Audio Upload')} />
+        ) : mode === 'History' ? (
+          <HistoryDashboard 
+            history={history} 
+            onClearHistory={handleClearHistory} 
+            onNavigateToMode={(targetMode) => setMode(targetMode)} 
+          />
         ) : (
-          <>
+          <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
             {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-              {currentMessages.map((msg, idx) => (
-                <div key={idx} className={`flex gap-4 max-w-4xl mx-auto ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${msg.role === 'user' ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-600'}`}>
-                    {msg.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
-                  </div>
-                  <div className={`flex-1 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                    <div className={`inline-block max-w-[85%] sm:max-w-[75%] rounded-2xl px-5 py-3 shadow-sm text-sm sm:text-base ${msg.role === 'user' ? 'bg-blue-600 text-white text-left' : 'bg-white border border-slate-200 text-slate-800'}`}>
-                       {msg.role === 'user' ? (
-                         <div className="whitespace-pre-wrap">{msg.content}</div>
-                       ) : (
-                         <div className="markdown-body prose prose-sm sm:prose-base max-w-none text-slate-800 prose-p:leading-relaxed prose-pre:bg-slate-100 prose-pre:text-slate-800">
-                            <ReactMarkdown>{msg.content}</ReactMarkdown>
-                         </div>
-                       )}
+            <div className="flex-1 flex flex-col min-w-0 h-full border-r border-slate-200">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+                {currentMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex gap-4 max-w-4xl mx-auto ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${msg.role === 'user' ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-600'}`}>
+                      {msg.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
+                    </div>
+                    <div className={`flex-1 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                      <div className={`inline-block max-w-[85%] sm:max-w-[75%] rounded-2xl px-5 py-3 shadow-sm text-sm sm:text-base ${msg.role === 'user' ? 'bg-blue-600 text-white text-left' : 'bg-white border border-slate-200 text-slate-800'}`}>
+                         {msg.role === 'user' ? (
+                           <div className="whitespace-pre-wrap">{msg.content}</div>
+                         ) : (
+                           <div className="markdown-body prose prose-sm sm:prose-base max-w-none text-slate-800 prose-p:leading-relaxed prose-pre:bg-slate-100 prose-pre:text-slate-800">
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                           </div>
+                         )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              {loading && (
-                 <div className="flex gap-4 max-w-4xl mx-auto">
-                   <div className="shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                     <Bot className="w-5 h-5" />
+                ))}
+                {loading && (
+                   <div className="flex gap-4 max-w-4xl mx-auto">
+                     <div className="shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                       <Bot className="w-5 h-5" />
+                     </div>
+                     <div className="bg-white border border-slate-200 px-5 py-3 rounded-2xl shadow-sm flex items-center gap-2">
+                       <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                       <span className="text-sm text-slate-500">Typing...</span>
+                     </div>
                    </div>
-                   <div className="bg-white border border-slate-200 px-5 py-3 rounded-2xl shadow-sm flex items-center gap-2">
-                     <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                     <span className="text-sm text-slate-500">Typing...</span>
-                   </div>
-                 </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
 
-            {/* Input Area */}
-            <div className="bg-white border-t border-slate-200 p-4">
-              <div className="max-w-4xl mx-auto flex gap-3 items-end">
-                <button
-                   onClick={toggleRecording}
-                   className={`mb-1 shrink-0 p-3 rounded-xl transition-colors ${
-                     isRecording 
-                       ? 'bg-red-100 text-red-600 animate-pulse' 
-                       : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                   }`}
-                   title={isRecording ? "Stop recording" : "Start dictation"}
-                >
-                   {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                </button>
-                <textarea
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={onKeyDown}
-                  placeholder="Type your message... (Shift+Enter for new line)"
-                  className="flex-1 max-h-48 min-h-[56px] resize-none border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base bg-slate-50"
-                  rows={1}
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || loading}
-                  className="mb-1 shrink-0 p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Send className="w-5 h-5" />
-                </button>
+              {/* Input Area */}
+              <div className="bg-white border-t border-slate-200 p-4">
+                <div className="max-w-4xl mx-auto flex gap-3 items-end">
+                  <button
+                     onClick={toggleRecording}
+                     className={`mb-1 shrink-0 p-3 rounded-xl transition-colors ${
+                       isRecording 
+                         ? 'bg-red-100 text-red-600 animate-pulse' 
+                         : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                     }`}
+                     title={isRecording ? "Stop recording" : "Start dictation"}
+                  >
+                     {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                  </button>
+                  <textarea
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={onKeyDown}
+                    placeholder="Type your message... (Shift+Enter for new line)"
+                    className="flex-1 max-h-48 min-h-[56px] resize-none border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base bg-slate-50"
+                    rows={1}
+                  />
+                  <button
+                    onClick={handleSend}
+                    disabled={!input.trim() || loading}
+                    className="mb-1 shrink-0 p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Send className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
-          </>
+
+            {/* Playbook Sidebar Pane (Only in Coach mode) */}
+            <div className="hidden lg:block lg:w-[420px] h-full p-4 bg-slate-50 shrink-0 border-l border-slate-200 overflow-y-auto">
+              <Playbook />
+            </div>
+          </div>
         )}
 
       </div>

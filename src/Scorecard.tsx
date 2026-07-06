@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Award, ChevronUp, ChevronDown, Check, X, 
-  AlertTriangle, ThumbsUp, ThumbsDown, RotateCcw, FileText
+  AlertTriangle, ThumbsUp, ThumbsDown, RotateCcw, FileText, Printer
 } from 'lucide-react';
 
 interface ScorecardProps {
@@ -37,7 +37,7 @@ export default function Scorecard({ evaluation, onReset, customTranscripts }: Sc
   })) || [];
 
   return (
-    <div className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 bg-slate-50 overflow-y-auto space-y-6">
+    <div id="scorecard-print-area" className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 bg-slate-50 overflow-y-auto space-y-6">
       
       {/* Header */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -50,13 +50,22 @@ export default function Scorecard({ evaluation, onReset, customTranscripts }: Sc
             <p className="text-slate-500 text-sm mt-0.5">Automated AI critique based on construction sales guidelines</p>
           </div>
         </div>
-        <button
-          onClick={onReset}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-sm"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Analyze Another Call
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 no-print shrink-0 w-full sm:w-auto">
+          <button
+            onClick={() => window.print()}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors border border-slate-200 cursor-pointer"
+          >
+            <Printer className="w-4 h-4" />
+            Download PDF Report
+          </button>
+          <button
+            onClick={onReset}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-sm cursor-pointer"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Analyze Another Call
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -239,7 +248,7 @@ export default function Scorecard({ evaluation, onReset, customTranscripts }: Sc
 
           {/* View Transcript Toggle */}
           {transcriptLines.length > 0 && (
-            <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-200">
+            <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-200 no-print">
               <button
                 onClick={() => setShowTranscript(!showTranscript)}
                 className="w-full flex items-center justify-between text-slate-700 font-medium px-2 py-1 text-sm hover:text-slate-900 transition-colors"

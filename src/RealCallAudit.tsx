@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { UploadCloud, FileAudio, Loader2, FileText, AlertCircle } from 'lucide-react';
 import Scorecard from './Scorecard';
 
-export default function RealCallAudit() {
+export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationComplete?: (score: number, evaluation: any, contactName: string, companyName: string) => void }) {
   const [file, setFile] = useState<File | null>(null);
   // Auditing States
   const [loading, setLoading] = useState(false);
@@ -105,6 +105,7 @@ export default function RealCallAudit() {
           }
 
           setEvaluation(parsedData);
+          onEvaluationComplete?.(parsedData.score, parsedData, parsedData.contactName || "Unknown", parsedData.companyName || "Unknown");
         } catch (err: any) {
           console.error("Audit error:", err);
           setError(err.message || "Failed to analyze audio file. Try again.");
