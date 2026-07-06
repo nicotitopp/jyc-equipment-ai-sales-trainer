@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, UserCheck, ShieldAlert, FileText, ClipboardList, HelpCircle } from 'lucide-react';
+import { BookOpen, UserCheck, ShieldAlert, FileText, ClipboardList } from 'lucide-react';
 
 export default function Playbook() {
   const [activeTab, setActiveTab] = useState<'bypass' | 'qualify' | 'reference' | 'objections'>('bypass');
@@ -16,10 +16,10 @@ export default function Playbook() {
       {/* Tabs */}
       <div className="flex border-b border-slate-100 mt-2 gap-1 overflow-x-auto shrink-0 no-scrollbar">
         {[
-          { id: 'bypass', label: 'Bypass & Apertura', icon: <UserCheck className="w-3.5 h-3.5" /> },
-          { id: 'qualify', label: 'Calificación', icon: <ClipboardList className="w-3.5 h-3.5" /> },
-          { id: 'reference', label: 'Preguntas Referencia', icon: <FileText className="w-3.5 h-3.5" /> },
-          { id: 'objections', label: 'Objeciones', icon: <ShieldAlert className="w-3.5 h-3.5" /> },
+          { id: 'bypass', label: 'Bypass & Opening', icon: <UserCheck className="w-3.5 h-3.5" /> },
+          { id: 'qualify', label: 'Qualification', icon: <ClipboardList className="w-3.5 h-3.5" /> },
+          { id: 'reference', label: 'Future Reference', icon: <FileText className="w-3.5 h-3.5" /> },
+          { id: 'objections', label: 'Objections', icon: <ShieldAlert className="w-3.5 h-3.5" /> },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -37,28 +37,28 @@ export default function Playbook() {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto pt-4 text-left space-y-4 text-xs leading-relaxed text-slate-600">
+      <div className="flex-1 overflow-y-auto pt-4 text-left space-y-4 text-xs leading-relaxed text-slate-600 font-sans">
         
         {activeTab === 'bypass' && (
           <div className="space-y-4">
             
             {/* Operator Script */}
             <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 font-bold text-[10px] text-slate-700 uppercase">1. Con la Operadora (Filtro)</span>
-              <p className="font-semibold text-slate-800 italic">"Buenos días, ¿me podría comunicar con la persona encargada de la venta de sus equipos pesados usados, como sus montacargas o cargadores?"</p>
+              <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 font-bold text-[10px] text-slate-700 uppercase">1. With the Operator (Gatekeeper Bypass)</span>
+              <p className="font-semibold text-slate-800 italic">"Good morning, could you please transfer me to the person in charge of the sales of your used heavy equipment like your forklifts and wheel loaders?"</p>
               
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1.5">
-                <p className="font-bold text-slate-700">Si preguntan "¿De qué se trata?":</p>
-                <p className="italic text-slate-600">"Habla [Nombre] de JYC Equipment. Somos compradores nacionales de maquinaria pesada usada. Quería verificar si tienen algún excedente para venta en este momento o planificado para este año."</p>
+                <p className="font-bold text-slate-700">If they ask "What is this in regards to?":</p>
+                <p className="italic text-slate-600">"This is [Name] with JYC Equipment and I'm calling because we buy used heavy equipment, such as forklifts and wheel loaders. I wanted to check with Carlos if you might have anything for sale right now or maybe coming up this year? Is he available?"</p>
               </div>
             </div>
 
             {/* KP Script */}
             <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-blue-50 font-bold text-[10px] text-blue-700 uppercase">2. Apertura con la Persona Clave (KP)</span>
-              <p className="font-semibold text-slate-800 italic">"Hola [Nombre]. Habla [Nombre] de JYC Equipment. ¿Le tomo en un mal momento?"</p>
-              <p className="text-slate-500">Espera respuesta. Si cooperan, presenta el gancho de compra:</p>
-              <p className="font-semibold text-slate-800 italic">"Le llamo porque somos compradores a nivel nacional de equipos pesados usados, como cargadores y montacargas. Quería validar si tienen algo disponible para venta en este momento o planificado para este año."</p>
+              <span className="inline-block px-2 py-0.5 rounded-md bg-blue-50 font-bold text-[10px] text-blue-700 uppercase">2. Opening with the Key Person (KP)</span>
+              <p className="font-semibold text-slate-800 italic">"Hi [KP Name], this is [Name] with JYC Equipment. Did I catch you at a bad time?"</p>
+              <p className="text-slate-500">Wait for response. If they cooperate, present the hook:</p>
+              <p className="font-semibold text-slate-800 italic">"I'm calling because we are nationwide buyers of used heavy equipment such as forklifts and loaders. I wanted to check with you if you might have anything for sale right now or maybe coming up this year?"</p>
             </div>
 
           </div>
@@ -67,33 +67,33 @@ export default function Playbook() {
         {activeTab === 'qualify' && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-emerald-50 font-bold text-[10px] text-emerald-700 uppercase">Calificación de Maquinaria Disponible</span>
-              <p className="text-slate-500">Si el cliente confirma que **sí** tiene un equipo para vender, debes calificarlo realizando las siguientes preguntas en orden:</p>
+              <span className="inline-block px-2 py-0.5 rounded-md bg-emerald-50 font-bold text-[10px] text-emerald-700 uppercase">Qualification of Available Machinery</span>
+              <p className="text-slate-500">If the prospect confirms they have an equipment unit available for sale, qualify the machine by asking the following questions in order:</p>
               
               <ul className="space-y-2 bg-emerald-50/20 border border-emerald-50 p-3 rounded-xl">
                 <li className="flex gap-2">
                   <span className="text-emerald-500 font-bold">1.</span>
-                  <span><strong>Tipo de equipo:</strong> ¿Qué tipo de maquinaria es? ¿Montacargas, cargador, excavadora?</span>
+                  <span><strong>Equipment Type:</strong> And what type of equipment is it? Is it a forklift or a loader?</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-emerald-500 font-bold">2.</span>
-                  <span><strong>Marca & Modelo:</strong> ¿Qué marca y modelo exacto es?</span>
+                  <span><strong>Make & Model:</strong> What's the make? What's the model?</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-emerald-500 font-bold">3.</span>
-                  <span><strong>Año:</strong> ¿Sabes de qué año es la máquina?</span>
+                  <span><strong>Year:</strong> Do you know what year it is?</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-emerald-500 font-bold">4.</span>
-                  <span><strong>Estado:</strong> ¿El equipo está operativo (corriendo) o necesita alguna reparación mayor?</span>
+                  <span><strong>Condition:</strong> Is it running or does it need any major repairs?</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-emerald-500 font-bold">5.</span>
-                  <span><strong>Precio pretendido:</strong> ¿Tienen algún precio objetivo en mente?</span>
+                  <span><strong>Target Price:</strong> Do you have a price in mind for it?</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-emerald-500 font-bold">6.</span>
-                  <span><strong>Fotos y Placas:</strong> ¿Me podría enviar fotos generales del equipo, incluyendo la placa de datos y el horómetro?</span>
+                  <span><strong>Photos & Data:</strong> Could you please send me some pictures of it including the data plate and the hour meter?</span>
                 </li>
               </ul>
             </div>
@@ -103,25 +103,25 @@ export default function Playbook() {
         {activeTab === 'reference' && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-violet-50 font-bold text-[10px] text-violet-700 uppercase">Si NO tienen Equipos Disponibles</span>
-              <p className="text-slate-500">Si el cliente dice que **no** tiene maquinaria para vender hoy, debes perfilar la compañía y dejar la puerta abierta a futuro con estas preguntas:</p>
+              <span className="inline-block px-2 py-0.5 rounded-md bg-violet-50 font-bold text-[10px] text-violet-700 uppercase">If They DO NOT Have Equipment Available</span>
+              <p className="text-slate-500">If the prospect states they have no surplus machinery for sale today, ask these reference questions to profile the account and open future leads:</p>
               
               <ul className="space-y-2 bg-violet-50/20 border border-violet-50 p-3 rounded-xl">
                 <li className="flex gap-2">
                   <span className="text-violet-500 font-bold">•</span>
-                  <span><strong>Proceso de venta:</strong> ¿Cómo manejan habitualmente su proceso cuando tienen excedentes o deciden desincorporar maquinaria usada?</span>
+                  <span><strong>Surplus Process:</strong> How does the process look like when you do have a surplus equipment for sale?</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-violet-500 font-bold">•</span>
-                  <span><strong>Compras:</strong> ¿Ustedes también compran maquinaria usada para su operación o siempre van por unidades nuevas?</span>
+                  <span><strong>Purchases:</strong> Do you buy used equipment as well? Or do you only go for brand new units?</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-violet-500 font-bold">•</span>
-                  <span><strong>Sucursales:</strong> ¿Usted se encarga de las ventas de maquinaria en varias plantas/sedes o solo de esta locación?</span>
+                  <span><strong>Scope:</strong> Do you take care of the equipment sales at several locations or branches, or only your plant?</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-violet-500 font-bold">•</span>
-                  <span><strong>Preferencia:</strong> En su operación diaria, ¿usan más Cargadores o Montacargas?</span>
+                  <span><strong>Preference:</strong> In your daily operations, do you use mostly Loaders or Forklifts?</span>
                 </li>
               </ul>
             </div>
@@ -130,24 +130,24 @@ export default function Playbook() {
 
         {activeTab === 'objections' && (
           <div className="space-y-3">
-            <span className="inline-block px-2 py-0.5 rounded-md bg-rose-50 font-bold text-[10px] text-rose-700 uppercase">Manejo de Objeciones del Script</span>
+            <span className="inline-block px-2 py-0.5 rounded-md bg-rose-50 font-bold text-[10px] text-rose-700 uppercase">Objection Handling Guidelines</span>
             
             {/* Auction */}
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <p className="font-bold text-slate-800">"Todo lo enviamos a Subastas..."</p>
-              <p className="text-slate-600"><strong className="text-blue-600">Rebatir:</strong> Explica que en subasta pierden del 10% al 15% en comisiones del subastador, además del costo de transporte. JYC paga de inmediato en 24 horas y nosotros nos encargamos del flete a nivel nacional sin comisiones.</p>
+              <p className="font-bold text-slate-800">"We always send our surplus machines to auction..."</p>
+              <p className="text-slate-600"><strong className="text-blue-600">Rebuttal:</strong> Explain that auction houses charge heavy seller commissions (often 10-15%) and the seller has to pay for freight to transport it there. JYC pays in full in 24 hours, charges 0% commissions, and handles all freight logistics directly from their plant.</p>
             </div>
 
             {/* Trade-in */}
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <p className="font-bold text-slate-800">"Hacemos Trade-in (toma a cuenta) con el distribuidor..."</p>
-              <p className="text-slate-600"><strong className="text-blue-600">Rebatir:</strong> Los distribuidores castigan el precio de las máquinas viejas. JYC puede pagarles un valor neto superior, lo cual les dará más dinero en efectivo y mayor poder de negociación para comprar su unidad nueva con cualquier marca.</p>
+              <p className="font-bold text-slate-800">"We just trade them in with the dealer..."</p>
+              <p className="text-slate-600"><strong className="text-blue-600">Rebuttal:</strong> Dealers offer low trade-in values to protect their margins. JYC pays higher net cash value than dealer valuations, giving them immediate cash flow and more leverage to negotiate a discount on the new machinery purchase.</p>
             </div>
 
             {/* Leasing */}
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <p className="font-bold text-slate-800">"Los equipos están bajo Arrendamiento (Lease)..."</p>
-              <p className="text-slate-600"><strong className="text-blue-600">Rebatir:</strong> Explica que JYC compra unidades al fin de sus contratos de leasing directamente al banco. Esto le evita a su empresa pagar penalizaciones por desgaste, reparaciones y gastos de retorno al banco.</p>
+              <p className="font-bold text-slate-800">"Our equipment is on lease with the bank..."</p>
+              <p className="text-slate-600"><strong className="text-blue-600">Rebuttal:</strong> Explain JYC regularly buys out equipment at the end of leases. We pay bank residual values directly, saving the client from bank wear-and-tear inspection penalties, repair requests, and return shipping costs.</p>
             </div>
           </div>
         )}
