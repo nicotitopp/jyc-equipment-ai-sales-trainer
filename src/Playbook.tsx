@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { BookOpen, UserCheck, ShieldAlert, FileText, ClipboardList } from 'lucide-react';
+import { BookOpen, UserCheck, ShieldAlert, FileText, ClipboardList, Briefcase } from 'lucide-react';
 
 export default function Playbook() {
-  const [activeTab, setActiveTab] = useState<'bypass' | 'qualify' | 'reference' | 'objections'>('bypass');
+  const [activeTab, setActiveTab] = useState<'bypass' | 'qualify' | 'reference' | 'objections' | 'catalog'>('bypass');
 
   return (
     <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 h-full flex flex-col min-h-[400px] max-h-full overflow-hidden">
@@ -20,6 +20,7 @@ export default function Playbook() {
           { id: 'qualify', label: 'Qualification', icon: <ClipboardList className="w-3.5 h-3.5" /> },
           { id: 'reference', label: 'Future Reference', icon: <FileText className="w-3.5 h-3.5" /> },
           { id: 'objections', label: 'Objections', icon: <ShieldAlert className="w-3.5 h-3.5" /> },
+          { id: 'catalog', label: 'Industries & Catalog', icon: <Briefcase className="w-3.5 h-3.5" /> },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -149,6 +150,67 @@ export default function Playbook() {
               <p className="font-bold text-slate-800">"Our equipment is on lease with the bank..."</p>
               <p className="text-slate-600"><strong className="text-blue-600">Rebuttal:</strong> Explain JYC regularly buys out equipment at the end of leases. We pay bank residual values directly, saving the client from bank wear-and-tear inspection penalties, repair requests, and return shipping costs.</p>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'catalog' && (
+          <div className="space-y-4">
+            
+            {/* Target Industries */}
+            <div className="space-y-2">
+              <span className="inline-block px-2 py-0.5 rounded-md bg-indigo-50 font-bold text-[10px] text-indigo-700 uppercase">1. Target Industries</span>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+                  <p className="font-bold text-slate-800 text-[10px]">Concrete & Precast</p>
+                  <p className="text-slate-500 text-[9px] mt-0.5">Ready-mix, aggregates, quarries, concrete block plants.</p>
+                </div>
+                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+                  <p className="font-bold text-slate-800 text-[10px]">Lumber & Sawmills</p>
+                  <p className="text-slate-500 text-[9px] mt-0.5">Sawmills, lumber yards, plywood & wood processing plants.</p>
+                </div>
+                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+                  <p className="font-bold text-slate-800 text-[10px]">Steel & Metal</p>
+                  <p className="text-slate-500 text-[9px] mt-0.5">Steel Mills, steel pipe plants, tube & coil manufacturing.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* What JYC Buys */}
+            <div className="space-y-2">
+              <span className="inline-block px-2 py-0.5 rounded-md bg-emerald-50 font-bold text-[10px] text-emerald-700 uppercase">2. Equipment We Buy</span>
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5 p-3 bg-emerald-50/20 border border-emerald-50 rounded-xl">
+                <li className="flex gap-1.5 items-start">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span><strong>Wheel Loaders:</strong> CAT (988, 966), Volvo, JD, Komatsu.</span>
+                </li>
+                <li className="flex gap-1.5 items-start">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span><strong>Forklifts:</strong> Taylor, Hyster (High Capacity preferred), Toyota.</span>
+                </li>
+                <li className="flex gap-1.5 items-start">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span><strong>Manlifts:</strong> Genie & JLG (Boom & Scissor lifts).</span>
+                </li>
+                <li className="flex gap-1.5 items-start">
+                  <span className="text-emerald-600 font-bold">✓</span>
+                  <span><strong>Others:</strong> Excavators, Haul trucks, Skid steers, Backhoes.</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* What JYC Rejects */}
+            <div className="space-y-2">
+              <span className="inline-block px-2 py-0.5 rounded-md bg-red-50 font-bold text-[10px] text-red-700 uppercase">3. We DO NOT Buy (Declines/Pivots)</span>
+              <div className="p-3 bg-red-50/10 border border-red-50 rounded-xl space-y-2">
+                <p className="text-slate-500 text-[10px]">Politely decline if offered any of these, then pivot back to forklifts/loaders:</p>
+                <div className="flex flex-wrap gap-2">
+                  {['Concrete Pumps', 'Mixer Trucks', 'Sweepers', 'Rollers', 'Concrete Molds', 'Truck Cranes', 'Mixers'].map((item) => (
+                    <span key={item} className="px-2 py-1 rounded bg-red-50 text-red-700 font-semibold text-[10px]">{item}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
 
