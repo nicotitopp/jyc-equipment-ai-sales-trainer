@@ -107,7 +107,7 @@ async function startServer() {
             },
             {
               text: `Please listen to and evaluate this cold call audio recording. The representative (Trainee) is a buyer from JYC Equipment contacting a prospect (Key Person) representing a business regarding used heavy machinery.
-The representative's primary goal is to BUY used heavy equipment (forklifts, wheel loaders, excavators, crushers, etc.) from the company.
+The representative's primary goal is to BUY used heavy equipment (forklifts, wheel loaders, reach stackers, empty container handlers, standard or electric forklifts, excavators, etc.) from the company.
 
 First, transcribe the entire call dialogue accurately as a list of spoken lines, separating the "Trainee" and the "Prospect", and include it in the "transcript" property of the output JSON.
 Listen to the audio to determine the language spoken, but write all critique details (summary, strengths, weaknesses, objectionsHandled feedback, recommendations) in Spanish.
@@ -156,7 +156,7 @@ You must return ONLY a JSON object with this exact structure:
         model: "gemini-2.5-flash",
         contents: contents,
         config: {
-          systemInstruction: "You are a strict construction machinery sales auditor. Analyze the audio and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
+          systemInstruction: "You are a strict machinery sales auditor. Analyze the audio and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
         }
       });
 

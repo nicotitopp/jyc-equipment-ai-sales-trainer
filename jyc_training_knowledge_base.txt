@@ -1,0 +1,59 @@
+JYC EQUIPMENT - MULTI-INDUSTRY TRAINING MANUAL & SALES SCRIPT
+
+1. COMPANY OVERVIEW
+JYC Equipment is a nationwide buyer of used heavy equipment.
+- We buy used heavy equipment for inventory and export markets.
+- We buy both running and non-running equipment, as long as it is complete.
+- We can purchase end-of-lease equipment directly from the bank or lease company.
+- We pay quickly, typically within 24 hours of reaching an agreement.
+- We handle all freight and transport logistics costs nationwide.
+- We have an overseas market for older or high-hour units, and a domestic market for late-model units.
+
+2. TARGET INDUSTRIES & CUSTOMER PERSONAS
+Our sales representatives call prospects who manage operations or fleets in these six industries:
+- Concrete & Precast Industry: Ready-mix plants, precast concrete structures plants (making blocks, pipes, slabs), sand/gravel quarries, and aggregate yards.
+- Lumber Industry & Sawmills: Sawmills, lumber yards, wood processing plants, plywood plants, and logging operations.
+- Steel & Metal Pipe Industry: Steel pipe plants, steel mills, metal tube/coil/rod factories, and plate manufacturers.
+- Ports & Terminals: Container yards, shipping ports, cargo handling locations, and maritime terminals.
+- Plastic Industry: Injection molding plants, plastic extrusion factories, blow molding facilities, and plastic recycling plants.
+- Medical & Pharma Industry: Medical device manufacturing plants, pharmaceutical laboratories, cleanroom warehouses, and healthcare logistics.
+
+3. EQUIPMENT CATALOG: WHAT WE BUY VS. WHAT WE REJECT
+- WHAT WE BUY:
+  * Wheel Loaders: Caterpillar (CAT 988 and 966 are highly popular), Volvo, John Deere, Case, Komatsu, Clark.
+  * Forklifts & Port Equipment: Reach stackers (Kalmar, Hyster, Konecranes, Taylor), empty container handlers. JYC highly prefers high-capacity Taylor and Hyster counterbalance forklifts. We also buy standard counterbalance, rough terrain, telehandlers (JLG, Lull), reach trucks, electric walkie stackers, and electric forklifts (Toyota, Crown, Jungheinrich, Raymond, Clark, Doosan, Manitou, Yale).
+  * Manlifts: Genie and JLG boom lifts and scissor lifts.
+  * Others: Excavators, Skid steers, Haul trucks, Backhoes.
+- WHAT WE DO NOT BUY (Politely decline and pivot if offered):
+  * Concrete pumps, Mixer trucks, Sweepers, Rollers, Concrete molds, Truck cranes, Mixers.
+  * Pivot script: "We don't typically buy mixers/cranes, but we do buy your used forklifts, wheel loaders, or boom lifts. Do you have any of those for sale?"
+
+4. COLD CALL SCRIPT FLOW
+
+A. GETTING PAST THE OPERATOR (GATEKEEPER BYPASS)
+- Receptionist intro: "Good morning, could you please transfer me to the person in charge of the sales of your used heavy equipment like your forklifts and wheel loaders?"
+- If operator asks "What is this in regards to?":
+  "This is [Name] with JYC Equipment. We are nationwide buyers of used heavy equipment, such as forklifts and wheel loaders. I wanted to check with the fleet or plant manager if you might have anything for sale right now or maybe coming up this year? Is he available?"
+
+B. TALKING TO THE KEY PERSON (KP)
+- Opening: "Hi [KP Name], this is [Name] with JYC Equipment. Did I catch you at a bad time?"
+- Hook: "I'm calling because we are nationwide buyers of used heavy equipment such as forklifts and wheel loaders. I wanted to check with you if you might have anything for sale right now or maybe coming up this year?"
+
+C. QUALIFYING AVAILABLE MACHINERY
+If the prospect has a machine for sale, the representative must ask these questions in order to qualify it:
+1. Equipment Type: "What type of equipment is it? Is it a forklift or a loader?"
+2. Make & Model: "What is the make and model?"
+3. Year: "Do you know what year it is?"
+4. Condition: "Is it running or does it need any major repairs?"
+5. Target Price: "Do you have a price in mind for it?"
+6. Photos & Data Plate: "Could you please send me some pictures of it including the data plate and the hour meter?"
+
+D. OBJECTION HANDLING REBUTTALS
+- If they Auction: "We always send our surplus machines to auction."
+  Rebuttal: "We are not an auction house or brokers; we buy equipment for stock, so we don't charge any commissions. If we agree on a price, we can pay within 24 hours, and we take care of all the freight costs. In auctions, you lose 10-15% in commissions and pay for transport."
+- If they Trade-in: "We just trade them in with the dealer when we buy new ones."
+  Rebuttal: "Dealers offer lower trade-in values to protect their margins. JYC pays higher net cash values than dealer trade-in valuations, giving you more cash and stronger negotiating power for your new purchase."
+- If they Lease: "Our equipment is on lease with the bank."
+  Rebuttal: "We buy end-of-lease equipment directly. Since we buy 'as-is', you don't need to take care of bank wear-and-tear inspection penalties, repairs, or return freight costs."
+- If they want a price first: "Give me a price."
+  Rebuttal: "I can definitely send someone over to inspect it, no problem. But before we do that, I don't want to waste your time or ours if it's not something we would buy. Could you tell me a bit more first? Like, what make, model, and year is it? Is it running, or does it need any repairs?"

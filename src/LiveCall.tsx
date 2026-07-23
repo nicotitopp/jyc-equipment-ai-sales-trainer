@@ -18,8 +18,47 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
   // Configuration States
   const [difficulty, setDifficulty] = useState<'friendly' | 'tough'>('friendly');
   const [language, setLanguage] = useState<'English' | 'Spanish'>('English');
+  const [industry, setIndustry] = useState<string>('concrete');
   const [contactName, setContactName] = useState('Carlos');
   const [companyName, setCompanyName] = useState('Canteras del Norte');
+
+  // Industry-specific defaults for quick configuration
+  const INDUSTRY_DEFAULTS: Record<string, { 
+    English: { company: string; contact: string }; 
+    Spanish: { company: string; contact: string }; 
+  }> = {
+    concrete: {
+      English: { company: "Northern Quarries", contact: "Charles" },
+      Spanish: { company: "Canteras del Norte", contact: "Carlos" }
+    },
+    lumber: {
+      English: { company: "Timberlands Sawmill", contact: "Robert" },
+      Spanish: { company: "Maderas del Bosque", contact: "Roberto" }
+    },
+    metal: {
+      English: { company: "Apex Steel Tubing", contact: "Edward" },
+      Spanish: { company: "Aceros Industriales", contact: "Eduardo" }
+    },
+    ports: {
+      English: { company: "Pacific Port Terminals", contact: "Frank" },
+      Spanish: { company: "Terminal Portuaria del Pacífico", contact: "Francisco" }
+    },
+    plastic: {
+      English: { company: "Matrix Plastics", contact: "Sophie" },
+      Spanish: { company: "Plásticos y Polímeros", contact: "Sofía" }
+    },
+    medical: {
+      English: { company: "BioPharma Logistics", contact: "Sarah" },
+      Spanish: { company: "Distribuidora Médica Nacional", contact: "Elena" }
+    }
+  };
+
+  // Automatically update defaults when industry or language is switched
+  useEffect(() => {
+    const defaults = INDUSTRY_DEFAULTS[industry]?.[language] || INDUSTRY_DEFAULTS.concrete[language];
+    setCompanyName(defaults.company);
+    setContactName(defaults.contact);
+  }, [industry, language]);
 
   // Evaluation States
   const [wasConnected, setWasConnected] = useState(false);
@@ -80,7 +119,8 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
           language: language,
           first_message: greeting,
           contact_name: contactName || "Carlos",
-          company_name: companyName || "Canteras del Norte"
+          company_name: companyName || "Canteras del Norte",
+          industry: industry
         }
       });
     } catch (error) {
@@ -111,6 +151,16 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
         .map(t => `${t.role === 'user' ? 'Trainee (Sales Rep)' : 'Prospect'}: ${t.text}`)
         .join('\n');
 
+      const industryLabels: Record<string, string> = {
+        concrete: 'Concrete & Precast Industry',
+        lumber: 'Lumber Industry & Sawmills',
+        metal: 'Metal / Steel Pipe Industry',
+        ports: 'Ports & Terminals',
+        plastic: 'Plastic Industry',
+        medical: 'Medical / Pharmaceutical Industry'
+      };
+      const selectedIndustryLabel = industryLabels[industry] || 'Heavy Machinery';
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,8 +168,8 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
           messages: [
             {
               role: 'user',
-              content: `Please evaluate this sales/purchasing cold call transcript. The representative is a buyer from JYC Equipment contacting a prospect named "${contactName}" representing "${companyName}" regarding used heavy machinery.
-The representative's primary goal is to BUY used heavy equipment (forklifts, wheel loaders, excavators, crushers, etc.) from the company.
+              content: `Please evaluate this sales/purchasing cold call transcript. The representative is a buyer from JYC Equipment contacting a prospect named "${contactName}" representing "${companyName}" (operating in the ${selectedIndustryLabel} sector) regarding used heavy machinery.
+The representative's primary goal is to BUY used heavy equipment (such as forklifts, wheel loaders, reach stackers, empty container handlers, standard or electric forklifts, etc.) from the company.
 
 The entire call was conducted in ${language}. You must write all critique details (strengths, weaknesses, objectionsHandled feedback, recommendations) in the user's primary language: Spanish.
 
@@ -157,7 +207,7 @@ You must return ONLY a JSON object with this exact structure:
 }`
             }
           ],
-          systemInstruction: "You are a strict construction machinery sales auditor. Analyze the transcript and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
+          systemInstruction: "You are a strict machinery sales auditor. Analyze the transcript and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
         })
       });
 
@@ -312,6 +362,22 @@ You must return ONLY a JSON object with this exact structure:
                 </div>
               </div>
 
+              {/* Target Industry */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Target Industry</label>
+                <select
+                  value={industry}
+                  onChange={(e) => setIndustry(e.target.value)}
+                  className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold text-slate-700"
+                >
+                  <option value="concrete">Concrete & Precast</option>
+                  <option value="lumber">Lumber & Sawmills</option>
+                  <option value="metal">Steel & Metal Pipe</option>
+                  <option value="ports">Ports & Terminals</option>
+                  <option value="plastic">Plastic Manufacturing</option>
+                  <option value="medical">Medical & Pharma</option>
+                </select>
+              </div>
 
               {/* Detalles adicionales */}
               <div className="grid grid-cols-2 gap-2">

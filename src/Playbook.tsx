@@ -170,7 +170,19 @@ export default function Playbook() {
                 </div>
                 <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
                   <p className="font-bold text-slate-800 text-[10px]">Steel & Metal</p>
-                  <p className="text-slate-500 text-[9px] mt-0.5">Steel Mills, steel pipe plants, tube & coil manufacturing.</p>
+                  <p className="text-slate-500 text-[9px] mt-0.5">Steel mills, steel pipe plants, tube & coil manufacturing.</p>
+                </div>
+                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+                  <p className="font-bold text-slate-800 text-[10px]">Ports & Terminals</p>
+                  <p className="text-slate-500 text-[9px] mt-0.5">Container terminals, shipping ports, cargo handling, logistics hubs.</p>
+                </div>
+                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+                  <p className="font-bold text-slate-800 text-[10px]">Plastic Industry</p>
+                  <p className="text-slate-500 text-[9px] mt-0.5">Injection molding, extrusion, recycling, compounding plants.</p>
+                </div>
+                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+                  <p className="font-bold text-slate-800 text-[10px]">Medical & Pharma</p>
+                  <p className="text-slate-500 text-[9px] mt-0.5">Medical device manufacturers, pharma labs, cleanroom logistics.</p>
                 </div>
               </div>
             </div>
@@ -185,15 +197,15 @@ export default function Playbook() {
                 </li>
                 <li className="flex gap-1.5 items-start">
                   <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Forklifts:</strong> Taylor, Hyster (High Capacity preferred), Toyota.</span>
+                  <span><strong>Forklifts & Port:</strong> Taylor, Hyster (High Capacity & Reach Stackers), Kalmar, Toyota, Crown.</span>
                 </li>
                 <li className="flex gap-1.5 items-start">
                   <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Manlifts:</strong> Genie & JLG (Boom & Scissor lifts).</span>
+                  <span><strong>Electric & Clean:</strong> Toyota, Crown, Jungheinrich, Raymond electric/pallet trucks.</span>
                 </li>
                 <li className="flex gap-1.5 items-start">
                   <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Others:</strong> Excavators, Haul trucks, Skid steers, Backhoes.</span>
+                  <span><strong>Others:</strong> Genie/JLG manlifts, Excavators, Skid steers, Backhoes.</span>
                 </li>
               </ul>
             </div>
