@@ -75,14 +75,43 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
 
           setLoadingMessage("Gemini is transcribing and auditing call script...");
 
-          const response = await fetch('/api/audit-audio', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              audioBase64: base64Data,
-              mimeType: mimeType
-            })
-          });
+          let response;
+          let retries = 3;
+          let lastErr: any;
+
+          while (retries > 0) {
+            try {
+              response = await fetch('/api/audit-audio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  audioBase64: base64Data,
+                  mimeType: mimeType
+                })
+              });
+
+              if (response.ok) break;
+
+              if ([502, 503, 504, 429].includes(response.status) && retries > 1) {
+                retries--;
+                await new Promise(r => setTimeout(r, 2500));
+                continue;
+              }
+              break;
+            } catch (fetchErr: any) {
+              lastErr = fetchErr;
+              retries--;
+              if (retries > 0) {
+                await new Promise(r => setTimeout(r, 3000));
+                continue;
+              }
+              throw fetchErr;
+            }
+          }
+
+          if (!response) {
+            throw lastErr || new Error("Failed to connect to server after retries.");
+          }
 
           const data = await response.json();
           if (!response.ok) {

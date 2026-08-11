@@ -161,14 +161,20 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
       };
       const selectedIndustryLabel = industryLabels[industry] || 'Heavy Machinery';
 
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: `Please evaluate this sales/purchasing cold call transcript. The representative is a buyer from JYC Equipment contacting a prospect named "${contactName}" representing "${companyName}" (operating in the ${selectedIndustryLabel} sector) regarding used heavy machinery.
+      let response;
+      let retries = 3;
+      let lastErr: any;
+
+      while (retries > 0) {
+        try {
+          response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              messages: [
+                {
+                  role: 'user',
+                  content: `Please evaluate this sales/purchasing cold call transcript. The representative is a buyer from JYC Equipment contacting a prospect named "${contactName}" representing "${companyName}" (operating in the ${selectedIndustryLabel} sector) regarding used heavy machinery.
 The representative's primary goal is to BUY used heavy equipment (such as forklifts, wheel loaders, reach stackers, empty container handlers, standard or electric forklifts, etc.) from the company.
 
 The entire call was conducted in ${language}. You must write all critique details (strengths, weaknesses, objectionsHandled feedback, recommendations) in the user's primary language: Spanish.
@@ -205,11 +211,35 @@ You must return ONLY a JSON object with this exact structure:
   ],
   "recommendations": ["Recommendation 1 in Spanish", "Recommendation 2 in Spanish", ...]
 }`
-            }
-          ],
-          systemInstruction: "You are a strict machinery sales auditor. Analyze the transcript and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
-        })
-      });
+                }
+              ],
+              systemInstruction: "You are a strict machinery sales auditor. Analyze the transcript and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
+            })
+          });
+
+          if (response.ok) break;
+
+          // If server status is waking up (502/503/504) retry
+          if ([502, 503, 504, 429].includes(response.status) && retries > 1) {
+            retries--;
+            await new Promise(r => setTimeout(r, 2500));
+            continue;
+          }
+          break;
+        } catch (fetchErr: any) {
+          lastErr = fetchErr;
+          retries--;
+          if (retries > 0) {
+            await new Promise(r => setTimeout(r, 3000));
+            continue;
+          }
+          throw fetchErr;
+        }
+      }
+
+      if (!response) {
+        throw lastErr || new Error("Failed to connect to server after retries.");
+      }
 
       const data = await response.json();
       if (!response.ok) {
