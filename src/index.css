@@ -69,6 +69,11 @@ body {
   .no-print {
     display: none !important;
   }
+  .print-always-visible {
+    display: block !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
   /* General print improvements */
   .bg-slate-50, .bg-white, .bg-emerald-50\/50, .bg-rose-50\/50, .bg-slate-50 {
     background-color: white !important;

@@ -261,8 +261,18 @@ You must return ONLY a JSON object with this exact structure:
         }
       }
 
-      setEvaluation(parsedData);
-      onEvaluationComplete?.(parsedData.score, parsedData, contactName || "Dave", companyName || "Pine Bluff Sand");
+      const normalizedTranscript = transcripts.map(t => ({
+        role: t.role === 'user' ? 'user' : 'prospect',
+        text: t.text
+      }));
+
+      const fullEvaluation = {
+        ...parsedData,
+        transcript: parsedData.transcript || normalizedTranscript
+      };
+
+      setEvaluation(fullEvaluation);
+      onEvaluationComplete?.(fullEvaluation.score, fullEvaluation, contactName || "Dave", companyName || "Pine Bluff Sand");
     } catch (error: any) {
       console.error("Evaluation error:", error);
       setEvaluation({
