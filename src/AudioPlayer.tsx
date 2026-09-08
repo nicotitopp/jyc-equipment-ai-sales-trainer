@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2, VolumeX, Download, RotateCcw, Headphones, FastForward } from 'lucide-react';
-import { getAudio } from './audioDb';
+import { getAudio, saveAudio } from './audioDb';
 
 interface AudioPlayerProps {
   audioId?: string;
@@ -28,31 +28,71 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
     let active = true;
 
     async function loadAudioSource() {
-      if (audioBlob) {
+      setLoading(true);
+
+      // 1. Direct blob provided
+      if (audioBlob && audioBlob.size > 0) {
         const url = URL.createObjectURL(audioBlob);
-        if (active) setBlobUrl(url);
+        if (active) {
+          setBlobUrl(url);
+          setLoading(false);
+        }
         return;
       }
 
-      if (audioUrl) {
-        if (active) setBlobUrl(audioUrl);
-        return;
-      }
-
+      // 2. Try IndexedDB first if audioId is provided
       if (audioId) {
-        setLoading(true);
         try {
           const fetchedBlob = await getAudio(audioId);
-          if (fetchedBlob && active) {
+          if (fetchedBlob && fetchedBlob.size > 0 && active) {
             const url = URL.createObjectURL(fetchedBlob);
             setBlobUrl(url);
+            setLoading(false);
+            return;
           }
         } catch (err) {
           console.warn('Error loading audio from IDB:', err);
-        } finally {
-          if (active) setLoading(false);
         }
       }
+
+      // 3. Try fetching audioUrl if provided
+      if (audioUrl) {
+        try {
+          const res = await fetch(audioUrl);
+          if (res.ok) {
+            const fetchedBlob = await res.blob();
+            if (fetchedBlob && fetchedBlob.size > 0 && active) {
+              const url = URL.createObjectURL(fetchedBlob);
+              setBlobUrl(url);
+              if (audioId) {
+                saveAudio(audioId, fetchedBlob).catch(console.warn);
+              }
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn('Error fetching audioUrl:', err);
+        }
+      }
+
+      // 4. Retry IndexedDB once after short delay (in case async write was finalizing)
+      if (audioId) {
+        await new Promise(r => setTimeout(r, 600));
+        try {
+          const fetchedBlob = await getAudio(audioId);
+          if (fetchedBlob && fetchedBlob.size > 0 && active) {
+            const url = URL.createObjectURL(fetchedBlob);
+            setBlobUrl(url);
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.warn('Retry error loading audio from IDB:', err);
+        }
+      }
+
+      if (active) setLoading(false);
     }
 
     loadAudioSource();

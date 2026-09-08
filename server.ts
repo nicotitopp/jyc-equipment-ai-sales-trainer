@@ -37,35 +37,26 @@ async function startServer() {
         parts: [{ text: m.content }]
       }));
 
+      const fallbackModels = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash"];
       let response;
-      let retries = 3;
       let lastError;
-      let currentModel = "gemini-2.5-flash";
 
-      while (retries > 0) {
+      for (const modelName of fallbackModels) {
         try {
           response = await ai.models.generateContent({
-            model: currentModel,
+            model: modelName,
             contents: contents,
             config: {
               systemInstruction: systemInstruction,
             }
           });
-          break;
-        } catch (error: any) {
-          lastError = error;
-          if (error.status === "UNAVAILABLE" || error.status === 503 || error.status === 429) {
-            retries--;
-            if (retries > 0) {
-              // Try falling back to flash-8b if standard flash is busy
-              if (currentModel === "gemini-2.5-flash") {
-                currentModel = "gemini-1.5-flash-8b";
-              }
-              await new Promise(r => setTimeout(r, 2000));
-              continue;
-            }
+          if (response && response.text) {
+            break;
           }
-          throw error;
+        } catch (error: any) {
+          console.warn(`Model ${modelName} chat attempt failed:`, error.message);
+          lastError = error;
+          await new Promise(r => setTimeout(r, 800));
         }
       }
 
@@ -152,13 +143,32 @@ You must return ONLY a JSON object with this exact structure:
         }
       ];
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: contents,
-        config: {
-          systemInstruction: "You are a strict machinery sales auditor. Analyze the audio and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
+      const fallbackModels = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash"];
+      let response;
+      let lastError;
+
+      for (const modelName of fallbackModels) {
+        try {
+          response = await ai.models.generateContent({
+            model: modelName,
+            contents: contents,
+            config: {
+              systemInstruction: "You are a strict machinery sales auditor. Analyze the audio and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
+            }
+          });
+          if (response && response.text) {
+            break;
+          }
+        } catch (error: any) {
+          console.warn(`Model ${modelName} audio audit attempt failed:`, error.message);
+          lastError = error;
+          await new Promise(r => setTimeout(r, 800));
         }
-      });
+      }
+
+      if (!response) {
+        throw lastError;
+      }
 
       res.json({ text: response.text });
     } catch (error: any) {

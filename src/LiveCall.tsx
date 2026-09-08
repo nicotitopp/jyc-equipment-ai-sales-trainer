@@ -127,13 +127,18 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       try {
-        const recorder = new MediaRecorder(stream);
+        const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : MediaRecorder.isTypeSupported('audio/webm')
+          ? 'audio/webm'
+          : '';
+        const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
         recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
+          if (e.data && e.data.size > 0) {
             audioChunksRef.current.push(e.data);
           }
         };
-        recorder.start(500);
+        recorder.start(250);
         mediaRecorderRef.current = recorder;
       } catch (recErr) {
         console.warn("Could not start local MediaRecorder:", recErr);
@@ -215,9 +220,21 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
   const triggerEvaluation = async () => {
     if (transcripts.length === 0) return;
 
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.requestData();
+        mediaRecorderRef.current.stop();
+      } catch (recErr) {
+        console.warn("Could not stop MediaRecorder on evaluate:", recErr);
+      }
+    }
+
+    await new Promise(r => setTimeout(r, 200));
+
     if (currentCallId && audioChunksRef.current.length > 0) {
       try {
-        const localBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const mime = mediaRecorderRef.current?.mimeType || 'audio/webm';
+        const localBlob = new Blob(audioChunksRef.current, { type: mime });
         await saveAudio(currentCallId, localBlob);
       } catch (saveErr) {
         console.warn("Could not save local recording:", saveErr);
