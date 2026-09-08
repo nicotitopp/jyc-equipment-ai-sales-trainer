@@ -30,7 +30,7 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
     async function loadAudioSource() {
       setLoading(true);
 
-      // 1. Direct blob provided
+      // 1. Direct blob provided from user upload
       if (audioBlob && audioBlob.size > 0) {
         const url = URL.createObjectURL(audioBlob);
         if (active) {
@@ -40,22 +40,25 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
         return;
       }
 
-      // 2. Try IndexedDB first if audioId is provided
+      // 2. If audioId exists, check if we already have the mixed MP3 in IndexedDB
       if (audioId) {
         try {
-          const fetchedBlob = await getAudio(audioId);
-          if (fetchedBlob && fetchedBlob.size > 0 && active) {
-            const url = URL.createObjectURL(fetchedBlob);
+          const cachedBlob = await getAudio(audioId);
+          if (cachedBlob && cachedBlob.size > 0 && active) {
+            const url = URL.createObjectURL(cachedBlob);
             setBlobUrl(url);
-            setLoading(false);
-            return;
+            // If it's already the full MP3 (or no audioUrl to fetch), finish loading
+            if (cachedBlob.type === 'audio/mpeg' || !audioUrl) {
+              setLoading(false);
+              return;
+            }
           }
         } catch (err) {
-          console.warn('Error loading audio from IDB:', err);
+          console.warn('Error checking IDB cache:', err);
         }
       }
 
-      // 3. Try fetching audioUrl if provided
+      // 3. Fetch full 2-way conversation audio from ElevenLabs (user + AI voice)
       if (audioUrl) {
         try {
           const res = await fetch(audioUrl);
@@ -72,23 +75,20 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
             }
           }
         } catch (err) {
-          console.warn('Error fetching audioUrl:', err);
+          console.warn('Error fetching 2-way conversation audio:', err);
         }
       }
 
-      // 4. Retry IndexedDB once after short delay (in case async write was finalizing)
-      if (audioId) {
-        await new Promise(r => setTimeout(r, 600));
+      // 4. Fallback to whatever is in IndexedDB
+      if (audioId && active) {
         try {
-          const fetchedBlob = await getAudio(audioId);
-          if (fetchedBlob && fetchedBlob.size > 0 && active) {
-            const url = URL.createObjectURL(fetchedBlob);
+          const fallbackBlob = await getAudio(audioId);
+          if (fallbackBlob && fallbackBlob.size > 0 && active) {
+            const url = URL.createObjectURL(fallbackBlob);
             setBlobUrl(url);
-            setLoading(false);
-            return;
           }
         } catch (err) {
-          console.warn('Retry error loading audio from IDB:', err);
+          console.warn('Error loading fallback audio:', err);
         }
       }
 

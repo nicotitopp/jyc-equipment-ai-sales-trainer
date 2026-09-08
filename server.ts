@@ -179,12 +179,8 @@ You must return ONLY a JSON object with this exact structure:
 
   app.get("/api/elevenlabs/signed-url", async (req, res) => {
     try {
-      const apiKey = process.env.ELEVENLABS_API_KEY;
+      const apiKey = process.env.ELEVENLABS_API_KEY || "sk_a1f695335cad3cea6e3f15491969d029aa71f353f01754e0";
       const agentId = process.env.ELEVENLABS_AGENT_ID || "agent_2501kw2zhyq8ewg9ntqm1613vhek";
-
-      if (!apiKey) {
-        return res.status(400).json({ error: "ELEVENLABS_API_KEY is not configured in .env" });
-      }
 
       const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`, {
         headers: {
@@ -209,27 +205,35 @@ You must return ONLY a JSON object with this exact structure:
   app.get("/api/elevenlabs/conversation-audio/:conversationId", async (req, res) => {
     try {
       const { conversationId } = req.params;
-      const apiKey = process.env.ELEVENLABS_API_KEY;
+      const apiKey = process.env.ELEVENLABS_API_KEY || "sk_a1f695335cad3cea6e3f15491969d029aa71f353f01754e0";
 
-      if (!apiKey) {
-        return res.status(400).json({ error: "ELEVENLABS_API_KEY is not configured in .env" });
-      }
+      let retries = 4;
+      let lastResponse;
 
-      const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversations/${conversationId}/audio`, {
-        headers: {
-          "xi-api-key": apiKey,
-          "Accept": "audio/mpeg"
+      while (retries > 0) {
+        const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversations/${conversationId}/audio`, {
+          headers: {
+            "xi-api-key": apiKey,
+            "Accept": "audio/mpeg"
+          }
+        });
+
+        if (response.ok) {
+          res.setHeader("Content-Type", "audio/mpeg");
+          res.setHeader("Content-Disposition", `attachment; filename="call_recording_${conversationId}.mp3"`);
+          const arrayBuffer = await response.arrayBuffer();
+          return res.send(Buffer.from(arrayBuffer));
         }
-      });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        return res.status(response.status).json({ error: errorText });
+        lastResponse = response;
+        retries--;
+        if (retries > 0) {
+          await new Promise(r => setTimeout(r, 1200));
+        }
       }
 
-      res.setHeader("Content-Type", "audio/mpeg");
-      const arrayBuffer = await response.arrayBuffer();
-      res.send(Buffer.from(arrayBuffer));
+      const errorText = await lastResponse?.text();
+      return res.status(lastResponse?.status || 500).json({ error: errorText || "Failed to fetch audio from ElevenLabs" });
     } catch (error: any) {
       console.error("Error fetching conversation audio:", error);
       res.status(500).json({ error: error.message || "Failed to fetch audio" });
