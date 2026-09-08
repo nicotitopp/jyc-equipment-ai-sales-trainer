@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ConversationProvider, useConversation } from '@elevenlabs/react';
 import { 
-  PhoneCall, Phone, Mic, MicOff, Loader2, Bot, User
+  PhoneCall, Phone, Mic, MicOff, Loader2, Bot, User, ShieldCheck
 } from 'lucide-react';
 import Scorecard from './Scorecard';
 import { saveAudio } from './audioDb';
@@ -28,6 +28,7 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
   const [industry, setIndustry] = useState<string>('concrete');
   const [contactName, setContactName] = useState('Carlos');
   const [companyName, setCompanyName] = useState('Canteras del Norte');
+  const [noiseSuppressionEnabled, setNoiseSuppressionEnabled] = useState(true);
 
   // Industry-specific defaults for quick configuration
   const INDUSTRY_DEFAULTS: Record<string, { 
@@ -125,7 +126,19 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
       setCurrentCallId(callId);
       audioChunksRef.current = [];
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const audioConstraints: any = {
+        echoCancellation: true,
+        noiseSuppression: noiseSuppressionEnabled,
+        autoGainControl: true,
+        channelCount: 1,
+        googEchoCancellation: true,
+        googAutoGainControl: true,
+        googNoiseSuppression: noiseSuppressionEnabled,
+        googHighpassFilter: true,
+        googNoiseReduction: noiseSuppressionEnabled
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       try {
         const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
           ? 'audio/webm;codecs=opus'
@@ -578,6 +591,32 @@ You must return ONLY a JSON object with this exact structure:
                     className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
+              </div>
+
+              {/* Noise Cancellation Toggle */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200/80">
+                <div className="flex items-center gap-2">
+                  <div className={`p-1 rounded-md ${noiseSuppressionEnabled ? 'bg-blue-100 text-blue-600' : 'bg-slate-200 text-slate-500'}`}>
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold text-slate-700 block leading-tight">Noise Suppression</span>
+                    <span className="text-[9px] text-slate-400 block leading-tight">Filters fan, keyboard & room noise</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNoiseSuppressionEnabled(!noiseSuppressionEnabled)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    noiseSuppressionEnabled ? 'bg-blue-600' : 'bg-slate-300'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      noiseSuppressionEnabled ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
               </div>
             </div>
           )}
