@@ -13,4 +13,7 @@ export interface HistoryItem {
   companyName: string;
   score: number;
   evaluation: any;
+  hasAudio?: boolean;
+  conversationId?: string;
+  audioUrl?: string;
 }

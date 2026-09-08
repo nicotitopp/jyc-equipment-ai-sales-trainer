@@ -8,6 +8,7 @@ import LiveCall from './LiveCall';
 import RealCallAudit from './RealCallAudit';
 import Playbook from './Playbook';
 import HistoryDashboard from './HistoryDashboard';
+import { clearAllAudios } from './audioDb';
 
 const MODES: { id: Mode; label: string; icon: React.ReactNode; description: string }[] = [
   { id: 'Coach', label: 'Coach', icon: <GraduationCap className="w-5 h-5" />, description: 'Get explanations and playbook guidance.' },
@@ -29,9 +30,16 @@ export default function App() {
     }
   });
 
-  const appendToHistory = (score: number, evaluation: any, contactName: string, companyName: string, type: 'Live Call' | 'Audio Upload') => {
+  const appendToHistory = (
+    score: number, 
+    evaluation: any, 
+    contactName: string, 
+    companyName: string, 
+    type: 'Live Call' | 'Audio Upload',
+    options?: { id?: string; hasAudio?: boolean; conversationId?: string; audioUrl?: string }
+  ) => {
     const newItem: HistoryItem = {
-      id: Date.now().toString() + Math.random().toString().substring(2, 6),
+      id: options?.id || (Date.now().toString() + Math.random().toString().substring(2, 6)),
       date: new Date().toLocaleDateString('es-ES', { 
         year: 'numeric', 
         month: 'short', 
@@ -43,7 +51,10 @@ export default function App() {
       contactName,
       companyName,
       score,
-      evaluation
+      evaluation,
+      hasAudio: options?.hasAudio ?? true,
+      conversationId: options?.conversationId,
+      audioUrl: options?.audioUrl
     };
     setHistory(prev => {
       const updated = [...prev, newItem];
@@ -54,6 +65,7 @@ export default function App() {
 
   const handleClearHistory = () => {
     localStorage.removeItem('jyc_sales_history');
+    clearAllAudios().catch(console.error);
     setHistory([]);
   };
 
@@ -312,9 +324,9 @@ export default function App() {
         </header>
 
         {mode === 'Live Call Simulation' ? (
-          <LiveCall onEvaluationComplete={(score, evalData, contact, company) => appendToHistory(score, evalData, contact, company, 'Live Call')} />
+          <LiveCall onEvaluationComplete={(score, evalData, contact, company, opts) => appendToHistory(score, evalData, contact, company, 'Live Call', opts)} />
         ) : mode === 'Real Call Audit' ? (
-          <RealCallAudit onEvaluationComplete={(score, evalData, contact, company) => appendToHistory(score, evalData, contact, company, 'Audio Upload')} />
+          <RealCallAudit onEvaluationComplete={(score, evalData, contact, company, opts) => appendToHistory(score, evalData, contact, company, 'Audio Upload', opts)} />
         ) : mode === 'History' ? (
           <HistoryDashboard 
             history={history} 

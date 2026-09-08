@@ -4,6 +4,7 @@ import {
   PhoneCall, Phone, Mic, MicOff, Loader2, Bot, User
 } from 'lucide-react';
 import Scorecard from './Scorecard';
+import { saveAudio } from './audioDb';
 
 interface TranscriptItem {
   id: number;
@@ -11,9 +12,15 @@ interface TranscriptItem {
   text: string;
 }
 
-const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (score: number, evaluation: any, contactName: string, companyName: string) => void }) => {
+const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (score: number, evaluation: any, contactName: string, companyName: string, opts?: { id?: string; hasAudio?: boolean; conversationId?: string; audioUrl?: string }) => void }) => {
   const [transcripts, setTranscripts] = useState<TranscriptItem[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Audio Recording States
+  const [currentCallId, setCurrentCallId] = useState<string | null>(null);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   // Configuration States
   const [difficulty, setDifficulty] = useState<'friendly' | 'challenging' | 'hardcore'>('friendly');
@@ -72,6 +79,11 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
   const [showTranscript, setShowTranscript] = useState(false);
 
   const conversation = useConversation({
+    onConnect: ({ conversationId }: { conversationId?: string } = {}) => {
+      if (conversationId) {
+        setCurrentConversationId(conversationId);
+      }
+    },
     onMessage: (msg) => {
       setTranscripts(prev => [...prev, {
         id: Date.now() + Math.random(),
@@ -109,7 +121,23 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
       setTranscripts([]);
       setEvaluation(null);
       setShowEvaluation(false);
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const callId = Date.now().toString() + Math.random().toString().substring(2, 6);
+      setCurrentCallId(callId);
+      audioChunksRef.current = [];
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      try {
+        const recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+        recorder.start(500);
+        mediaRecorderRef.current = recorder;
+      } catch (recErr) {
+        console.warn("Could not start local MediaRecorder:", recErr);
+      }
       
       // Determine the first message greeting in the correct language
       const greeting = language === 'English'
@@ -164,6 +192,13 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
   };
 
   const handleEndCall = async () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (recErr) {
+        console.warn("Could not stop MediaRecorder:", recErr);
+      }
+    }
     await conversation.endSession();
   };
 
@@ -172,10 +207,33 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
     setEvaluation(null);
     setShowEvaluation(false);
     setWasConnected(false);
+    setCurrentCallId(null);
+    setCurrentConversationId(null);
+    audioChunksRef.current = [];
   };
 
   const triggerEvaluation = async () => {
     if (transcripts.length === 0) return;
+
+    if (currentCallId && audioChunksRef.current.length > 0) {
+      try {
+        const localBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await saveAudio(currentCallId, localBlob);
+      } catch (saveErr) {
+        console.warn("Could not save local recording:", saveErr);
+      }
+    }
+
+    if (currentCallId && currentConversationId) {
+      fetch(`/api/elevenlabs/conversation-audio/${currentConversationId}`)
+        .then(res => res.ok ? res.blob() : null)
+        .then(blob => {
+          if (blob && blob.size > 0 && currentCallId) {
+            saveAudio(currentCallId, blob).catch(console.warn);
+          }
+        })
+        .catch(err => console.warn("Could not fetch remote conversation audio:", err));
+    }
 
     setEvaluating(true);
     setShowEvaluation(true);
@@ -307,7 +365,18 @@ You must return ONLY a JSON object with this exact structure:
       };
 
       setEvaluation(fullEvaluation);
-      onEvaluationComplete?.(fullEvaluation.score, fullEvaluation, contactName || "Dave", companyName || "Pine Bluff Sand");
+      onEvaluationComplete?.(
+        fullEvaluation.score, 
+        fullEvaluation, 
+        contactName || "Carlos", 
+        companyName || "Canteras del Norte",
+        {
+          id: currentCallId || undefined,
+          hasAudio: true,
+          conversationId: currentConversationId || undefined,
+          audioUrl: currentConversationId ? `/api/elevenlabs/conversation-audio/${currentConversationId}` : undefined
+        }
+      );
     } catch (error: any) {
       console.error("Evaluation error:", error);
       setEvaluation({
@@ -358,6 +427,8 @@ You must return ONLY a JSON object with this exact structure:
         evaluation={evaluation} 
         onReset={handleResetCall} 
         customTranscripts={transcripts} 
+        audioId={currentCallId || undefined}
+        conversationId={currentConversationId || undefined}
       />
     );
   }
@@ -581,7 +652,7 @@ You must return ONLY a JSON object with this exact structure:
   );
 };
 
-export default function LiveCall({ onEvaluationComplete }: { onEvaluationComplete?: (score: number, evaluation: any, contactName: string, companyName: string) => void }) {
+export default function LiveCall({ onEvaluationComplete }: { onEvaluationComplete?: (score: number, evaluation: any, contactName: string, companyName: string, opts?: { id?: string; hasAudio?: boolean; conversationId?: string; audioUrl?: string }) => void }) {
   return (
     <ConversationProvider>
       <ElevenLabsCallView onEvaluationComplete={onEvaluationComplete} />

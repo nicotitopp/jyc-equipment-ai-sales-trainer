@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, FileAudio, Loader2, FileText, AlertCircle } from 'lucide-react';
 import Scorecard from './Scorecard';
+import { saveAudio } from './audioDb';
 
-export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationComplete?: (score: number, evaluation: any, contactName: string, companyName: string) => void }) {
+export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationComplete?: (score: number, evaluation: any, contactName: string, companyName: string, opts?: { id?: string; hasAudio?: boolean; audioUrl?: string }) => void }) {
   const [file, setFile] = useState<File | null>(null);
+  const [currentId, setCurrentId] = useState<string | null>(null);
   // Auditing States
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -133,8 +135,18 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
             }
           }
 
+          const auditId = Date.now().toString() + Math.random().toString().substring(2, 6);
+          setCurrentId(auditId);
+          if (file) {
+            try {
+              await saveAudio(auditId, file);
+            } catch (saveErr) {
+              console.warn("Could not save audio to IDB:", saveErr);
+            }
+          }
+
           setEvaluation(parsedData);
-          onEvaluationComplete?.(parsedData.score, parsedData, parsedData.contactName || "Unknown", parsedData.companyName || "Unknown");
+          onEvaluationComplete?.(parsedData.score, parsedData, parsedData.contactName || "Unknown", parsedData.companyName || "Unknown", { id: auditId, hasAudio: true });
         } catch (err: any) {
           console.error("Audit error:", err);
           setError(err.message || "Failed to analyze audio file. Try again.");
@@ -161,6 +173,8 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
       <Scorecard 
         evaluation={evaluation} 
         onReset={handleReset} 
+        audioBlob={file}
+        audioId={currentId || undefined}
       />
     );
   }

@@ -3,6 +3,7 @@ import {
   Award, ChevronUp, ChevronDown, Check, X, 
   AlertTriangle, ThumbsUp, ThumbsDown, RotateCcw, FileText, Printer
 } from 'lucide-react';
+import AudioPlayer from './AudioPlayer';
 
 interface ScorecardProps {
   evaluation: {
@@ -25,9 +26,21 @@ interface ScorecardProps {
   };
   onReset: () => void;
   customTranscripts?: { id: number | string; role: string; text: string }[];
+  audioId?: string;
+  audioBlob?: Blob | null;
+  audioUrl?: string;
+  conversationId?: string;
 }
 
-export default function Scorecard({ evaluation, onReset, customTranscripts }: ScorecardProps) {
+export default function Scorecard({ 
+  evaluation, 
+  onReset, 
+  customTranscripts,
+  audioId,
+  audioBlob,
+  audioUrl,
+  conversationId 
+}: ScorecardProps) {
   const [showTranscript, setShowTranscript] = useState(false);
 
   // Normalize transcript list
@@ -35,6 +48,8 @@ export default function Scorecard({ evaluation, onReset, customTranscripts }: Sc
     role: t.role,
     text: t.text
   })) || [];
+
+  const effectiveAudioUrl = audioUrl || (conversationId ? `/api/elevenlabs/conversation-audio/${conversationId}` : undefined);
 
   return (
     <div id="scorecard-print-area" className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 bg-slate-50 overflow-y-auto space-y-6">
@@ -67,6 +82,19 @@ export default function Scorecard({ evaluation, onReset, customTranscripts }: Sc
           </button>
         </div>
       </div>
+
+      {/* Audio Player Bar */}
+      {(audioId || audioBlob || effectiveAudioUrl) && (
+        <div className="no-print">
+          <AudioPlayer 
+            audioId={audioId}
+            audioBlob={audioBlob}
+            audioUrl={effectiveAudioUrl}
+            title="Recorded Call Audio / Grabación de la Llamada"
+            subtitle="Listen to conversation with time scrubber and speed controls"
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         

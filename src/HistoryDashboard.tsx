@@ -3,7 +3,7 @@ import { HistoryItem } from './types';
 import Scorecard from './Scorecard';
 import { 
   BarChart, Calendar, Award, User, Briefcase, 
-  Trash2, ArrowRight, Play, Upload, MessageSquare, AlertCircle, Check
+  Trash2, ArrowRight, Play, Upload, MessageSquare, AlertCircle, Check, Headphones
 } from 'lucide-react';
 
 interface HistoryDashboardProps {
@@ -32,6 +32,9 @@ export default function HistoryDashboard({ history, onClearHistory, onNavigateTo
         <Scorecard 
           evaluation={selectedItem.evaluation} 
           onReset={() => setSelectedItem(null)} 
+          audioId={selectedItem.id}
+          audioUrl={selectedItem.audioUrl}
+          conversationId={selectedItem.conversationId}
         />
       </div>
     );
@@ -198,6 +201,11 @@ export default function HistoryDashboard({ history, onClearHistory, onNavigateTo
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase">
                           {item.type}
                         </span>
+                        {(item.hasAudio ?? true) && (
+                          <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+                            <Headphones className="w-2.5 h-2.5" /> Audio
+                          </span>
+                        )}
                       </div>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-slate-400 font-medium">
                         <span className="flex items-center gap-1">

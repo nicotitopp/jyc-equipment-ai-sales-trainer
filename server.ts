@@ -196,6 +196,36 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
+  app.get("/api/elevenlabs/conversation-audio/:conversationId", async (req, res) => {
+    try {
+      const { conversationId } = req.params;
+      const apiKey = process.env.ELEVENLABS_API_KEY;
+
+      if (!apiKey) {
+        return res.status(400).json({ error: "ELEVENLABS_API_KEY is not configured in .env" });
+      }
+
+      const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversations/${conversationId}/audio`, {
+        headers: {
+          "xi-api-key": apiKey,
+          "Accept": "audio/mpeg"
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return res.status(response.status).json({ error: errorText });
+      }
+
+      res.setHeader("Content-Type", "audio/mpeg");
+      const arrayBuffer = await response.arrayBuffer();
+      res.send(Buffer.from(arrayBuffer));
+    } catch (error: any) {
+      console.error("Error fetching conversation audio:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch audio" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
