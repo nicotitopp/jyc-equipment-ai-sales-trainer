@@ -46,11 +46,17 @@ export default function Playbook() {
             {/* Operator Script */}
             <div className="space-y-2">
               <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 font-bold text-[10px] text-slate-700 uppercase">1. With the Operator (Gatekeeper Bypass)</span>
-              <p className="font-semibold text-slate-800 italic">"Good morning, could you please transfer me to the person in charge of the sales of your used heavy equipment like your forklifts and wheel loaders?"</p>
+              <p className="font-semibold text-slate-800 italic">"Good morning, could you please transfer me to the person in charge of plant operations or the used machinery fleet, like your forklifts and wheel loaders?"</p>
+              <p className="text-[11px] text-slate-500 italic">En español: "Buenos días, ¿me podría comunicar con el encargado de planta, operaciones o flota de maquinaria como montacargas y cargadores?"</p>
               
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1.5">
                 <p className="font-bold text-slate-700">If they ask "What is this in regards to?":</p>
-                <p className="italic text-slate-600">"This is [Name] with JYC Equipment and I'm calling because we buy used heavy equipment, such as forklifts and wheel loaders. I wanted to check with Carlos if you might have anything for sale right now or maybe coming up this year? Is he available?"</p>
+                <p className="italic text-slate-600">"This is [Name] with JYC Equipment. We are nationwide buyers of used heavy equipment. I wanted to check with the plant manager if you might have any surplus equipment for sale or coming up for renewal this year. Is he available?"</p>
+                <p className="text-[11px] text-slate-500 italic">En español: "Habla [Nombre] de JYC Equipment. Compramos maquinaria pesada usada y quería consultar con el jefe de planta si tienen algún equipo sobrante o por renovar este año."</p>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200/60 rounded-xl p-2.5 text-[11px] text-amber-800">
+                <strong>⚠️ Regla de Oro:</strong> El prospecto <strong>NO es comerciante de maquinaria</strong>; es una empresa industrial (cantera, aserradero, planta). Preguntar por el <em>Jefe de Operaciones / Planta / Flota</em> evita que la operadora te transfiera por error a su propio departamento de ventas.
               </div>
             </div>
 
@@ -58,8 +64,10 @@ export default function Playbook() {
             <div className="space-y-2">
               <span className="inline-block px-2 py-0.5 rounded-md bg-blue-50 font-bold text-[10px] text-blue-700 uppercase">2. Opening with the Key Person (KP)</span>
               <p className="font-semibold text-slate-800 italic">"Hi [KP Name], this is [Name] with JYC Equipment. Did I catch you at a bad time?"</p>
-              <p className="text-slate-500">Wait for response. If they cooperate, present the hook:</p>
+              <p className="text-[11px] text-slate-500 italic">En español: "Hola [Nombre], habla [Mi Nombre] de JYC Equipment. ¿Lo tomo en un mal momento?"</p>
+              <p className="text-slate-500 mt-1">Wait for response. If they cooperate, present the hook:</p>
               <p className="font-semibold text-slate-800 italic">"I'm calling because we are nationwide buyers of used heavy equipment such as forklifts and loaders. I wanted to check with you if you might have anything for sale right now or maybe coming up this year?"</p>
+              <p className="text-[11px] text-slate-500 italic">En español: "Le llamo porque somos compradores a nivel nacional de maquinaria pesada usada como montacargas y cargadores. Quería consultar si tienen algún equipo para la venta ahora o pensado para renovar este año."</p>
             </div>
 
           </div>

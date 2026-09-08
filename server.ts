@@ -167,6 +167,35 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
+  app.get("/api/elevenlabs/signed-url", async (req, res) => {
+    try {
+      const apiKey = process.env.ELEVENLABS_API_KEY;
+      const agentId = process.env.ELEVENLABS_AGENT_ID || "agent_2501kw2zhyq8ewg9ntqm1613vhek";
+
+      if (!apiKey) {
+        return res.status(400).json({ error: "ELEVENLABS_API_KEY is not configured in .env" });
+      }
+
+      const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`, {
+        headers: {
+          "xi-api-key": apiKey
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("ElevenLabs API error:", response.status, errorText);
+        return res.status(response.status).json({ error: errorText });
+      }
+
+      const data = await response.json();
+      res.json({ signedUrl: data.signed_url, agentId });
+    } catch (error: any) {
+      console.error("Error generating ElevenLabs signed URL:", error);
+      res.status(500).json({ error: error.message || "Failed to generate signed URL" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

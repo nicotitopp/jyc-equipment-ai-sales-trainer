@@ -16,7 +16,7 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Configuration States
-  const [difficulty, setDifficulty] = useState<'friendly' | 'tough'>('friendly');
+  const [difficulty, setDifficulty] = useState<'friendly' | 'challenging' | 'hardcore'>('friendly');
   const [language, setLanguage] = useState<'English' | 'Spanish'>('English');
   const [industry, setIndustry] = useState<string>('concrete');
   const [contactName, setContactName] = useState('Carlos');
@@ -30,6 +30,10 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
     concrete: {
       English: { company: "Northern Quarries", contact: "Charles" },
       Spanish: { company: "Canteras del Norte", contact: "Carlos" }
+    },
+    sand_gravel: {
+      English: { company: "Pioneer Sand & Gravel", contact: "Tyler" },
+      Spanish: { company: "Áridos y Gravas del Norte", contact: "Mateo" }
     },
     lumber: {
       English: { company: "Timberlands Sawmill", contact: "Robert" },
@@ -112,17 +116,47 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
         ? `Good morning, thank you for calling ${companyName}. How can I help you?`
         : `Buenos días, gracias por llamar a ${companyName}. ¿En qué le puedo ayudar?`;
 
-      await conversation.startSession({
-        agentId: "agent_2501kw2zhyq8ewg9ntqm1613vhek",
-        dynamicVariables: {
-          difficulty: difficulty,
-          language: language,
-          first_message: greeting,
-          contact_name: contactName || "Carlos",
-          company_name: companyName || "Canteras del Norte",
-          industry: industry
+      const dynamicVariables = {
+        difficulty: difficulty,
+        language: language,
+        first_message: greeting,
+        contact_name: contactName || "Carlos",
+        company_name: companyName || "Canteras del Norte",
+        industry: industry
+      };
+
+      const langCode = language === 'Spanish' ? 'es' : 'en';
+
+      const overrides = {
+        agent: {
+          language: langCode
         }
-      });
+      };
+
+      // Try fetching a signed URL from the backend (uses ELEVENLABS_API_KEY)
+      let sessionConfig: any = {
+        agentId: "agent_2501kw2zhyq8ewg9ntqm1613vhek",
+        dynamicVariables,
+        overrides
+      };
+
+      try {
+        const res = await fetch("/api/elevenlabs/signed-url");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.signedUrl) {
+            sessionConfig = {
+              signedUrl: data.signedUrl,
+              dynamicVariables,
+              overrides
+            };
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch signed URL, falling back to direct agentId:", err);
+      }
+
+      await conversation.startSession(sessionConfig);
     } catch (error) {
       console.error("Failed to start conversation:", error);
       alert("Failed to start conversation. Please ensure microphone permissions are granted.");
@@ -153,6 +187,7 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
 
       const industryLabels: Record<string, string> = {
         concrete: 'Concrete & Precast Industry',
+        sand_gravel: 'Sand & Gravel / Quarries Industry',
         lumber: 'Lumber Industry & Sawmills',
         metal: 'Metal / Steel Pipe Industry',
         ports: 'Ports & Terminals',
@@ -177,7 +212,7 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
                   content: `Please evaluate this sales/purchasing cold call transcript. The representative is a buyer from JYC Equipment contacting a prospect named "${contactName}" representing "${companyName}" (operating in the ${selectedIndustryLabel} sector) regarding used heavy machinery.
 The representative's primary goal is to BUY used heavy equipment (such as forklifts, wheel loaders, reach stackers, empty container handlers, standard or electric forklifts, etc.) from the company.
 
-The entire call was conducted in ${language}. You must write all critique details (strengths, weaknesses, objectionsHandled feedback, recommendations) in the user's primary language: Spanish.
+The entire call was conducted in ${language} at difficulty level "${difficulty}". You must write all critique details (strengths, weaknesses, objectionsHandled feedback, recommendations) in the user's primary language: Spanish. Factor the difficulty level into your grading of their objection handling, gatekeeper bypass, and confidence.
 
 Review the following transcript of the call:
 ${transcriptText}
@@ -377,29 +412,44 @@ You must return ONLY a JSON object with this exact structure:
 
               {/* Dificultad */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Customer Difficulty</label>
-                <div className="flex gap-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Difficulty / Dificultad</label>
+                <div className="grid grid-cols-3 gap-1.5">
                   <button
                     onClick={() => setDifficulty('friendly')}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all ${
+                    className={`py-1.5 px-1.5 rounded-lg text-[11px] font-semibold border transition-all text-center ${
                       difficulty === 'friendly'
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700 shadow-xs'
                         : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                     }`}
                   >
-                    Friendly
+                    🌱 Friendly
                   </button>
                   <button
-                    onClick={() => setDifficulty('tough')}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all ${
-                      difficulty === 'tough'
-                        ? 'bg-rose-50 border-rose-300 text-rose-700'
+                    onClick={() => setDifficulty('challenging')}
+                    className={`py-1.5 px-1.5 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                      difficulty === 'challenging'
+                        ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-xs'
                         : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                     }`}
                   >
-                    Tough / Obstacles
+                    ⚡ Challenging
+                  </button>
+                  <button
+                    onClick={() => setDifficulty('hardcore')}
+                    className={`py-1.5 px-1.5 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                      difficulty === 'hardcore'
+                        ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-xs'
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    🔥 Hardcore
                   </button>
                 </div>
+                <p className="text-[10px] text-slate-400 italic">
+                  {difficulty === 'friendly' && '• Cooperative gatekeeper & receptive manager with 1 objection.'}
+                  {difficulty === 'challenging' && '• Strict gatekeeper, busy manager pushing for price first.'}
+                  {difficulty === 'hardcore' && '• Hostile gatekeeper, suspicious manager & heavy objections.'}
+                </p>
               </div>
 
               {/* Target Industry */}
@@ -411,6 +461,7 @@ You must return ONLY a JSON object with this exact structure:
                   className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold text-slate-700"
                 >
                   <option value="concrete">Concrete & Precast</option>
+                  <option value="sand_gravel">Sand & Gravel</option>
                   <option value="lumber">Lumber & Sawmills</option>
                   <option value="metal">Steel & Metal Pipe</option>
                   <option value="ports">Ports & Terminals</option>
