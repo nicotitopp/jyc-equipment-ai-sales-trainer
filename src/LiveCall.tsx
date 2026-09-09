@@ -561,13 +561,13 @@ You must return ONLY a JSON object with this exact structure:
                   onChange={(e) => setIndustry(e.target.value)}
                   className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold text-slate-700"
                 >
-                  <option value="concrete">Concrete & Precast</option>
-                  <option value="sand_gravel">Sand & Gravel</option>
-                  <option value="lumber">Lumber & Sawmills</option>
-                  <option value="metal">Steel & Metal Pipe</option>
-                  <option value="ports">Ports & Terminals</option>
-                  <option value="plastic">Plastic Manufacturing</option>
-                  <option value="medical">Medical & Pharma</option>
+                  <option value="plastic">🧪 Plastics & Injection Molding</option>
+                  <option value="concrete">🏗️ Concrete & Precast</option>
+                  <option value="sand_gravel">⛰️ Sand & Gravel</option>
+                  <option value="lumber">🪵 Lumber & Sawmills</option>
+                  <option value="metal">⚙️ Steel & Metal Pipe</option>
+                  <option value="ports">🚢 Ports & Container Terminals</option>
+                  <option value="medical">🏥 Medical & Pharma Logistics</option>
                 </select>
               </div>
 
