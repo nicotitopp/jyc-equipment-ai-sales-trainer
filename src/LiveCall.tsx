@@ -175,7 +175,8 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
 
       const overrides = {
         agent: {
-          language: langCode
+          language: langCode,
+          first_message: greeting
         }
       };
 
