@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { BookOpen, UserCheck, ShieldAlert, FileText, ClipboardList, Briefcase, Zap } from 'lucide-react';
+import { BookOpen, UserCheck, ShieldAlert, FileText, ClipboardList, Briefcase, Zap, Anchor, HeartPulse } from 'lucide-react';
 
 export default function Playbook() {
-  const [activeTab, setActiveTab] = useState<'bypass' | 'qualify' | 'plastics' | 'reference' | 'objections' | 'catalog'>('bypass');
+  const [activeTab, setActiveTab] = useState<'bypass' | 'qualify' | 'plastics' | 'ports' | 'medical' | 'reference' | 'objections' | 'catalog'>('bypass');
 
   return (
     <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 h-full flex flex-col min-h-[400px] max-h-full overflow-hidden">
@@ -19,6 +19,8 @@ export default function Playbook() {
           { id: 'bypass', label: 'Bypass & Opening', icon: <UserCheck className="w-3.5 h-3.5" /> },
           { id: 'qualify', label: 'Qualification', icon: <ClipboardList className="w-3.5 h-3.5" /> },
           { id: 'plastics', label: '🧪 Plastics Script', icon: <Zap className="w-3.5 h-3.5 text-emerald-600" /> },
+          { id: 'ports', label: '🚢 Ports Script', icon: <Anchor className="w-3.5 h-3.5 text-blue-600" /> },
+          { id: 'medical', label: '🏥 Medical Script', icon: <HeartPulse className="w-3.5 h-3.5 text-rose-600" /> },
           { id: 'reference', label: 'Future Reference', icon: <FileText className="w-3.5 h-3.5" /> },
           { id: 'objections', label: 'Objections', icon: <ShieldAlert className="w-3.5 h-3.5" /> },
           { id: 'catalog', label: 'Industries & Catalog', icon: <Briefcase className="w-3.5 h-3.5" /> },
@@ -156,6 +158,122 @@ export default function Playbook() {
           </div>
         )}
 
+        {activeTab === 'ports' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <span className="inline-block px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold text-[10px] uppercase">Official Ports & Terminals Sales Script</span>
+              <p className="text-slate-600 text-xs">JYC is a leading nationwide buyer and global exporter of heavy maritime port equipment, intermodal machinery, and terminal fleets. We handle 100% of <strong>heavy rigging, boom dismantling, and multi-axle freight logistics</strong>.</p>
+            </div>
+
+            {/* Target Machinery in Ports */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2.5 bg-blue-50/40 border border-blue-100 rounded-xl space-y-1">
+                <p className="font-bold text-slate-800 text-[11px] text-blue-900">🚢 Reach Stackers (45-Ton)</p>
+                <p className="text-[10px] text-slate-600">Kalmar Gloria DRG450, Konecranes SMV 4531/4532, Hyster RS45, Taylor TER-975, Sany, CVS Ferrari. (⚠️ NEVER mention Caterpillar for reach stackers).</p>
+              </div>
+              <div className="p-2.5 bg-blue-50/40 border border-blue-100 rounded-xl space-y-1">
+                <p className="font-bold text-slate-800 text-[11px] text-blue-900">📦 Container Handlers</p>
+                <p className="text-[10px] text-slate-600">Loaded & Empty container handlers: Taylor TEC-950L, Taylor TXLC, Kalmar DCF100/DRF, Hyster H550HD, Konecranes.</p>
+              </div>
+              <div className="p-2.5 bg-blue-50/40 border border-blue-100 rounded-xl space-y-1">
+                <p className="font-bold text-slate-800 text-[11px] text-blue-900">🚜 Port Forklifts (30k-90k+ lbs)</p>
+                <p className="text-[10px] text-slate-600">Taylor (TX-300, TX-550), Hyster (H360HD, H650HD), Kalmar, Konecranes, Svetruck heavy-duty forklifts.</p>
+              </div>
+              <div className="p-2.5 bg-blue-50/40 border border-blue-100 rounded-xl space-y-1">
+                <p className="font-bold text-slate-800 text-[11px] text-blue-900">🚛 Terminal Tractors & Spotters</p>
+                <p className="text-[10px] text-slate-600">Ottawa (T2 4x2 / 6x4), Terberg (YT182, YT222, RT223), Capacity (TJ5000, TJ9000), TICO Pro-Spotter.</p>
+              </div>
+            </div>
+
+            {/* Ports Script Highlights */}
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <p className="font-bold text-slate-800 text-[11px]">Ports Operator Pitch (Gatekeeper Bypass):</p>
+              <p className="italic text-slate-700 text-[11px]">"Good morning, could you please transfer me to the person in charge of terminal operations, fleet maintenance, or the heavy equipment like your reach stackers, container handlers, or yard trucks?"</p>
+              <p className="text-[10px] text-slate-500 italic">En español: "Buenos días, ¿me podría comunicar con el encargado de operaciones de terminal, mantenimiento de flota o la maquinaria pesada como sus reach stackers, manipuladores de contenedores o tractocamiones de patio?"</p>
+              
+              <p className="font-bold text-slate-800 text-[11px] mt-2">Ports KP Opening & Pitch:</p>
+              <p className="italic text-slate-700 text-[11px]">"Hi [KP Name], this is [My Name] with JYC Equipment. Did I catch you at a bad time?... I'm calling because we are nationwide buyers and global exporters of used port and terminal equipment—such as 45-ton reach stackers, container handlers, heavy forklifts, and yard tractors. I wanted to check if you might have any surplus units for sale or coming up for renewal in your fleet?"</p>
+              <p className="text-[10px] text-slate-500 italic">En español: "Hola [Nombre], habla [Mi Nombre] de JYC Equipment. ¿Lo tomo en un mal momento?... Le llamo porque compramos a nivel nacional y exportamos equipo portuario usado—como reach stackers de 45T, manipuladores de contenedores, montacargas pesados y tractores de patio. ¿Tienen algún equipo disponible o por renovar este año?"</p>
+            </div>
+
+            {/* Ports Qualification Checklist */}
+            <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-xl space-y-1.5">
+              <p className="font-bold text-blue-900 text-[11px]">📋 Ports Qualification Checklist (Ask in order):</p>
+              <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-700">
+                <li><strong>Equipment Type:</strong> Reach Stacker 45T, Empty/Loaded Handler, Heavy Port Forklift (30k-80k lbs), or Terminal Tractor?</li>
+                <li><strong>Make & Model:</strong> Kalmar Gloria DRG450, Konecranes SMV 4531, Taylor TEC-950L, Hyster RS45, Ottawa T2?</li>
+                <li><strong>Capacity & Spreader:</strong> 45-Ton rating? Spreader 20'-40' telescopic? 5-high or 6-high stacking?</li>
+                <li><strong>Year & Operating Hours:</strong> What year is the unit and approximate engine / mast hours?</li>
+                <li><strong>Condition:</strong> Is it currently active in terminal ops? Any hydraulic leaks, boom issues, or transmission repairs needed?</li>
+                <li><strong>Price & Data Plates:</strong> Do you have an asking price in mind? / Can you share photos of the unit, hour meter, and data plate?</li>
+              </ol>
+            </div>
+
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-900 space-y-1">
+              <p className="font-bold">⭐ JYC's Value Proposition for Ports & Terminals:</p>
+              <p>Moving a 45-Ton reach stacker requires boom disassembly, multi-axle RGN transport, and strict port TWIC/safety clearances. <strong>JYC coordinates 100% of rigging, logistics, and port permits, wire transferring payment in full in 24 hours.</strong></p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'medical' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <span className="inline-block px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 font-bold text-[10px] uppercase">Official JYC Medical Diagnostic Imaging Script</span>
+              <p className="text-slate-600 text-xs">JYC Medical purchases pre-owned MRIs, CT Scanners, PET/CTs, and digital X-ray systems from hospital networks and imaging centers nationwide, providing <strong>turnkey de-installation, ramping down, and rigging</strong>.</p>
+            </div>
+
+            {/* Target Systems in Medical */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-2.5 bg-rose-50/40 border border-rose-100 rounded-xl space-y-1">
+                <p className="font-bold text-slate-800 text-[11px] text-rose-900">🧲 MRIs (1.5 Tesla & 3.0 Tesla)</p>
+                <p className="text-[10px] text-slate-600">GE (Optima MR450w, Signa Explorer), Siemens (Magnetom Avanto, Aera, Skyra, Vida), Philips (Ingenia, Achieva).</p>
+              </div>
+              <div className="p-2.5 bg-rose-50/40 border border-rose-100 rounded-xl space-y-1">
+                <p className="font-bold text-slate-800 text-[11px] text-rose-900">☢️ CT Scanners (64/128/256-Slice)</p>
+                <p className="text-[10px] text-slate-600">GE (Revolution, Optima CT660), Siemens (Somatom Definition, Force, go.Top), Toshiba/Canon (Aquilion ONE/PRIME), Philips.</p>
+              </div>
+              <div className="p-2.5 bg-rose-50/40 border border-rose-100 rounded-xl space-y-1">
+                <p className="font-bold text-slate-800 text-[11px] text-rose-900">🔬 PET & PET-CT Systems</p>
+                <p className="text-[10px] text-slate-600">GE Discovery MI/IQ, Siemens Biograph Horizon/Vision, Philips Vereos molecular imaging systems.</p>
+              </div>
+              <div className="p-2.5 bg-rose-50/40 border border-rose-100 rounded-xl space-y-1">
+                <p className="font-bold text-slate-800 text-[11px] text-rose-900">🩺 Digital X-Rays & C-Arms / Cath Labs</p>
+                <p className="text-[10px] text-slate-600">GE Innova, Siemens Artis zee / Cios, Philips Allura / Azurion cath labs, Ziehm mobile C-arms.</p>
+              </div>
+            </div>
+
+            {/* Medical Script Highlights */}
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <p className="font-bold text-slate-800 text-[11px]">Medical Operator Pitch (Hospital / Imaging Center):</p>
+              <p className="italic text-slate-700 text-[11px]">"Good morning, could you please transfer me to the Director of Imaging, Radiology, or the person in charge of surplus and retired diagnostic imaging equipment like your MRIs, CT scanners, or PET/CTs?"</p>
+              <p className="text-[10px] text-slate-500 italic">En español: "Buenos días, ¿me podría comunicar con el Director de Imagenología, Radiología o el encargado del equipo de diagnóstico médico usado como sus resonancias magnéticas, tomógrafos CT o PET/CT?"</p>
+              
+              <p className="font-bold text-slate-800 text-[11px] mt-2">Medical KP Opening & Pitch:</p>
+              <p className="italic text-slate-700 text-[11px]">"Hi [KP Name], this is [My Name] with JYC Medical. Did I catch you at a bad time?... I'm calling because we purchase diagnostic imaging systems nationwide—including MRIs (1.5T and 3.0T), CT scanners, and PET/CTs from GE, Siemens, Toshiba/Canon, and Philips. I wanted to see if your facility has any imaging systems scheduled for de-installation, replacement, or asset disposition this year?"</p>
+              <p className="text-[10px] text-slate-500 italic">En español: "Hola [Nombre], habla [Mi Nombre] de JYC Medical. ¿Lo tomo en un mal momento?... Le llamo porque compramos sistemas de imagenología médica a nivel nacional (resonancias 1.5T/3.0T, tomógrafos CT, PET/CTs de GE, Siemens, Toshiba/Canon, Philips). ¿Tienen algún equipo programado para desinstalación o renovación este año?"</p>
+            </div>
+
+            {/* Medical Qualification Workflow (From Script) */}
+            <div className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl space-y-1.5">
+              <p className="font-bold text-rose-900 text-[11px]">📋 Official Medical Qualification Sequence (Step-by-Step):</p>
+              <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-700">
+                <li><strong>System Type:</strong> MRI (1.5T / 3.0T), PET, PET-CT, CT Scanner (64/128 slice), Cath Lab, or Digital X-Ray?</li>
+                <li><strong>Make / Brand:</strong> GE Healthcare, Siemens Healthineers, Toshiba / Canon Medical Systems, or Philips Healthcare?</li>
+                <li><strong>Quantity:</strong> How many units are available (1 unit, 5 units, 10-20 units across network)?</li>
+                <li><strong>Model & Year:</strong> What is the specific model and manufacture year (e.g. 2017 Siemens Magnetom Aera 1.5T)?</li>
+                <li><strong>Operational Status & Maintenance:</strong> Is it currently operational under OEM service contract? Helium level &gt;70% (for MRIs)? Tube mAs / exposure count (for CTs)?</li>
+                <li><strong>Price, Coil Packages & Removal Window:</strong> What is your target price? What coils/software packages are included? What is the scheduled de-installation date?</li>
+              </ol>
+            </div>
+
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-[11px] text-rose-900 space-y-1">
+              <p className="font-bold">⭐ JYC Medical's Turnkey Value Proposition:</p>
+              <p>De-installing medical imaging equipment requires cryogenic ramping down, hospital wall/window rigging, and strict health safety compliance. <strong>JYC Medical handles 100% of cryogenic ramp-down, professional mechanical de-installation, crane rigging, and nationwide logistics, paying in full before de-installation begins.</strong></p>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'reference' && (
           <div className="space-y-4">
             <div className="space-y-2">
@@ -250,8 +368,8 @@ export default function Playbook() {
                   <p className="text-slate-500 text-[9px] mt-0.5">Container terminals, shipping ports, cargo handling, logistics hubs.</p>
                 </div>
                 <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-                  <p className="font-bold text-slate-800 text-[10px]">🏥 Medical & Pharma</p>
-                  <p className="text-slate-500 text-[9px] mt-0.5">Medical device manufacturers, pharma labs, cleanroom logistics.</p>
+                  <p className="font-bold text-slate-800 text-[10px]">🏥 Medical & Healthcare</p>
+                  <p className="text-slate-500 text-[9px] mt-0.5">Hospital networks, diagnostic imaging centers, radiology clinics (MRI, CT, PET).</p>
                 </div>
               </div>
             </div>
@@ -266,15 +384,15 @@ export default function Playbook() {
                 </li>
                 <li className="flex gap-1.5 items-start">
                   <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Wheel Loaders:</strong> CAT (988, 966), Volvo, JD, Komatsu.</span>
+                  <span><strong>Ports & Terminals:</strong> 45-Ton Reach Stackers (Kalmar, Konecranes, Hyster, Taylor), Container Handlers, Yard Tractors (Ottawa, Terberg).</span>
                 </li>
                 <li className="flex gap-1.5 items-start">
                   <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Forklifts & Port:</strong> Taylor, Hyster (High Capacity & Reach Stackers), Kalmar, Toyota, Crown.</span>
+                  <span><strong>Medical Systems:</strong> MRIs 1.5T & 3.0T, CT Scanners (64/128-slice), PET/CTs (GE, Siemens, Toshiba/Canon, Philips).</span>
                 </li>
                 <li className="flex gap-1.5 items-start">
                   <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Others:</strong> Genie/JLG manlifts, Excavators, Skid steers, Backhoes.</span>
+                  <span><strong>Heavy Forklifts & Loaders:</strong> CAT Wheel Loaders (988, 966), Taylor & Hyster 30k-90k lbs forklifts, Volvo, Komatsu.</span>
                 </li>
               </ul>
             </div>
