@@ -1,17 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+:root {
+  color-scheme: light dark;
 }
 
 body {
   font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Markdown styling */
 .markdown-body p {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
+  line-height: 1.65;
 }
 
 .markdown-body p:last-child {
@@ -21,25 +52,57 @@ body {
 .markdown-body ul {
   list-style-type: disc;
   padding-left: 1.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .markdown-body ol {
   list-style-type: decimal;
   padding-left: 1.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .markdown-body li {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
+  line-height: 1.6;
 }
 
 .markdown-body strong {
-  font-weight: 600;
+  font-weight: 700;
+  color: inherit;
 }
 
 .markdown-body em {
   font-style: italic;
+}
+
+.markdown-body blockquote {
+  border-left: 3px solid #3b82f6;
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: #475569;
+  font-style: italic;
+}
+
+/* Soundwave animation for live calling */
+@keyframes audio-pulse {
+  0%, 100% { height: 6px; }
+  50% { height: 26px; }
+}
+
+.animate-waveform-1 {
+  animation: audio-pulse 0.9s ease-in-out infinite;
+}
+.animate-waveform-2 {
+  animation: audio-pulse 1.1s ease-in-out 0.15s infinite;
+}
+.animate-waveform-3 {
+  animation: audio-pulse 0.75s ease-in-out 0.3s infinite;
+}
+.animate-waveform-4 {
+  animation: audio-pulse 1.3s ease-in-out 0.1s infinite;
+}
+.animate-waveform-5 {
+  animation: audio-pulse 0.85s ease-in-out 0.25s infinite;
 }
 
 @media print {
@@ -47,11 +110,9 @@ body {
     background-color: white !important;
     color: black !important;
   }
-  /* Hide everything */
   body * {
     visibility: hidden;
   }
-  /* Make print area visible */
   #scorecard-print-area, #scorecard-print-area * {
     visibility: visible;
   }
@@ -74,15 +135,15 @@ body {
     max-height: none !important;
     overflow: visible !important;
   }
-  /* General print improvements */
-  .bg-slate-50, .bg-white, .bg-emerald-50\/50, .bg-rose-50\/50, .bg-slate-50 {
+  .bg-slate-50, .bg-white, .bg-slate-900 {
     background-color: white !important;
     background: white !important;
+    color: black !important;
   }
-  .shadow-sm, .shadow-md {
+  .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl {
     box-shadow: none !important;
   }
-  .border, .border-slate-200, .border-slate-100 {
-    border-color: #e2e8f0 !important;
+  .border, .border-slate-200, .border-slate-100, .border-slate-800 {
+    border-color: #cbd5e1 !important;
   }
 }

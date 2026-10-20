@@ -1,12 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, FileAudio, Loader2, FileText, AlertCircle } from 'lucide-react';
+import { UploadCloud, FileAudio, Loader2, AlertCircle, FileCheck, ShieldCheck } from 'lucide-react';
 import Scorecard from './Scorecard';
 import { saveAudio } from './audioDb';
 
 export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationComplete?: (score: number, evaluation: any, contactName: string, companyName: string, opts?: { id?: string; hasAudio?: boolean; audioUrl?: string }) => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [currentId, setCurrentId] = useState<string | null>(null);
-  // Auditing States
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [evaluation, setEvaluation] = useState<any>(null);
@@ -36,7 +35,7 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
         setFile(droppedFile);
         setError(null);
       } else {
-        setError("Please upload an audio file (.mp3, .wav, .m4a)");
+        setError("Por favor sube un archivo de audio válido (.mp3, .wav, .m4a).");
       }
     }
   };
@@ -61,21 +60,21 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
 
   const handleAudit = async () => {
     if (!file) return;
+
     setLoading(true);
     setError(null);
-    setLoadingMessage("Reading audio file...");
+    setLoadingMessage("Leyendo archivo de audio local...");
 
     try {
       const reader = new FileReader();
-      
       reader.onload = async () => {
         try {
-          const resultStr = reader.result as string;
-          // Extract base64 part
-          const base64Data = resultStr.split(',')[1];
-          const mimeType = file.type || "audio/mp3";
+          const result = reader.result as string;
+          const commaIndex = result.indexOf(',');
+          const base64Data = commaIndex !== -1 ? result.substring(commaIndex + 1) : result;
+          const mimeType = file.type || 'audio/mp3';
 
-          setLoadingMessage("Gemini is transcribing and auditing call script...");
+          setLoadingMessage("Analizando prospección con IA y transcribiendo...");
 
           let response;
           let retries = 3;
@@ -112,12 +111,12 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
           }
 
           if (!response) {
-            throw lastErr || new Error("Failed to connect to server after retries.");
+            throw lastErr || new Error("No se pudo conectar al servidor tras varios intentos.");
           }
 
           const data = await response.json();
           if (!response.ok) {
-            throw new Error(data.error || 'Failed to analyze call audio');
+            throw new Error(data.error || 'Fallo al analizar el audio de la llamada');
           }
 
           const text = data.text;
@@ -131,7 +130,7 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
             if (start !== -1 && end !== -1) {
               parsedData = JSON.parse(text.substring(start, end + 1));
             } else {
-              throw new Error("Invalid JSON response from auditor: " + text);
+              throw new Error("Respuesta JSON no válida del auditor: " + text);
             }
           }
 
@@ -146,14 +145,13 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
               console.warn("Could not save audio to IDB:", saveErr);
             }
 
-            // Also upload to central server so Admin can listen on any computer
             try {
               const uploadRes = await fetch('/api/audios/upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   id: auditId,
-                  audioBase64: base64Audio,
+                  audioBase64: base64Data,
                   mimeType: file.type || 'audio/mp3'
                 })
               });
@@ -172,19 +170,21 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
           onEvaluationComplete?.(
             parsedData.score, 
             parsedData, 
-            parsedData.contactName || "Unknown", 
-            parsedData.companyName || "Unknown", 
+            parsedData.contactName || "No identificado", 
+            parsedData.companyName || "Empresa Prospecto", 
             { id: auditId, hasAudio: true, audioUrl: serverAudioUrl }
           );
+          setLoading(false);
+
         } catch (err: any) {
           console.error("Audit error:", err);
-          setError(err.message || "Failed to analyze audio file. Try again.");
+          setError(err.message || "No se pudo procesar el archivo de audio. Intenta nuevamente.");
           setLoading(false);
         }
       };
 
       reader.onerror = () => {
-        setError("Failed to read local file.");
+        setError("Error al leer el archivo local.");
         setLoading(false);
       };
 
@@ -192,7 +192,7 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
 
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "An unexpected error occurred.");
+      setError(err.message || "Ocurrió un error inesperado.");
       setLoading(false);
     }
   };
@@ -209,39 +209,42 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start p-6 bg-slate-50 overflow-y-auto">
-      <div className="max-w-3xl w-full bg-white rounded-3xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6">
+    <div className="flex-1 flex flex-col items-center justify-start p-4 sm:p-6 bg-slate-50 overflow-y-auto">
+      <div className="max-w-2xl w-full bg-white rounded-xl shadow-xs border border-slate-200 p-6 sm:p-8 space-y-6 text-left">
         
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
-            <UploadCloud className="w-6 h-6" />
+        <div className="flex items-center gap-3.5 border-b border-slate-100 pb-5">
+          <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center shrink-0 border border-blue-100">
+            <UploadCloud className="w-5 h-5" />
           </div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Audit Real Call</h2>
-          <p className="text-slate-500 text-sm max-w-md mx-auto">
-            Upload an audio recording of a real cold call to get detailed script compliance feedback from Gemini.
-          </p>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+              Auditoría de Llamada Real
+            </h2>
+            <p className="text-slate-500 text-xs">
+              Sube la grabación de una llamada de prospección para evaluarla contra los guiones oficiales JYC
+            </p>
+          </div>
         </div>
 
         {loading ? (
-          <div className="py-12 flex flex-col items-center justify-center space-y-6">
+          <div className="py-12 flex flex-col items-center justify-center space-y-5 text-center">
             <div className="relative flex items-center justify-center">
-              <Loader2 className="w-16 h-16 animate-spin text-blue-600" />
-              <div className="absolute w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                <FileAudio className="w-5 h-5 text-blue-600 animate-pulse" />
+              <Loader2 className="w-14 h-14 animate-spin text-blue-600" />
+              <div className="absolute w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center">
+                <FileAudio className="w-4 h-4 text-blue-600 animate-pulse" />
               </div>
             </div>
-            <div className="text-center space-y-2 max-w-md">
-              <h3 className="text-xl font-bold text-slate-800 animate-pulse">{loadingMessage}</h3>
-              <p className="text-slate-500 text-sm">
-                This might take a minute depending on the length of the audio file. Please do not close this window.
+            <div className="space-y-1.5 max-w-sm">
+              <h3 className="text-sm font-bold text-slate-900">{loadingMessage}</h3>
+              <p className="text-slate-500 text-xs">
+                Este proceso puede tardar unos segundos según la duración del audio. Por favor no cierres la ventana.
               </p>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-5">
             
-
             {/* Dropzone */}
             <div 
               onDragEnter={handleDrag}
@@ -249,9 +252,9 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
               onDragLeave={handleDrag}
               onDrop={handleDrop}
               onClick={triggerUploadClick}
-              className={`border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${
+              className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${
                 dragActive 
-                  ? 'border-blue-500 bg-blue-50/20' 
+                  ? 'border-blue-500 bg-blue-50/30' 
                   : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50/50'
               }`}
             >
@@ -263,26 +266,29 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
                 onChange={handleFileChange}
               />
               
-              <div className="p-4 bg-slate-100 text-slate-500 rounded-2xl">
-                <FileAudio className="w-8 h-8" />
+              <div className="p-3 bg-slate-100 text-slate-500 rounded-lg">
+                <FileAudio className="w-6 h-6" />
               </div>
               
               {file ? (
                 <div className="text-center space-y-1">
-                  <p className="font-semibold text-slate-800 text-sm">{file.name}</p>
-                  <p className="text-xs text-slate-400">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                  <p className="font-semibold text-slate-900 text-xs flex items-center justify-center gap-1.5">
+                    <FileCheck className="w-4 h-4 text-emerald-600" />
+                    {file.name}
+                  </p>
+                  <p className="text-[11px] font-mono text-slate-400">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
                 </div>
               ) : (
                 <div className="text-center space-y-1">
-                  <p className="font-semibold text-slate-800 text-sm">Drag and drop your audio recording</p>
-                  <p className="text-xs text-slate-400">Supports .mp3, .wav, .m4a up to 15MB</p>
+                  <p className="font-semibold text-slate-800 text-xs">Arrastra y suelta tu archivo de audio aquí</p>
+                  <p className="text-[11px] text-slate-400">Formatos compatibles: .mp3, .wav, .m4a hasta 25MB</p>
                 </div>
               )}
             </div>
 
             {error && (
-              <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-700 text-sm">
-                <AlertCircle className="w-5 h-5 shrink-0" />
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2.5 text-red-700 text-xs font-medium">
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
@@ -291,11 +297,16 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
             <button
               onClick={handleAudit}
               disabled={!file}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer text-sm"
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg font-bold text-xs transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
             >
               <UploadCloud className="w-4 h-4" />
-              Audit Call Recording
+              Iniciar Auditoría y Evaluación
             </button>
+
+            <div className="pt-2 flex items-center justify-center gap-1.5 text-[11px] text-slate-400 border-t border-slate-100">
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+              <span>Verificación de guiones: Bypass, Gancho, Calificación y Cierre</span>
+            </div>
 
           </div>
         )}

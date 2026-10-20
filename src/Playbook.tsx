@@ -5,7 +5,7 @@ export default function Playbook() {
   const [activeTab, setActiveTab] = useState<'bypass' | 'qualify' | 'plastics' | 'ports' | 'medical' | 'reference' | 'objections' | 'catalog'>('bypass');
 
   return (
-    <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 h-full flex flex-col min-h-[400px] max-h-full overflow-hidden">
+    <div className="bg-white rounded-xl p-4 sm:p-5 shadow-xs border border-slate-200 h-full flex flex-col min-h-[400px] max-h-full overflow-hidden text-left">
       
       {/* Playbook Header */}
       <div className="flex items-center gap-2 pb-3 border-b border-slate-100 shrink-0">

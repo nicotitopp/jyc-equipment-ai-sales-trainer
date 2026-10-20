@@ -90,7 +90,7 @@ function writeDb(data: DatabaseSchema) {
   }
 }
 
-export function authenticate(username: string, password?: string, customName?: string): { id: string; username: string; name: string; role: 'trainee' | 'admin' } | null {
+export function authenticate(username: string, password?: string, customName?: string): { id: string; username: string; name: string; role: 'trainee' | 'admin'; blocked?: boolean } | null {
   const db = readDb();
   const cleanUsername = (username || '').trim().toLowerCase();
   const cleanPassword = (password || '').trim();

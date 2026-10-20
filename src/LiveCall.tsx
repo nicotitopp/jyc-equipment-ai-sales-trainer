@@ -79,6 +79,15 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
   const [showEvaluation, setShowEvaluation] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
 
+  // Call timer state
+  const [callDuration, setCallDuration] = useState(0);
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const conversation = useConversation({
     onConnect: ({ conversationId }: { conversationId?: string } = {}) => {
       if (conversationId) {
@@ -96,6 +105,19 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
 
   const isConnected = conversation.status === "connected";
   const isConnecting = conversation.status === "connecting";
+
+  // Call timer effect
+  useEffect(() => {
+    let interval: any;
+    if (isConnected) {
+      interval = setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+    } else {
+      setCallDuration(0);
+    }
+    return () => clearInterval(interval);
+  }, [isConnected]);
 
   // Watch for session ending to trigger evaluation automatically
   useEffect(() => {
@@ -465,18 +487,18 @@ You must return ONLY a JSON object with this exact structure:
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start p-6 bg-slate-50 overflow-hidden">
-      <div className="max-w-5xl w-full flex flex-col md:flex-row h-full gap-6">
+    <div className="flex-1 flex flex-col items-center justify-start p-4 sm:p-6 bg-slate-50 overflow-hidden">
+      <div className="max-w-5xl w-full flex flex-col md:flex-row h-full gap-5">
         
         {/* Call Controls */}
-        <div className="md:w-1/3 bg-white rounded-3xl shadow-sm border border-slate-200 p-6 text-center space-y-6 shrink-0 flex flex-col justify-start overflow-y-auto max-h-full">
+        <div className="md:w-[360px] bg-white rounded-xl shadow-xs border border-slate-200 p-5 text-center space-y-5 shrink-0 flex flex-col justify-start overflow-y-auto max-h-full text-left">
           <div className="space-y-1">
-            <div className="mx-auto w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-2">
-              <PhoneCall className="w-6 h-6" />
+            <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-2 border border-blue-100">
+              <PhoneCall className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800">Live Voice Call</h2>
+            <h2 className="text-base font-bold text-slate-900 tracking-tight">Simulación Telefónica por Voz</h2>
             <p className="text-slate-500 text-xs">
-              Simulate a phone call. Choose parameters below and practice buying or selling a machine.
+              Conversación bidireccional en tiempo real con el comprador prospecto mediante ElevenLabs ConvAI.
             </p>
           </div>
 
@@ -622,34 +644,46 @@ You must return ONLY a JSON object with this exact structure:
             </div>
           )}
 
-          <div className="min-h-[60px] flex items-center justify-center">
+          <div className="min-h-[72px] flex items-center justify-center">
             {isConnecting && (
               <div className="flex flex-col items-center gap-2 text-slate-500">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-                <p className="text-xs font-semibold animate-pulse">Connecting...</p>
+                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                <p className="text-xs font-semibold animate-pulse">Estableciendo conexión por voz...</p>
               </div>
             )}
             {isConnected && (
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-2 w-full">
+                 <div className="flex items-center gap-2">
+                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                   <span className="text-xs font-mono font-bold text-slate-800 bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
+                     {formatDuration(callDuration)}
+                   </span>
+                 </div>
+
                  {conversation.isSpeaking ? (
-                   <div className="flex items-center gap-1.5 text-blue-600 font-medium">
-                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                   <div className="flex items-center gap-1.5 h-8">
+                     <span className="w-1 bg-blue-600 rounded-full animate-waveform-1" />
+                     <span className="w-1 bg-blue-600 rounded-full animate-waveform-2" />
+                     <span className="w-1 bg-blue-600 rounded-full animate-waveform-3" />
+                     <span className="w-1 bg-blue-600 rounded-full animate-waveform-4" />
+                     <span className="w-1 bg-blue-600 rounded-full animate-waveform-5" />
+                     <span className="text-xs text-blue-700 font-semibold ml-2">El prospecto está hablando...</span>
                    </div>
                  ) : (
-                   <div className="text-xs text-slate-500 font-medium animate-pulse">
-                     Listening / Processing...
+                   <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+                     <Mic className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+                     <span>Tu turno de hablar al micrófono</span>
                    </div>
                  )}
-                 <p className="text-[10px] text-slate-400">
-                   Speak clearly into your microphone
+                 <p className="text-[10px] text-slate-400 font-mono">
+                   {companyName} • {contactName}
                  </p>
               </div>
             )}
             {!isConnected && !isConnecting && (
                <div className="flex flex-col items-center text-slate-400 text-xs">
-                 <p>Ready to call</p>
+                 <p className="font-medium">Listo para iniciar simulación</p>
+                 <span className="text-[10px] text-slate-400">Verifica tu micrófono antes de llamar</span>
                </div>
             )}
           </div>
@@ -658,43 +692,52 @@ You must return ONLY a JSON object with this exact structure:
             {!isConnected && !isConnecting && (
               <button
                 onClick={handleStartCall}
-                className="px-6 py-2.5 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-transform hover:scale-102 shadow-sm flex items-center justify-center gap-2 cursor-pointer text-sm"
+                className="px-6 py-2.5 w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white rounded-lg font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer text-xs"
               >
                 <Phone className="w-4 h-4" />
-                Start Call
+                Iniciar Llamada de Simulación
               </button>
             )}
 
             {(isConnected || isConnecting) && (
               <button
                 onClick={handleEndCall}
-                className="px-6 py-2.5 w-full bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-transform hover:scale-102 shadow-sm flex items-center justify-center gap-2 cursor-pointer text-sm"
+                className="px-6 py-2.5 w-full bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white rounded-lg font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer text-xs"
               >
                 <Phone className="w-4 h-4 fill-current rotate-[135deg]" />
-                End Call
+                Finalizar Llamada y Auditar
               </button>
             )}
           </div>
         </div>
 
         {/* Transcript Area */}
-        <div className="md:w-2/3 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-0">
-          <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 shrink-0">
-            <h3 className="font-semibold text-slate-700">Live Transcript</h3>
+        <div className="md:flex-1 bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden flex flex-col min-h-0 text-left">
+          <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 shrink-0 flex items-center justify-between">
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wide">Transcripción en Tiempo Real</h3>
+            <span className="text-[10px] font-mono text-slate-400">Audio Bidireccional</span>
           </div>
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-3.5">
             {transcripts.length === 0 ? (
-               <div className="h-full flex items-center justify-center text-slate-400 text-sm text-center">
-                 Initiate the call and speak to see the live transcript here.
+               <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs text-center space-y-2 p-6">
+                 <div className="p-3 bg-slate-100 text-slate-400 rounded-lg">
+                   <PhoneCall className="w-5 h-5" />
+                 </div>
+                 <p className="font-medium text-slate-600">Inicia la llamada para comenzar el diálogo con el prospecto.</p>
+                 <span className="text-[11px] text-slate-400">Las líneas habladas aparecerán aquí transcritas en vivo.</span>
                </div>
             ) : (
                transcripts.map((msg) => (
-                 <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${msg.role === 'user' ? 'bg-slate-200 text-slate-600' : 'bg-blue-100 text-blue-600'}`}>
-                      {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                    </div>
+                 <div key={msg.id} className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <span className={`shrink-0 px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase h-5 flex items-center ${
+                      msg.role === 'user' ? 'bg-slate-900 text-white' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {msg.role === 'user' ? 'VENDEDOR' : 'PROSPECTO'}
+                    </span>
                     <div className={`flex-1 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                       <div className={`inline-block max-w-[85%] rounded-2xl px-4 py-2.5 text-sm text-left ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-800'}`}>
+                       <div className={`inline-block max-w-[85%] rounded-lg px-3 py-2 text-xs text-left leading-relaxed ${
+                         msg.role === 'user' ? 'bg-blue-600 text-white font-medium' : 'bg-slate-100 text-slate-800'
+                       }`}>
                          {msg.text}
                        </div>
                     </div>

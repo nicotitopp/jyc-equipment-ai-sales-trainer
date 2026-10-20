@@ -56,34 +56,34 @@ export default function LoginModal({ onLogin }: LoginModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         
         {/* Header Branding */}
-        <div className="bg-gradient-to-b from-slate-900 to-slate-800 pt-8 pb-7 px-8 text-white text-center relative border-b border-slate-700/50">
-          <div className="w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/20 border border-white/10">
-            <Briefcase className="w-7 h-7 text-white" />
+        <div className="bg-slate-950 pt-7 pb-6 px-8 text-white text-center relative border-b border-slate-800">
+          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-md shadow-blue-600/30 font-black text-white text-lg">
+            JYC
           </div>
-          <h2 className="text-xl font-black tracking-tight text-white uppercase">
+          <h2 className="text-lg font-extrabold tracking-tight text-white uppercase">
             JYC EQUIPMENT
           </h2>
-          <p className="text-blue-300 text-xs font-semibold mt-0.5 tracking-wide uppercase">
-            AI Sales Training & Intelligence Portal
+          <p className="text-slate-400 text-xs font-mono font-medium mt-0.5 tracking-wider uppercase">
+            AI Sales Training & Intelligence
           </p>
         </div>
 
         {/* Login Form */}
-        <div className="p-8 space-y-6 text-left">
+        <div className="p-7 space-y-5 text-left">
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-800">Iniciar Sesión</h3>
-            <p className="text-xs text-slate-500">Ingresa tus credenciales para acceder a la plataforma.</p>
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Iniciar Sesión</h3>
+            <p className="text-xs text-slate-500">Ingresa tus credenciales autorizadas para ingresar.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             
             {/* Username Input */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-semibold text-slate-700 mb-1 tracking-wide">
                 Usuario
               </label>
               <div className="relative">
@@ -95,10 +95,10 @@ export default function LoginModal({ onLogin }: LoginModalProps) {
                     setUsername(e.target.value);
                     if (error) setError('');
                   }}
-                  placeholder="admin o tu usuario de vendedor"
+                  placeholder="admin o usuario de vendedor"
                   autoComplete="username"
                   disabled={loading}
-                  className="w-full pl-10 pr-3 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium bg-slate-50/50 hover:bg-white transition-all disabled:opacity-60"
+                  className="w-full pl-10 pr-3 py-2.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 font-medium bg-slate-50/60 hover:bg-white transition-all disabled:opacity-60"
                   required
                 />
               </div>
@@ -106,7 +106,7 @@ export default function LoginModal({ onLogin }: LoginModalProps) {
 
             {/* Password Input */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-semibold text-slate-700 mb-1 tracking-wide">
                 Contraseña
               </label>
               <div className="relative">
@@ -121,7 +121,7 @@ export default function LoginModal({ onLogin }: LoginModalProps) {
                   placeholder="••••••••••••"
                   autoComplete="current-password"
                   disabled={loading}
-                  className="w-full pl-10 pr-11 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-medium bg-slate-50/50 hover:bg-white transition-all disabled:opacity-60"
+                  className="w-full pl-10 pr-11 py-2.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 font-medium bg-slate-50/60 hover:bg-white transition-all disabled:opacity-60"
                   required
                 />
                 <button
@@ -138,17 +138,17 @@ export default function LoginModal({ onLogin }: LoginModalProps) {
 
             {/* Error Message */}
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium animate-in fade-in duration-150">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs font-medium animate-in fade-in duration-150">
                 {error}
               </div>
             )}
 
             {/* Submit Button with Loading State */}
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white rounded-lg font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Award, ChevronUp, ChevronDown, Check, X, 
-  AlertTriangle, ThumbsUp, ThumbsDown, RotateCcw, FileText, Printer
+  AlertTriangle, ThumbsUp, ThumbsDown, RotateCcw, FileText, Printer, ShieldCheck
 } from 'lucide-react';
 import AudioPlayer from './AudioPlayer';
 
@@ -43,42 +43,56 @@ export default function Scorecard({
 }: ScorecardProps) {
   const [showTranscript, setShowTranscript] = useState(false);
 
-  // Normalize transcript list
   const transcriptLines = evaluation.transcript || customTranscripts?.map(t => ({
     role: t.role,
     text: t.text
   })) || [];
 
   const effectiveAudioUrl = audioUrl || (conversationId ? `/api/elevenlabs/conversation-audio/${conversationId}` : undefined);
+  const isPassing = evaluation.score >= 70;
 
   return (
-    <div id="scorecard-print-area" className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 bg-slate-50 overflow-y-auto space-y-6">
+    <div id="scorecard-print-area" className="w-full max-w-5xl mx-auto p-4 sm:p-6 space-y-5 text-left">
       
-      {/* Header */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-4 text-center sm:text-left">
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
-            <Award className="w-8 h-8" />
+      {/* Top Header Card */}
+      <div className="bg-white rounded-xl p-5 sm:p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className={`p-3 rounded-xl shrink-0 ${
+            isPassing ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+          }`}>
+            <Award className="w-7 h-7" />
           </div>
           <div>
-            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Call Performance Scorecard</h2>
-            <p className="text-slate-500 text-sm mt-0.5">Automated AI critique based on construction sales guidelines</p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                Auditoría Técnica de Llamada
+              </h2>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                isPassing ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+              }`}>
+                {isPassing ? 'APROBADA' : 'REQUIERE REPASO'}
+              </span>
+            </div>
+            <p className="text-slate-500 text-xs mt-0.5 font-medium">
+              Evaluación automatizada conforme a los criterios de prospección de maquinaria pesada JYC Equipment
+            </p>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 no-print shrink-0 w-full sm:w-auto">
+
+        <div className="flex items-center gap-2 no-print shrink-0 w-full sm:w-auto">
           <button
             onClick={() => window.print()}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors border border-slate-200 cursor-pointer"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold border border-slate-300 transition-colors cursor-pointer"
           >
-            <Printer className="w-4 h-4" />
-            Download PDF Report
+            <Printer className="w-3.5 h-3.5" />
+            Descargar PDF
           </button>
           <button
             onClick={onReset}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-sm cursor-pointer"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4" />
-            Analyze Another Call
+            <RotateCcw className="w-3.5 h-3.5" />
+            Nueva Simulación
           </button>
         </div>
       </div>
@@ -90,94 +104,107 @@ export default function Scorecard({
             audioId={audioId}
             audioBlob={audioBlob}
             audioUrl={effectiveAudioUrl}
-            title="Recorded Call Audio / Grabación de la Llamada"
-            subtitle="Listen to conversation with time scrubber and speed controls"
+            title="Grabación de la Llamada / Audio Auditado"
+            subtitle="Reproduce la conversación con control de velocidad y scrubber"
           />
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Main Grid: Score Column & Detailed Critique */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         
-        {/* Score & Summary Column */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* Left Column: Overall Score & Checklist */}
+        <div className="lg:col-span-1 space-y-5">
           
-          {/* Score Card */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col items-center text-center space-y-4">
-            <h3 className="font-bold text-slate-700 text-sm tracking-wider uppercase">Overall Score</h3>
+          {/* Score Indicator */}
+          <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex flex-col items-center text-center">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 mb-3">
+              Puntaje de Rendimiento
+            </span>
             
             {/* SVG Ring Progress */}
             <div className="relative w-36 h-36 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90">
-                {/* Background Circle */}
                 <circle
                   cx="72"
                   cy="72"
-                  r="60"
+                  r="58"
                   className="text-slate-100"
-                  strokeWidth="10"
+                  strokeWidth="9"
                   stroke="currentColor"
                   fill="transparent"
                 />
-                {/* Foreground Circle */}
                 <circle
                   cx="72"
                   cy="72"
-                  r="60"
-                  strokeWidth="10"
-                  strokeDasharray={377}
-                  strokeDashoffset={377 - (377 * Math.min(Math.max(evaluation.score, 0), 100)) / 100}
+                  r="58"
+                  strokeWidth="9"
+                  strokeDasharray={364}
+                  strokeDashoffset={364 - (364 * Math.min(Math.max(evaluation.score, 0), 100)) / 100}
                   strokeLinecap="round"
                   stroke={
                     evaluation.score >= 80 
-                      ? "#10B981" // emerald-500
+                      ? "#10B981" 
                       : evaluation.score >= 60 
-                        ? "#F59E0B" // amber-500
-                        : "#EF4444" // red-500
+                        ? "#F59E0B" 
+                        : "#EF4444"
                   }
                   fill="transparent"
                 />
               </svg>
               <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-4xl font-extrabold text-slate-900">{evaluation.score}</span>
-                <span className="text-xs text-slate-400 font-semibold uppercase">/ 100</span>
+                <span className="text-4xl font-extrabold text-slate-900 font-mono tracking-tight">
+                  {evaluation.score}
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">/ 100 PTS</span>
               </div>
             </div>
 
-            <div className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-slate-700"
-              style={{
-                backgroundColor: evaluation.score >= 80 ? '#ECFDF5' : evaluation.score >= 60 ? '#FFFBEB' : '#FEF2F2',
-                color: evaluation.score >= 80 ? '#047857' : evaluation.score >= 60 ? '#B45309' : '#B91C1C'
-              }}
+            <div 
+              className={`mt-3 px-3 py-1 rounded-md text-xs font-bold uppercase font-mono tracking-wide ${
+                evaluation.score >= 80 
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
+                  : evaluation.score >= 60 
+                    ? 'bg-amber-50 text-amber-800 border border-amber-200' 
+                    : 'bg-red-50 text-red-800 border border-red-200'
+              }`}
             >
-              {evaluation.score >= 80 ? 'Excellent' : evaluation.score >= 60 ? 'Satisfactory' : 'Needs Improvement'}
+              {evaluation.score >= 80 ? 'Excelente' : evaluation.score >= 60 ? 'Aceptable' : 'Por Mejorar'}
             </div>
 
-            <p className="text-slate-500 text-sm leading-relaxed border-t border-slate-100 pt-4 w-full">
+            <p className="text-slate-600 text-xs leading-relaxed border-t border-slate-100 pt-3.5 mt-3.5 text-left w-full">
               {evaluation.summary}
             </p>
           </div>
 
-          {/* Qualification Checklist */}
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
-            <h3 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">Sales Process Checklist</h3>
+          {/* Checklist */}
+          <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wide">
+                Lista de Verificación
+              </h3>
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
+            </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               {[
-                { key: 'gatekeeperBypass', label: 'Bypass de Operador / KP' },
-                { key: 'kpOpening', label: 'Apertura con KP y Gancho' },
-                { key: 'equipmentQualification', label: 'Calificación de Equipo (Si hay)' },
-                { key: 'futureReference', label: 'Preguntas de Referencia (Si no hay)' },
-                { key: 'priceAndAssets', label: 'Precio Pretendido e Imágenes' },
-                { key: 'objectionHandling', label: 'Manejo de Objeciones (Script)' },
-                { key: 'nextStepsSecure', label: 'Contacto y Siguientes Pasos' }
+                { key: 'gatekeeperBypass', label: 'Bypass de Operador / Filtro' },
+                { key: 'kpOpening', label: 'Apertura con Key Person (Gancho)' },
+                { key: 'equipmentQualification', label: 'Calificación de Equipo (Año/Marca/Horas)' },
+                { key: 'futureReference', label: 'Preguntas de Referencia (Si no vende)' },
+                { key: 'priceAndAssets', label: 'Petición de Precio Pretendido & Fotos' },
+                { key: 'objectionHandling', label: 'Manejo de Objeciones (Playbook)' },
+                { key: 'nextStepsSecure', label: 'Contacto Directo & Siguiente Paso' }
               ].map((item) => {
                 const checked = (evaluation.checklist as any)?.[item.key] === true;
                 return (
-                  <div key={item.key} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600 text-left pr-2">{item.label}</span>
-                    <div className={`p-1 rounded-full shrink-0 ${checked ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
-                      {checked ? <Check className="w-4 h-4 stroke-[3]" /> : <X className="w-4 h-4 stroke-[3]" />}
-                    </div>
+                  <div key={item.key} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-slate-50 transition-colors text-xs">
+                    <span className="text-slate-700 font-medium pr-2 leading-tight">{item.label}</span>
+                    <span className={`p-1 rounded-md shrink-0 ${
+                      checked ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {checked ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <X className="w-3.5 h-3.5 stroke-[3]" />}
+                    </span>
                   </div>
                 );
               })}
@@ -186,122 +213,130 @@ export default function Scorecard({
 
         </div>
 
-        {/* Critique Details Column */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Right Column: Strengths, Weaknesses, Objections & Transcript */}
+        <div className="lg:col-span-2 space-y-5">
           
-          {/* Strengths & Weaknesses */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Strengths & Weaknesses 2-Column Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
-            {/* Strengths Card */}
-            <div className="bg-emerald-50/50 border border-emerald-100 rounded-3xl p-6 space-y-3">
-              <div className="flex items-center gap-2 text-emerald-800 font-bold">
-                <ThumbsUp className="w-5 h-5" />
-                <span>What Went Well</span>
+            {/* Strengths */}
+            <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 space-y-2.5">
+              <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs uppercase tracking-wide">
+                <ThumbsUp className="w-4 h-4 text-emerald-600" />
+                <span>Puntos Fuertes</span>
               </div>
               <ul className="space-y-2">
                 {evaluation.strengths?.map((str: string, idx: number) => (
-                  <li key={idx} className="text-slate-700 text-sm flex gap-2">
-                    <span className="text-emerald-500 font-bold select-none">•</span>
+                  <li key={idx} className="text-slate-800 text-xs flex items-start gap-2 leading-relaxed">
+                    <span className="text-emerald-600 font-bold select-none">•</span>
                     <span>{str}</span>
                   </li>
                 ))}
                 {(!evaluation.strengths || evaluation.strengths.length === 0) && (
-                  <li className="text-slate-400 text-sm italic">No significant strengths recorded.</li>
+                  <li className="text-slate-400 text-xs italic">No se registraron fortalezas específicas.</li>
                 )}
               </ul>
             </div>
 
-            {/* Weaknesses Card */}
-            <div className="bg-rose-50/50 border border-rose-100 rounded-3xl p-6 space-y-3">
-              <div className="flex items-center gap-2 text-rose-800 font-bold">
-                <ThumbsDown className="w-5 h-5" />
-                <span>Areas for Improvement</span>
+            {/* Weaknesses */}
+            <div className="bg-rose-50/60 border border-rose-200 rounded-xl p-4 space-y-2.5">
+              <div className="flex items-center gap-2 text-rose-900 font-bold text-xs uppercase tracking-wide">
+                <ThumbsDown className="w-4 h-4 text-rose-600" />
+                <span>Áreas de Oportunidad</span>
               </div>
               <ul className="space-y-2">
                 {evaluation.weaknesses?.map((weak: string, idx: number) => (
-                  <li key={idx} className="text-slate-700 text-sm flex gap-2">
-                    <span className="text-rose-400 font-bold select-none">•</span>
+                  <li key={idx} className="text-slate-800 text-xs flex items-start gap-2 leading-relaxed">
+                    <span className="text-rose-600 font-bold select-none">•</span>
                     <span>{weak}</span>
                   </li>
                 ))}
                 {(!evaluation.weaknesses || evaluation.weaknesses.length === 0) && (
-                  <li className="text-slate-400 text-sm italic">No specific weaknesses recorded.</li>
+                  <li className="text-slate-400 text-xs italic">No se registraron debilidades relevantes.</li>
                 )}
               </ul>
             </div>
 
           </div>
 
-          {/* Objections Handled Feedback */}
+          {/* Objections Handled */}
           {evaluation.objectionsHandled && evaluation.objectionsHandled.length > 0 && (
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
-              <h3 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">Objection Handling Review</h3>
-              <div className="space-y-4">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs space-y-3">
+              <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wide border-b border-slate-100 pb-2">
+                Evaluación de Objeciones Respondidas
+              </h3>
+              <div className="space-y-3">
                 {evaluation.objectionsHandled.map((obj: any, idx: number) => (
-                  <div key={idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
+                  <div key={idx} className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-800 text-sm">{obj.objection}</span>
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                      <span className="font-bold text-slate-900 text-xs">{obj.objection}</span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
                         obj.handledWell 
                           ? 'bg-emerald-100 text-emerald-800' 
                           : 'bg-amber-100 text-amber-800'
                       }`}>
                         {obj.handledWell ? <ThumbsUp className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-                        {obj.handledWell ? 'Handled Well' : 'Needs Practice'}
+                        {obj.handledWell ? 'Bien Resuelta' : 'Requiere Reforzar'}
                       </span>
                     </div>
-                    <p className="text-slate-600 text-sm leading-relaxed">{obj.feedback}</p>
+                    <p className="text-slate-600 text-xs leading-relaxed">{obj.feedback}</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Actionable Recommendations */}
+          {/* Recommendations */}
           {evaluation.recommendations && evaluation.recommendations.length > 0 && (
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 space-y-4">
-              <h3 className="font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">Recommendations & Correct script flow</h3>
-              <div className="space-y-3">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs space-y-3">
+              <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wide border-b border-slate-100 pb-2">
+                Recomendaciones & Flujo Correcto de Guion
+              </h3>
+              <div className="space-y-2.5">
                 {evaluation.recommendations.map((rec: string, idx: number) => (
-                  <div key={idx} className="flex gap-3 text-sm">
-                    <div className="shrink-0 w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                  <div key={idx} className="flex items-start gap-2.5 text-xs">
+                    <div className="shrink-0 w-5 h-5 rounded-md bg-blue-600 text-white flex items-center justify-center font-mono font-bold text-[10px] mt-0.5">
                       {idx + 1}
                     </div>
-                    <p className="text-slate-700 mt-0.5 leading-relaxed">{rec}</p>
+                    <p className="text-slate-700 leading-relaxed">{rec}</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* View Transcript Container */}
+          {/* Transcript Section */}
           {transcriptLines.length > 0 && (
-            <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-200 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span className="flex items-center gap-2 font-bold text-slate-800 text-sm">
+            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="flex items-center gap-2 font-bold text-slate-800 text-xs uppercase tracking-wide">
                   <FileText className="w-4 h-4 text-blue-600" />
-                  Call Transcript ({transcriptLines.length} lines)
+                  Transcripción Completa del Diálogo ({transcriptLines.length} líneas)
                 </span>
                 <button
                   onClick={() => setShowTranscript(!showTranscript)}
                   className="no-print text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                 >
-                  {showTranscript ? 'Collapse on screen' : 'Expand on screen'}
-                  {showTranscript ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  {showTranscript ? 'Ocultar' : 'Ver Diálogo'}
+                  {showTranscript ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </button>
               </div>
 
-              <div className={`pt-2 max-h-[350px] overflow-y-auto space-y-3 print-always-visible ${showTranscript ? 'block' : 'hidden'}`}>
+              <div className={`space-y-2.5 pt-1 max-h-[380px] overflow-y-auto print-always-visible ${showTranscript ? 'block' : 'hidden'}`}>
                 {transcriptLines.map((msg: any, idx: number) => {
                   const isUser = msg.role === 'user' || msg.role === 'Trainee' || msg.role === 'Trainee (Sales Rep)' || msg.role === 'agent';
-                  const roleLabel = isUser ? 'Trainee' : 'Prospect';
+                  const roleLabel = isUser ? 'VENDEDOR' : 'PROSPECTO';
                   return (
-                    <div key={idx} className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
-                      <div className={`shrink-0 px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center h-5 ${isUser ? 'bg-blue-100 text-blue-800' : 'bg-slate-200 text-slate-700'}`}>
+                    <div key={idx} className={`flex gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}>
+                      <span className={`shrink-0 px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase h-5 flex items-center ${
+                        isUser ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-700'
+                      }`}>
                         {roleLabel}
-                      </div>
+                      </span>
                       <div className={`flex-1 ${isUser ? 'text-right' : 'text-left'}`}>
-                        <div className={`inline-block max-w-[85%] rounded-2xl px-3.5 py-2 text-xs text-left ${isUser ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-800'}`}>
+                        <div className={`inline-block max-w-[85%] rounded-lg px-3 py-2 text-xs text-left leading-relaxed ${
+                          isUser ? 'bg-blue-600 text-white font-medium' : 'bg-slate-100 text-slate-800'
+                        }`}>
                           {msg.text}
                         </div>
                       </div>

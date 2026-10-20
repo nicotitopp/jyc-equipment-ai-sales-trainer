@@ -8,11 +8,12 @@
       "role": "admin"
     },
     {
-      "id": "user_1792531873832_7lln",
-      "username": "carlosj",
-      "password": "carlos.juan123",
+      "id": "user_1792533593151_hqo5",
+      "username": "calorj",
+      "password": "juan.carlos2026",
       "name": "Juan Carlos",
-      "role": "trainee"
+      "role": "trainee",
+      "createdAt": "20 oct 2026, 16:59"
     }
   ],
   "history": []
