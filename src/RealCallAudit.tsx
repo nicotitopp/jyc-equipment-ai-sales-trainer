@@ -137,16 +137,45 @@ export default function RealCallAudit({ onEvaluationComplete }: { onEvaluationCo
 
           const auditId = Date.now().toString() + Math.random().toString().substring(2, 6);
           setCurrentId(auditId);
+          let serverAudioUrl = `/api/audios/${auditId}`;
+
           if (file) {
             try {
               await saveAudio(auditId, file);
             } catch (saveErr) {
               console.warn("Could not save audio to IDB:", saveErr);
             }
+
+            // Also upload to central server so Admin can listen on any computer
+            try {
+              const uploadRes = await fetch('/api/audios/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  id: auditId,
+                  audioBase64: base64Audio,
+                  mimeType: file.type || 'audio/mp3'
+                })
+              });
+              if (uploadRes.ok) {
+                const uploadData = await uploadRes.json();
+                if (uploadData.audioUrl) {
+                  serverAudioUrl = uploadData.audioUrl;
+                }
+              }
+            } catch (uploadErr) {
+              console.warn("Could not sync audio with server storage:", uploadErr);
+            }
           }
 
           setEvaluation(parsedData);
-          onEvaluationComplete?.(parsedData.score, parsedData, parsedData.contactName || "Unknown", parsedData.companyName || "Unknown", { id: auditId, hasAudio: true });
+          onEvaluationComplete?.(
+            parsedData.score, 
+            parsedData, 
+            parsedData.contactName || "Unknown", 
+            parsedData.companyName || "Unknown", 
+            { id: auditId, hasAudio: true, audioUrl: serverAudioUrl }
+          );
         } catch (err: any) {
           console.error("Audit error:", err);
           setError(err.message || "Failed to analyze audio file. Try again.");

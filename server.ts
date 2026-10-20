@@ -3,10 +3,27 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import {
+  authenticate,
+  getHistory,
+  saveHistoryItem,
+  deleteHistoryItem,
+  clearHistory,
+  getRegisteredTrainees,
+  saveAudioFile,
+  getAudioFile,
+  ensureDirectories,
+  updateUserPassword,
+  getAllUsers,
+  createUser,
+  deleteUser,
+  getAllUsersWithStats
+} from "./server/db";
 
 dotenv.config();
 
 async function startServer() {
+  ensureDirectories();
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
@@ -237,6 +254,205 @@ You must return ONLY a JSON object with this exact structure:
     } catch (error: any) {
       console.error("Error fetching conversation audio:", error);
       res.status(500).json({ error: error.message || "Failed to fetch audio" });
+    }
+  });
+
+  // ==========================================
+  // Authentication & User Session API
+  // ==========================================
+  app.post("/api/auth/login", (req, res) => {
+    try {
+      const { username, password, customName } = req.body;
+      if (!username || !password || !password.trim()) {
+        return res.status(400).json({ error: "El usuario y la contraseña son obligatorios." });
+      }
+
+      const user = authenticate(username, password, customName);
+      if (!user) {
+        return res.status(401).json({ error: "Credenciales incorrectas. Para admin use usuario 'admin' y clave 'admin123'. Para practicante use 'practicante' y clave 'jyc123'." });
+      }
+
+      res.json({ success: true, user });
+    } catch (error: any) {
+      console.error("Error authenticating user:", error);
+      res.status(500).json({ error: "Internal server error during authentication" });
+    }
+  });
+
+  app.get("/api/users/list", (req, res) => {
+    try {
+      const users = getAllUsersWithStats();
+      res.json({ users });
+    } catch (error: any) {
+      console.error("Error fetching user list:", error);
+      res.status(500).json({ error: "Failed to fetch user list" });
+    }
+  });
+
+  app.post("/api/admin/users", (req, res) => {
+    try {
+      const { requesterRole, username, password, name } = req.body;
+      if (requesterRole !== 'admin') {
+        return res.status(403).json({ error: "Permiso denegado. Solo un administrador puede crear nuevos usuarios." });
+      }
+
+      const result = createUser(username, password, name);
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      res.json({ success: true, user: result.user });
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ error: "Error interno al crear usuario." });
+    }
+  });
+
+  app.delete("/api/admin/users/:username", (req, res) => {
+    try {
+      const { requesterRole } = req.body || {};
+      const { username } = req.params;
+
+      if (requesterRole !== 'admin') {
+        return res.status(403).json({ error: "Permiso denegado. Solo un administrador puede eliminar usuarios." });
+      }
+
+      const result = deleteUser(username);
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      res.json({ success: true, message: `Usuario '${username}' eliminado correctamente.` });
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Error interno al eliminar usuario." });
+    }
+  });
+
+  app.post("/api/users/change-password", (req, res) => {
+    try {
+      const { requesterRole, targetUsername, newPassword } = req.body;
+      if (requesterRole !== 'admin') {
+        return res.status(403).json({ error: "Permiso denegado. Solo un administrador puede cambiar contraseñas." });
+      }
+      if (!targetUsername || !newPassword || !newPassword.trim()) {
+        return res.status(400).json({ error: "Debes especificar el usuario y la nueva contraseña." });
+      }
+
+      const updated = updateUserPassword(targetUsername, newPassword);
+      if (!updated) {
+        return res.status(404).json({ error: `Usuario '${targetUsername}' no encontrado en la base de datos.` });
+      }
+
+      res.json({ success: true, message: `Contraseña de ${targetUsername} actualizada correctamente en la base de datos.` });
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ error: "Error interno al actualizar la contraseña" });
+    }
+  });
+
+  // ==========================================
+  // Central Database History & Audit API
+  // ==========================================
+  app.get("/api/history", (req, res) => {
+    try {
+      const { role, userId, userName } = req.query;
+      const history = getHistory({
+        role: role as string,
+        userId: userId as string,
+        userName: userName as string
+      });
+      res.json({ history });
+    } catch (error: any) {
+      console.error("Error fetching history:", error);
+      res.status(500).json({ error: "Failed to load history" });
+    }
+  });
+
+  app.post("/api/history", (req, res) => {
+    try {
+      const item = req.body;
+      if (!item || !item.score === undefined) {
+        return res.status(400).json({ error: "Invalid history item data" });
+      }
+
+      const saved = saveHistoryItem(item);
+      res.json({ success: true, item: saved });
+    } catch (error: any) {
+      console.error("Error saving history item:", error);
+      res.status(500).json({ error: "Failed to save history item to database" });
+    }
+  });
+
+  app.delete("/api/history/:id", (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = deleteHistoryItem(id);
+      res.json({ success: deleted });
+    } catch (error: any) {
+      console.error("Error deleting history item:", error);
+      res.status(500).json({ error: "Failed to delete history item" });
+    }
+  });
+
+  app.post("/api/history/clear", (req, res) => {
+    try {
+      const { userId, role } = req.body;
+      // Only admin can clear all, trainees can only clear their own
+      if (role === 'admin') {
+        clearHistory(userId ? { userId } : undefined);
+      } else if (userId) {
+        clearHistory({ userId });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error clearing history:", error);
+      res.status(500).json({ error: "Failed to clear history" });
+    }
+  });
+
+  app.get("/api/trainees", (req, res) => {
+    try {
+      const trainees = getRegisteredTrainees();
+      res.json({ trainees });
+    } catch (error: any) {
+      console.error("Error fetching trainees:", error);
+      res.status(500).json({ error: "Failed to fetch trainees" });
+    }
+  });
+
+  // ==========================================
+  // Audio Persistence API
+  // ==========================================
+  app.post("/api/audios/upload", (req, res) => {
+    try {
+      const { id, audioBase64, mimeType } = req.body;
+      if (!id || !audioBase64) {
+        return res.status(400).json({ error: "Missing audio id or data" });
+      }
+
+      const audioUrl = saveAudioFile(id, audioBase64, mimeType || 'audio/mpeg');
+      res.json({ success: true, audioUrl });
+    } catch (error: any) {
+      console.error("Error saving audio file:", error);
+      res.status(500).json({ error: "Failed to save audio file" });
+    }
+  });
+
+  app.get("/api/audios/:id", (req, res) => {
+    try {
+      const { id } = req.params;
+      const audio = getAudioFile(id);
+      if (!audio) {
+        return res.status(404).json({ error: "Audio file not found" });
+      }
+
+      res.setHeader("Content-Type", audio.mimeType);
+      res.setHeader("Content-Length", audio.buffer.length);
+      res.send(audio.buffer);
+    } catch (error: any) {
+      console.error("Error retrieving audio file:", error);
+      res.status(500).json({ error: "Failed to stream audio file" });
     }
   });
 

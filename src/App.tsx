@@ -1,13 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mode, Message, HistoryItem } from './types';
+import { Mode, Message, HistoryItem, User as UserType } from './types';
 import { getSystemInstruction } from './instructions';
-import { Send, User, Bot, RefreshCw, GraduationCap, Briefcase, ClipboardCheck, PhoneCall, Loader2, Menu, X, Mic, Volume2, VolumeX, MicOff, UploadCloud, BarChart3 } from 'lucide-react';
+import { 
+  Send, User, Bot, RefreshCw, GraduationCap, Briefcase, 
+  ClipboardCheck, PhoneCall, Loader2, Menu, X, Mic, Volume2, 
+  VolumeX, MicOff, UploadCloud, BarChart3, LogOut, Shield 
+} from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import LiveCall from './LiveCall';
 import RealCallAudit from './RealCallAudit';
 import Playbook from './Playbook';
 import HistoryDashboard from './HistoryDashboard';
+import LoginModal from './LoginModal';
 import { clearAllAudios } from './audioDb';
 
 const MODES: { id: Mode; label: string; icon: React.ReactNode; description: string }[] = [
@@ -20,6 +25,18 @@ const MODES: { id: Mode; label: string; icon: React.ReactNode; description: stri
 export default function App() {
   const [mode, setMode] = useState<Mode>('Coach');
 
+  // User Authentication State
+  const [currentUser, setCurrentUser] = useState<UserType | null>(() => {
+    try {
+      const saved = localStorage.getItem('jyc_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(!currentUser);
+
   // Load initial history from localStorage
   const [history, setHistory] = useState<HistoryItem[]>(() => {
     try {
@@ -30,7 +47,32 @@ export default function App() {
     }
   });
 
-  const appendToHistory = (
+  // Sync history with backend database
+  const syncHistoryWithBackend = async (user: UserType) => {
+    try {
+      const url = user.role === 'admin'
+        ? '/api/history?role=admin'
+        : `/api/history?role=trainee&userId=${user.id}&userName=${encodeURIComponent(user.name)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.history)) {
+          setHistory(data.history);
+          localStorage.setItem('jyc_sales_history', JSON.stringify(data.history));
+        }
+      }
+    } catch (err) {
+      console.warn("Could not sync history with backend:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      syncHistoryWithBackend(currentUser);
+    }
+  }, [currentUser]);
+
+  const appendToHistory = async (
     score: number, 
     evaluation: any, 
     contactName: string, 
@@ -40,6 +82,8 @@ export default function App() {
   ) => {
     const newItem: HistoryItem = {
       id: options?.id || (Date.now().toString() + Math.random().toString().substring(2, 6)),
+      userId: currentUser?.id || 'trainee_default',
+      userName: currentUser?.name || 'Vendedor Practicante',
       date: new Date().toLocaleDateString('es-ES', { 
         year: 'numeric', 
         month: 'short', 
@@ -47,6 +91,7 @@ export default function App() {
         hour: '2-digit',
         minute: '2-digit'
       }),
+      timestamp: Date.now(),
       type,
       contactName,
       companyName,
@@ -56,17 +101,70 @@ export default function App() {
       conversationId: options?.conversationId,
       audioUrl: options?.audioUrl
     };
+
     setHistory(prev => {
-      const updated = [...prev, newItem];
+      const updated = [newItem, ...prev.filter(h => h.id !== newItem.id)];
+      localStorage.setItem('jyc_sales_history', JSON.stringify(updated));
+      return updated;
+    });
+
+    // Save to central server database so Admin can see it
+    try {
+      await fetch('/api/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newItem,
+          userRole: currentUser?.role || 'trainee'
+        })
+      });
+    } catch (err) {
+      console.warn("Could not save history to central database:", err);
+    }
+  };
+
+  const handleClearHistory = async () => {
+    try {
+      await fetch('/api/history/clear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: currentUser?.role,
+          userId: currentUser?.id
+        })
+      });
+    } catch (err) {
+      console.warn("Could not clear history on server:", err);
+    }
+    localStorage.removeItem('jyc_sales_history');
+    clearAllAudios().catch(console.error);
+    setHistory([]);
+  };
+
+  const handleDeleteHistoryItem = async (id: string) => {
+    try {
+      await fetch(`/api/history/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn("Could not delete item on server:", err);
+    }
+    setHistory(prev => {
+      const updated = prev.filter(h => h.id !== id);
       localStorage.setItem('jyc_sales_history', JSON.stringify(updated));
       return updated;
     });
   };
 
-  const handleClearHistory = () => {
-    localStorage.removeItem('jyc_sales_history');
-    clearAllAudios().catch(console.error);
-    setHistory([]);
+  const handleLogout = () => {
+    localStorage.removeItem('jyc_user');
+    setCurrentUser(null);
+    setShowLoginModal(true);
+  };
+
+  const handleLogin = (user: UserType) => {
+    setCurrentUser(user);
+    localStorage.setItem('jyc_user', JSON.stringify(user));
+    setShowLoginModal(false);
+    syncHistoryWithBackend(user);
   };
 
   // Store separate message histories for each chat mode
@@ -278,9 +376,29 @@ export default function App() {
             </div>
           </div>
           
-          <div className="p-4 border-t border-slate-800">
-             <div className="text-xs text-slate-500 text-center">
-               Internal Training Use Only
+          <div className="p-4 border-t border-slate-800 space-y-3">
+             {currentUser && (
+               <div className="bg-slate-800/80 rounded-xl p-3 border border-slate-700/60 text-left">
+                 <div className="flex items-center justify-between">
+                   <span className="text-[10px] uppercase font-bold text-slate-400">Usuario Activo</span>
+                   <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                     currentUser.role === 'admin' ? 'bg-indigo-950 text-indigo-300 border border-indigo-700/50' : 'bg-blue-950 text-blue-300 border border-blue-700/50'
+                   }`}>
+                     {currentUser.role === 'admin' ? 'ADMIN' : 'PRACTICANTE'}
+                   </span>
+                 </div>
+                 <p className="font-bold text-white text-xs mt-1 truncate">{currentUser.name}</p>
+                 <button
+                   onClick={handleLogout}
+                   className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-700/50 hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
+                 >
+                   <LogOut className="w-3.5 h-3.5" />
+                   Cambiar Usuario
+                 </button>
+               </div>
+             )}
+             <div className="text-[10px] text-slate-500 text-center">
+               Internal Training & Supervision Portal
              </div>
           </div>
         </div>
@@ -304,23 +422,52 @@ export default function App() {
              </div>
            </div>
            
-           <button
-             onClick={() => {
-               const newVoice = !voiceEnabled;
-               setVoiceEnabled(newVoice);
-               if (!newVoice) {
-                   window.speechSynthesis.cancel();
-               }
-             }}
-             className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium transition-colors ${
-               voiceEnabled 
-                  ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                  : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
-             }`}
-           >
-             {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-             <span className="hidden sm:inline">{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
-           </button>
+           <div className="flex items-center gap-2 sm:gap-3">
+             {currentUser && (
+               <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border ${
+                 currentUser.role === 'admin'
+                   ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                   : 'bg-blue-50 border-blue-200 text-blue-700'
+               }`}>
+                 {currentUser.role === 'admin' ? (
+                   <Shield className="w-3.5 h-3.5 text-indigo-600" />
+                 ) : (
+                   <User className="w-3.5 h-3.5 text-blue-600" />
+                 )}
+                 <span className="max-w-[130px] truncate">{currentUser.name}</span>
+                 <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/90 font-bold uppercase shadow-xs">
+                   {currentUser.role === 'admin' ? 'Admin' : 'Practicante'}
+                 </span>
+               </div>
+             )}
+
+             <button
+               onClick={handleLogout}
+               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-semibold transition-colors cursor-pointer"
+               title="Cambiar o cerrar sesión"
+             >
+               <LogOut className="w-3.5 h-3.5" />
+               <span className="hidden sm:inline">Cambiar Usuario</span>
+             </button>
+
+             <button
+               onClick={() => {
+                 const newVoice = !voiceEnabled;
+                 setVoiceEnabled(newVoice);
+                 if (!newVoice) {
+                     window.speechSynthesis.cancel();
+                 }
+               }}
+               className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium transition-colors ${
+                 voiceEnabled 
+                    ? 'bg-blue-50 border-blue-200 text-blue-700' 
+                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+               }`}
+             >
+               {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+               <span className="hidden sm:inline">{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
+             </button>
+           </div>
         </header>
 
         {mode === 'Live Call Simulation' ? (
@@ -330,7 +477,9 @@ export default function App() {
         ) : mode === 'History' ? (
           <HistoryDashboard 
             history={history} 
+            currentUser={currentUser}
             onClearHistory={handleClearHistory} 
+            onDeleteHistoryItem={handleDeleteHistoryItem}
             onNavigateToMode={(targetMode) => setMode(targetMode)} 
           />
         ) : (
@@ -411,6 +560,11 @@ export default function App() {
         )}
 
       </div>
+
+      {/* User Login / Profile Switcher Modal */}
+      {showLoginModal && (
+        <LoginModal onLogin={handleLogin} />
+      )}
     </div>
   );
 }
