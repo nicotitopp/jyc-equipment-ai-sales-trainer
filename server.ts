@@ -17,7 +17,8 @@ import {
   getAllUsers,
   createUser,
   deleteUser,
-  getAllUsersWithStats
+  getAllUsersWithStats,
+  toggleUserBlock
 } from "./server/db";
 
 dotenv.config();
@@ -269,7 +270,11 @@ You must return ONLY a JSON object with this exact structure:
 
       const user = authenticate(username, password, customName);
       if (!user) {
-        return res.status(401).json({ error: "Credenciales incorrectas. Para admin use usuario 'admin' y clave 'admin123'. Para practicante use 'practicante' y clave 'jyc123'." });
+        return res.status(401).json({ error: "Credenciales incorrectas. Verifica tu usuario y contraseña." });
+      }
+
+      if (user.blocked) {
+        return res.status(403).json({ error: "Tu cuenta ha sido bloqueada por el Administrador. Por favor contacta a supervisión para reactivar tu acceso." });
       }
 
       res.json({ success: true, user });
@@ -326,6 +331,34 @@ You must return ONLY a JSON object with this exact structure:
     } catch (error: any) {
       console.error("Error deleting user:", error);
       res.status(500).json({ error: "Error interno al eliminar usuario." });
+    }
+  });
+
+  app.post("/api/admin/users/toggle-block", (req, res) => {
+    try {
+      const { requesterRole, targetUsername } = req.body;
+      if (requesterRole !== 'admin') {
+        return res.status(403).json({ error: "Permiso denegado. Solo un administrador puede bloquear o desbloquear usuarios." });
+      }
+      if (!targetUsername) {
+        return res.status(400).json({ error: "Debes especificar el usuario a modificar." });
+      }
+
+      const result = toggleUserBlock(targetUsername);
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      res.json({ 
+        success: true, 
+        blocked: result.blocked, 
+        message: result.blocked 
+          ? `Usuario '@${targetUsername}' bloqueado correctamente. No podrá iniciar sesión.` 
+          : `Usuario '@${targetUsername}' reactivado correctamente.` 
+      });
+    } catch (error: any) {
+      console.error("Error toggling user block:", error);
+      res.status(500).json({ error: "Error interno al cambiar estado de bloqueo del usuario." });
     }
   });
 

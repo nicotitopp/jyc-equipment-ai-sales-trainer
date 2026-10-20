@@ -8,6 +8,7 @@ export interface UserAccount {
   name: string;
   role: 'trainee' | 'admin';
   createdAt?: string;
+  blocked?: boolean;
 }
 
 export interface DbHistoryItem {
@@ -116,7 +117,8 @@ export function authenticate(username: string, password?: string, customName?: s
       id: user.id,
       username: user.username,
       name: displayName,
-      role: user.role
+      role: user.role,
+      blocked: !!user.blocked
     };
   }
 
@@ -203,6 +205,25 @@ export function deleteUser(username: string): { success: boolean; error?: string
   return { success: true };
 }
 
+export function toggleUserBlock(username: string): { success: boolean; blocked?: boolean; error?: string } {
+  const db = readDb();
+  const cleanUsername = username.trim().toLowerCase();
+
+  if (cleanUsername === 'admin') {
+    return { success: false, error: "No es posible bloquear la cuenta del Administrador principal." };
+  }
+
+  const user = db.users.find(u => u.username.toLowerCase() === cleanUsername);
+  if (!user) {
+    return { success: false, error: "Usuario no encontrado." };
+  }
+
+  user.blocked = !user.blocked;
+  writeDb(db);
+
+  return { success: true, blocked: user.blocked };
+}
+
 export interface DetailedUserRecord {
   id: string;
   username: string;
@@ -210,6 +231,7 @@ export interface DetailedUserRecord {
   role: 'trainee' | 'admin';
   password: string;
   createdAt: string;
+  blocked?: boolean;
   callCount: number;
   avgScore: number;
   bestScore: number;
@@ -257,6 +279,7 @@ export function getAllUsersWithStats(): DetailedUserRecord[] {
       role: u.role,
       password: u.password,
       createdAt: u.createdAt || 'Registrado',
+      blocked: !!u.blocked,
       callCount: count,
       avgScore,
       bestScore,

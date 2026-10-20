@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, UserPlus, Key, Trash2, X, Shield, UserCheck, 
   CheckCircle2, AlertCircle, Loader2, RefreshCw, Lock, Eye, EyeOff,
-  Copy, Award, PhoneCall, Calendar, ChevronRight, ArrowLeft, BarChart3, Check
+  Copy, Award, PhoneCall, Calendar, ChevronRight, ArrowLeft, BarChart3, Check, Ban
 } from 'lucide-react';
 
 interface AdminUserManagerProps {
@@ -25,6 +25,7 @@ interface DetailedUser {
   role: 'trainee' | 'admin';
   password: string;
   createdAt: string;
+  blocked?: boolean;
   callCount: number;
   avgScore: number;
   bestScore: number;
@@ -194,6 +195,34 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
     }
   };
 
+  const handleToggleBlock = async (username: string, currentlyBlocked?: boolean) => {
+    const actionText = currentlyBlocked ? 'desbloquear y reactivar el acceso para' : 'bloquear el acceso para';
+    if (!window.confirm(`¿Estás seguro de ${actionText} el usuario '@${username}'?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/users/toggle-block', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requesterRole: 'admin',
+          targetUsername: username
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al cambiar estado de bloqueo.');
+      }
+
+      setFeedback({ type: 'success', message: data.message });
+      await fetchUsers(username);
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Error al modificar estado de bloqueo.' });
+    }
+  };
+
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text);
     setCopiedType(type);
@@ -285,6 +314,17 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                         }`}>
                           {selectedUser.role === 'admin' ? 'Administrador' : 'Vendedor'}
                         </span>
+                        {selectedUser.role !== 'admin' && (
+                          selectedUser.blocked ? (
+                            <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/40 flex items-center gap-1">
+                              <Ban className="w-3 h-3" /> Acceso Bloqueado
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> Acceso Activo
+                            </span>
+                          )
+                        )}
                       </div>
                       <p className="text-indigo-200 font-mono text-xs mt-0.5">@{selectedUser.username}</p>
                     </div>
@@ -471,14 +511,35 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                 )}
               </div>
 
-              {/* Delete User Action (Only for non-admin) */}
+              {/* Actions: Block/Unblock & Delete (Only for non-admin) */}
               {selectedUser.role !== 'admin' && (
-                <div className="pt-2 flex justify-end">
+                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-slate-200">
+                  <button
+                    onClick={() => handleToggleBlock(selectedUser.username, selectedUser.blocked)}
+                    className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border shadow-xs ${
+                      selectedUser.blocked
+                        ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300'
+                    }`}
+                  >
+                    {selectedUser.blocked ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>Desbloquear y Reactivar Acceso</span>
+                      </>
+                    ) : (
+                      <>
+                        <Ban className="w-4 h-4 text-amber-600" />
+                        <span>Bloquear Acceso (Suspender Vendedor)</span>
+                      </>
+                    )}
+                  </button>
+
                   <button
                     onClick={() => handleDeleteUser(selectedUser.username, selectedUser.name)}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-bold transition-colors cursor-pointer border border-red-200"
+                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-bold transition-colors cursor-pointer border border-red-200"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                     <span>Eliminar Vendedor del Sistema</span>
                   </button>
                 </div>
@@ -617,10 +678,21 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                               @{u.username}
                             </span>
                             <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                              u.role === 'admin' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              u.role === 'admin' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
                             }`}>
                               {u.role === 'admin' ? 'Admin' : 'Vendedor'}
                             </span>
+                            {u.role !== 'admin' && (
+                              u.blocked ? (
+                                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 flex items-center gap-1">
+                                  <Ban className="w-2.5 h-2.5" /> Bloqueado
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  Activo
+                                </span>
+                              )
+                            )}
                           </div>
 
                           <div className="flex items-center gap-3 mt-1 text-xs text-slate-500 font-medium">
