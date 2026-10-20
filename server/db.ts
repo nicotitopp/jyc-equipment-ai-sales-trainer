@@ -7,6 +7,7 @@ export interface UserAccount {
   password: string;
   name: string;
   role: 'trainee' | 'admin';
+  createdAt?: string;
 }
 
 export interface DbHistoryItem {
@@ -160,7 +161,14 @@ export function createUser(username: string, password: string, name: string): { 
     username: cleanUsername,
     password: cleanPassword,
     name: cleanName,
-    role: 'trainee'
+    role: 'trainee',
+    createdAt: new Date().toLocaleDateString('es-ES', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    })
   };
 
   db.users.push(newUser);
@@ -195,23 +203,66 @@ export function deleteUser(username: string): { success: boolean; error?: string
   return { success: true };
 }
 
-export function getAllUsersWithStats(): { id: string; username: string; name: string; role: 'trainee' | 'admin'; callCount: number; avgScore: number }[] {
+export interface DetailedUserRecord {
+  id: string;
+  username: string;
+  name: string;
+  role: 'trainee' | 'admin';
+  password: string;
+  createdAt: string;
+  callCount: number;
+  avgScore: number;
+  bestScore: number;
+  passRate: number;
+  lastActive?: string;
+  recentCalls: {
+    id: string;
+    date: string;
+    companyName: string;
+    contactName: string;
+    score: number;
+    type: string;
+  }[];
+}
+
+export function getAllUsersWithStats(): DetailedUserRecord[] {
   const db = readDb();
   return db.users.map(u => {
-    const userCalls = db.history.filter(h => 
+    const userCalls = (db.history || []).filter(h => 
       h.userId === u.id || 
       h.userName?.toLowerCase() === u.name.toLowerCase() ||
       h.userName?.toLowerCase() === u.username.toLowerCase()
-    );
+    ).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
     const count = userCalls.length;
     const avgScore = count > 0 ? Math.round(userCalls.reduce((acc, curr) => acc + curr.score, 0) / count) : 0;
+    const bestScore = count > 0 ? Math.max(...userCalls.map(c => c.score || 0)) : 0;
+    const passedCount = userCalls.filter(c => (c.score || 0) >= 70).length;
+    const passRate = count > 0 ? Math.round((passedCount / count) * 100) : 0;
+    const lastActive = count > 0 ? userCalls[0].date : undefined;
+
+    const recentCalls = userCalls.slice(0, 5).map(c => ({
+      id: c.id,
+      date: c.date,
+      companyName: c.companyName,
+      contactName: c.contactName,
+      score: c.score,
+      type: c.type
+    }));
+
     return {
       id: u.id,
       username: u.username,
       name: u.name,
       role: u.role,
+      password: u.password,
+      createdAt: u.createdAt || 'Registrado',
       callCount: count,
-      avgScore
+      avgScore,
+      bestScore,
+      passRate,
+      lastActive,
+      recentCalls
     };
   });
 }

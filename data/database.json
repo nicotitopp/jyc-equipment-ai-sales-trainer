@@ -6,6 +6,13 @@
       "password": "JYC!@2026*!!@",
       "name": "Administrador JYC",
       "role": "admin"
+    },
+    {
+      "id": "user_1792531873832_7lln",
+      "username": "carlosj",
+      "password": "carlos.juan123",
+      "name": "Juan Carlos",
+      "role": "trainee"
     }
   ],
   "history": []
