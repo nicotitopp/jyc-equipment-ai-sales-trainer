@@ -47,7 +47,7 @@ export default function RealCallAudit({
         setFile(droppedFile);
         setError(null);
       } else {
-        setError("Selecciona un archivo de audio compatible (.mp3, .wav o .m4a).");
+        setError("Please select a supported audio file (.mp3, .wav, or .m4a).");
       }
     }
   };
@@ -75,7 +75,7 @@ export default function RealCallAudit({
 
     setLoading(true);
     setError(null);
-    setLoadingMessage("Preparando archivo de audio...");
+    setLoadingMessage("Preparing audio file...");
 
     try {
       const reader = new FileReader();
@@ -86,7 +86,7 @@ export default function RealCallAudit({
           const base64Data = commaIndex !== -1 ? result.substring(commaIndex + 1) : result;
           const mimeType = file.type || 'audio/mp3';
 
-          setLoadingMessage("Transcribiendo la llamada y analizando la conversación...");
+          setLoadingMessage("Transcribing call and analyzing sales dialogue...");
 
           let response;
           let retries = 3;
@@ -123,12 +123,12 @@ export default function RealCallAudit({
           }
 
           if (!response) {
-            throw lastErr || new Error("No se pudo conectar al servidor tras varios intentos.");
+            throw lastErr || new Error("Could not connect to server after multiple attempts.");
           }
 
           const data = await response.json();
           if (!response.ok) {
-            throw new Error(data.error || 'No fue posible analizar el audio de la llamada.');
+            throw new Error(data.error || 'Could not analyze call audio.');
           }
 
           const text = data.text;
@@ -142,7 +142,7 @@ export default function RealCallAudit({
             if (start !== -1 && end !== -1) {
               parsedData = JSON.parse(text.substring(start, end + 1));
             } else {
-              throw new Error("Respuesta no válida del evaluador.");
+              throw new Error("Invalid response from evaluator.");
             }
           }
 
@@ -182,21 +182,21 @@ export default function RealCallAudit({
           onEvaluationComplete?.(
             parsedData.score, 
             parsedData, 
-            parsedData.contactName || "No identificado", 
-            parsedData.companyName || "Empresa cliente", 
+            parsedData.contactName || "Unidentified", 
+            parsedData.companyName || "Client Company", 
             { id: auditId, hasAudio: true, audioUrl: serverAudioUrl }
           );
           setLoading(false);
 
         } catch (err: any) {
           console.error("Audit error:", err);
-          setError(err.message || "No se pudo procesar el archivo de audio. Intenta nuevamente.");
+          setError(err.message || "Could not process audio file. Please try again.");
           setLoading(false);
         }
       };
 
       reader.onerror = () => {
-        setError("Error al leer el archivo seleccionado.");
+        setError("Error reading the selected audio file.");
         setLoading(false);
       };
 
@@ -204,7 +204,7 @@ export default function RealCallAudit({
 
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Ocurrió un error inesperado.");
+      setError(err.message || "An unexpected error occurred.");
       setLoading(false);
     }
   };
@@ -233,10 +233,10 @@ export default function RealCallAudit({
           </div>
           <div>
             <h2 className="text-lg font-display font-bold text-slate-900 tracking-tight">
-              Evaluar grabación de llamada real
+              Evaluate Real Call Recording
             </h2>
             <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
-              Sube el audio de una llamada telefónica para analizar cómo se realizó el filtro en recepción, la calificación de maquinaria y el manejo de objeciones.
+              Upload the audio of an actual phone call to audit gatekeeper bypass, equipment qualification, and objection handling.
             </p>
           </div>
         </div>
@@ -249,7 +249,7 @@ export default function RealCallAudit({
             <div className="space-y-1 max-w-sm">
               <h3 className="text-base font-display font-bold text-slate-900">{loadingMessage}</h3>
               <p className="text-slate-500 text-xs sm:text-sm">
-                Esto toma unos segundos dependiendo de la duración de la llamada.
+                This takes a few seconds depending on the length of the call recording.
               </p>
             </div>
           </div>
@@ -291,16 +291,16 @@ export default function RealCallAudit({
                     {file.name}
                   </p>
                   <p className="text-xs text-slate-500">
-                    {(file.size / (1024 * 1024)).toFixed(2)} MB · Haz clic para cambiar de archivo
+                    {(file.size / (1024 * 1024)).toFixed(2)} MB · Click to choose a different file
                   </p>
                 </div>
               ) : (
                 <div className="text-center space-y-1">
                   <p className="font-semibold text-slate-800 text-sm">
-                    Arrastra tu grabación aquí o haz clic para seleccionarla
+                    Drag and drop your audio recording here, or click to browse
                   </p>
                   <p className="text-xs text-slate-500">
-                    Formatos compatibles: .mp3, .wav, .m4a (hasta 25 MB)
+                    Supported formats: .mp3, .wav, .m4a (up to 25 MB)
                   </p>
                 </div>
               )}
@@ -319,12 +319,12 @@ export default function RealCallAudit({
               className="w-full py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 rounded-xl font-display font-bold text-sm transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
             >
               <UploadCloud className="w-4 h-4" />
-              <span>Analizar y calificar llamada</span>
+              <span>Analyze & Audit Call</span>
             </button>
 
             <div className="pt-2 flex items-center justify-center gap-1.5 text-xs text-slate-500 border-t border-slate-100">
               <ShieldCheck className="w-4 h-4 text-blue-600" />
-              <span>Evalúa filtro en recepción, apertura con responsable, las 7 preguntas y cierre</span>
+              <span>Audits reception bypass, key person opening, the 7 questions, and next steps</span>
             </div>
 
           </div>

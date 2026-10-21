@@ -32,7 +32,7 @@ export const api = {
       body: JSON.stringify({ username, password, customName }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Credenciales incorrectas');
+    if (!res.ok) throw new Error(data.error || 'Invalid credentials');
     return data;
   },
 
@@ -44,7 +44,7 @@ export const api = {
       body: JSON.stringify({ messages, systemInstruction }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error al comunicarse con el coach');
+    if (!res.ok) throw new Error(data.error || 'Failed to communicate with coach');
     return data.text;
   },
 
@@ -56,7 +56,7 @@ export const api = {
       body: JSON.stringify({ audioBase64, mimeType }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error al analizar el audio');
+    if (!res.ok) throw new Error(data.error || 'Failed to analyze audio');
     return data;
   },
 
@@ -108,7 +108,7 @@ export const api = {
   // User Management (Admin)
   async fetchUserList(): Promise<UserStats[]> {
     const res = await fetch('/api/users/list');
-    if (!res.ok) throw new Error('Error al obtener lista de usuarios');
+    if (!res.ok) throw new Error('Failed to fetch user list');
     const data = await res.json();
     return data.users || [];
   },
@@ -120,7 +120,7 @@ export const api = {
       body: JSON.stringify({ ...user, requesterRole: 'admin' }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error al crear usuario');
+    if (!res.ok) throw new Error(data.error || 'Failed to create user');
   },
 
   async updateUserPassword(userId: string, newPassword: string): Promise<void> {
@@ -130,7 +130,7 @@ export const api = {
       body: JSON.stringify({ newPassword, requesterRole: 'admin' }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error al actualizar contraseña');
+    if (!res.ok) throw new Error(data.error || 'Failed to update password');
   },
 
   async toggleUserBlock(userId: string): Promise<boolean> {
@@ -140,7 +140,7 @@ export const api = {
       body: JSON.stringify({ requesterRole: 'admin' }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error al cambiar estado');
+    if (!res.ok) throw new Error(data.error || 'Failed to update user status');
     return data.blocked;
   },
 
@@ -151,6 +151,6 @@ export const api = {
       body: JSON.stringify({ requesterRole: 'admin' }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error al eliminar usuario');
+    if (!res.ok) throw new Error(data.error || 'Failed to delete user');
   },
 };

@@ -69,20 +69,20 @@ export default function Scorecard({
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
               <h2 className="text-xl font-display font-bold text-slate-900 tracking-tight">
-                Evaluación de la práctica
+                Practice Call Evaluation
               </h2>
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                 isPassing 
                   ? 'bg-emerald-100 text-emerald-800' 
                   : 'bg-amber-100 text-amber-800'
               }`}>
-                {isPassing ? 'Objetivo cumplido' : 'Oportunidad de mejora'}
+                {isPassing ? 'Objective Achieved' : 'Opportunity to Improve'}
               </span>
             </div>
             <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
               {scenarioTitle 
-                ? `Escenario practicado: ${scenarioTitle}` 
-                : 'Análisis de tu conversación comercial, calificación de maquinaria y manejo de objeciones'}
+                ? `Practiced scenario: ${scenarioTitle}` 
+                : 'Analysis of your sales dialogue, equipment qualification, and objection handling'}
             </p>
           </div>
         </div>
@@ -93,14 +93,14 @@ export default function Scorecard({
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition-colors cursor-pointer"
           >
             <Printer className="w-4 h-4 text-slate-500" />
-            <span>Descargar PDF</span>
+            <span>Download PDF</span>
           </button>
           <button
             onClick={onReset}
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-display font-bold shadow-xs transition-colors cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>Practicar de nuevo</span>
+            <span>Practice Again</span>
           </button>
         </div>
       </div>
@@ -112,8 +112,8 @@ export default function Scorecard({
             audioId={audioId}
             audioBlob={audioBlob}
             audioUrl={effectiveAudioUrl}
-            title="Grabación de la llamada"
-            subtitle="Escucha la conversación para repasar tu tono y tus respuestas"
+            title="Call Recording"
+            subtitle="Listen to the conversation to review your tone and responses"
           />
         </div>
       )}
@@ -127,7 +127,7 @@ export default function Scorecard({
           {/* Score & Conversation Summary */}
           <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs flex flex-col items-center text-center">
             <span className="text-xs font-semibold text-slate-500 mb-3">
-              Puntuación general
+              Overall Score
             </span>
             
             <div className="relative w-36 h-36 flex items-center justify-center">
@@ -163,12 +163,12 @@ export default function Scorecard({
                 <span className="text-4xl font-display font-bold text-slate-900 font-mono">
                   {evaluation.score}
                 </span>
-                <span className="text-xs text-slate-400 font-medium">de 100</span>
+                <span className="text-xs text-slate-400 font-medium">out of 100</span>
               </div>
             </div>
 
             <div className="w-full border-t border-slate-100 pt-4 mt-4 text-left space-y-1.5">
-              <div className="text-xs font-semibold text-slate-800">Resumen de la conversación</div>
+              <div className="text-xs font-semibold text-slate-800">Executive Summary</div>
               <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
                 {evaluation.summary}
               </p>
@@ -180,22 +180,22 @@ export default function Scorecard({
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-display font-bold text-slate-900 text-sm">
-                  Etapas y preguntas realizadas
+                  Call Stages & Questions Asked
                 </h3>
-                <p className="text-xs text-slate-500">Estructura clave de la llamada</p>
+                <p className="text-xs text-slate-500">Key structure of the call</p>
               </div>
               <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
             </div>
             
             <div className="space-y-2">
               {[
-                { key: 'gatekeeperBypass', label: 'Superar recepción (filtro inicial)' },
-                { key: 'kpOpening', label: 'Presentación y motivo con el responsable' },
-                { key: 'equipmentQualification', label: 'Preguntas de calificación (marca, modelo, año)' },
-                { key: 'futureReference', label: 'Preguntas de referencia (si hoy no vende)' },
-                { key: 'priceAndAssets', label: 'Solicitud de precio estimado y fotografías' },
-                { key: 'objectionHandling', label: 'Respuesta clara a las objeciones' },
-                { key: 'nextStepsSecure', label: 'Acuerdo del siguiente paso o contacto directo' }
+                { key: 'gatekeeperBypass', label: 'Gatekeeper bypass (reception filter)' },
+                { key: 'kpOpening', label: 'Introduction & purpose with key person' },
+                { key: 'equipmentQualification', label: 'Qualification questions (make, model, year)' },
+                { key: 'futureReference', label: 'Future reference questions (if not selling today)' },
+                { key: 'priceAndAssets', label: 'Price expectation & photo/plate request' },
+                { key: 'objectionHandling', label: 'Clear objection handling' },
+                { key: 'nextStepsSecure', label: 'Agreed next step or direct contact' }
               ].map((item) => {
                 const checked = (evaluation.checklist as any)?.[item.key] === true;
                 return (
@@ -209,12 +209,12 @@ export default function Scorecard({
                       {checked ? (
                         <>
                           <Check className="w-3 h-3 stroke-[2.5]" />
-                          <span>Sí</span>
+                          <span>Yes</span>
                         </>
                       ) : (
                         <>
                           <X className="w-3 h-3 stroke-[2.5]" />
-                          <span>Faltó</span>
+                          <span>Missed</span>
                         </>
                       )}
                     </span>
@@ -238,7 +238,7 @@ export default function Scorecard({
                 <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
                   <ThumbsUp className="w-4 h-4" />
                 </div>
-                <span>Aciertos en la llamada</span>
+                <span>Call Strengths</span>
               </div>
               <ul className="space-y-2.5">
                 {evaluation.strengths?.map((str: string, idx: number) => (
@@ -248,7 +248,7 @@ export default function Scorecard({
                   </li>
                 ))}
                 {(!evaluation.strengths || evaluation.strengths.length === 0) && (
-                  <li className="text-slate-400 text-xs italic">No se registraron aciertos específicos en esta sesión.</li>
+                  <li className="text-slate-400 text-xs italic">No specific strengths recorded in this session.</li>
                 )}
               </ul>
             </div>
@@ -259,7 +259,7 @@ export default function Scorecard({
                 <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600">
                   <ThumbsDown className="w-4 h-4" />
                 </div>
-                <span>Aspectos por mejorar</span>
+                <span>Areas for Improvement</span>
               </div>
               <ul className="space-y-2.5">
                 {evaluation.weaknesses?.map((weak: string, idx: number) => (
@@ -269,7 +269,7 @@ export default function Scorecard({
                   </li>
                 ))}
                 {(!evaluation.weaknesses || evaluation.weaknesses.length === 0) && (
-                  <li className="text-slate-400 text-xs italic">No se detectaron puntos débiles críticos.</li>
+                  <li className="text-slate-400 text-xs italic">No critical weaknesses detected.</li>
                 )}
               </ul>
             </div>
@@ -281,9 +281,9 @@ export default function Scorecard({
             <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs space-y-4">
               <div className="border-b border-slate-100 pb-3">
                 <h3 className="font-display font-bold text-slate-900 text-sm">
-                  Manejo de objeciones
+                  Objection Handling
                 </h3>
-                <p className="text-xs text-slate-500">Cómo respondiste a las dudas o resistencias del cliente</p>
+                <p className="text-xs text-slate-500">How you addressed prospect concerns or resistance</p>
               </div>
               <div className="space-y-3">
                 {evaluation.objectionsHandled.map((obj: any, idx: number) => (
@@ -296,7 +296,7 @@ export default function Scorecard({
                           : 'bg-amber-100 text-amber-800'
                       }`}>
                         {obj.handledWell ? <ThumbsUp className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-                        {obj.handledWell ? 'Bien resuelta' : 'Por reforzar'}
+                        {obj.handledWell ? 'Handled well' : 'Needs work'}
                       </span>
                     </div>
                     <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">{obj.feedback}</p>
@@ -311,9 +311,9 @@ export default function Scorecard({
             <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs space-y-4">
               <div className="border-b border-slate-100 pb-3">
                 <h3 className="font-display font-bold text-slate-900 text-sm">
-                  Recomendaciones para tu siguiente llamada
+                  Recommendations for your next call
                 </h3>
-                <p className="text-xs text-slate-500">Consejos prácticos para aplicar en el próximo intento</p>
+                <p className="text-xs text-slate-500">Actionable advice to apply on your next attempt</p>
               </div>
               <div className="space-y-2.5">
                 {evaluation.recommendations.map((rec: string, idx: number) => (
@@ -334,13 +334,13 @@ export default function Scorecard({
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <span className="flex items-center gap-2 font-display font-bold text-slate-900 text-sm">
                   <FileText className="w-4 h-4 text-slate-500" />
-                  Transcripción de la conversación ({transcriptLines.length} intervenciones)
+                  Full Conversation Transcript ({transcriptLines.length} turns)
                 </span>
                 <button
                   onClick={() => setShowTranscript(!showTranscript)}
                   className="no-print text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                 >
-                  {showTranscript ? 'Ocultar transcripción' : 'Ver transcripción'}
+                  {showTranscript ? 'Hide transcript' : 'Show transcript'}
                   {showTranscript ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </button>
               </div>
@@ -348,7 +348,7 @@ export default function Scorecard({
               <div className={`space-y-3 pt-1 max-h-[420px] overflow-y-auto print-always-visible ${showTranscript ? 'block' : 'hidden'}`}>
                 {transcriptLines.map((msg: any, idx: number) => {
                   const isUser = msg.role === 'user' || msg.role === 'Trainee' || msg.role === 'Trainee (Sales Rep)' || msg.role === 'agent';
-                  const roleLabel = isUser ? 'Tú (Comercial)' : 'Cliente';
+                  const roleLabel = isUser ? 'You (Sales Rep)' : 'Prospect';
                   return (
                     <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm leading-relaxed ${

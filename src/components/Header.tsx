@@ -33,7 +33,7 @@ export default function Header({
         <button
           onClick={onOpenSidebar}
           className="md:hidden p-2 -ml-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-          aria-label="Abrir menú"
+          aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -58,7 +58,7 @@ export default function Header({
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold text-xs shadow-xs transition-colors cursor-pointer"
           >
             <PhoneCall className="w-3.5 h-3.5" />
-            <span>Practicar llamada</span>
+            <span>Practice Call</span>
           </button>
         )}
 
@@ -66,7 +66,7 @@ export default function Header({
         {mode === 'Coach' && (
           <button
             onClick={onToggleVoice}
-            title={voiceEnabled ? 'Silenciar lectura por voz' : 'Escuchar respuestas por voz'}
+            title={voiceEnabled ? 'Mute voice audio' : 'Listen to responses with voice'}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
               voiceEnabled
                 ? 'bg-blue-50 border-blue-200 text-blue-700'
@@ -79,7 +79,7 @@ export default function Header({
               <VolumeX className="w-3.5 h-3.5 text-slate-400" />
             )}
             <span className="hidden sm:inline">
-              {voiceEnabled ? 'Voz activada' : 'Voz en silencio'}
+              {voiceEnabled ? 'Voice enabled' : 'Voice muted'}
             </span>
           </button>
         )}

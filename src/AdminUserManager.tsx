@@ -91,7 +91,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
     setFeedback(null);
 
     if (!newUsername.trim() || !newName.trim() || !newPassword.trim()) {
-      setFeedback({ type: 'error', message: 'Completa todos los campos para registrar al comercial.' });
+      setFeedback({ type: 'error', message: 'Please fill in all fields to register the sales rep.' });
       return;
     }
 
@@ -112,12 +112,12 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'No se pudo crear el usuario.');
+        throw new Error(data.error || 'Could not create user.');
       }
 
       setFeedback({ 
         type: 'success', 
-        message: `Comercial '${data.user.name}' (@${data.user.username}) registrado correctamente.` 
+        message: `Sales rep '${data.user.name}' (@${data.user.username}) registered successfully.` 
       });
       setNewUsername('');
       setNewName('');
@@ -125,7 +125,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
       setShowCreateForm(false);
       await fetchUsers(data.user.username);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Error de conexión.' });
+      setFeedback({ type: 'error', message: err.message || 'Connection error.' });
     } finally {
       setCreating(false);
     }
@@ -133,7 +133,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
 
   const handleChangePassword = async (username: string) => {
     if (!newPasswordInput.trim()) {
-      alert('Escribe una nueva contraseña.');
+      alert('Please enter a new password.');
       return;
     }
 
@@ -152,25 +152,25 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'No se pudo actualizar la contraseña.');
+        throw new Error(data.error || 'Could not update password.');
       }
 
       setFeedback({ 
         type: 'success', 
-        message: `Contraseña de '@${username}' actualizada.` 
+        message: `Password updated for '@${username}'.` 
       });
       setIsEditingPassword(false);
       setNewPasswordInput('');
       await fetchUsers(username);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Error al cambiar contraseña.' });
+      setFeedback({ type: 'error', message: err.message || 'Error updating password.' });
     } finally {
       setChangingPass(false);
     }
   };
 
   const handleDeleteUser = async (username: string, name: string) => {
-    if (!window.confirm(`¿Deseas eliminar permanentemente al usuario '@${username}' (${name})?`)) {
+    if (!window.confirm(`Are you sure you want to permanently delete '@${username}' (${name})?`)) {
       return;
     }
 
@@ -184,22 +184,22 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'No se pudo eliminar el usuario.');
+        throw new Error(data.error || 'Could not delete user.');
       }
 
-      setFeedback({ type: 'success', message: `Usuario '@${username}' eliminado.` });
+      setFeedback({ type: 'success', message: `User '@${username}' deleted successfully.` });
       if (selectedUser?.username === username) {
         setSelectedUser(null);
       }
       fetchUsers();
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Error al eliminar usuario.' });
+      setFeedback({ type: 'error', message: err.message || 'Error deleting user.' });
     }
   };
 
   const handleToggleBlock = async (username: string, currentlyBlocked?: boolean) => {
-    const actionText = currentlyBlocked ? 'reactivar el acceso para' : 'suspender temporalmente el acceso para';
-    if (!window.confirm(`¿Confirmas que deseas ${actionText} '@${username}'?`)) {
+    const actionText = currentlyBlocked ? 'reactivate access for' : 'temporarily suspend access for';
+    if (!window.confirm(`Are you sure you want to ${actionText} '@${username}'?`)) {
       return;
     }
 
@@ -215,13 +215,13 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Error al cambiar el estado de acceso.');
+        throw new Error(data.error || 'Error updating access status.');
       }
 
       setFeedback({ type: 'success', message: data.message });
       await fetchUsers(username);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Error al modificar el estado.' });
+      setFeedback({ type: 'error', message: err.message || 'Error updating access status.' });
     }
   };
 
@@ -247,7 +247,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
             </div>
             <div className="text-left">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h3 className="font-display font-bold text-base">Gestión de comerciales y accesos</h3>
+                <h3 className="font-display font-bold text-base">Sales Rep Management & Access</h3>
                 {dbStatus && (
                   <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${
                     dbStatus.mode === 'postgres' && dbStatus.connected
@@ -255,13 +255,13 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                       : 'bg-amber-950/80 text-amber-300 border-amber-700/60'
                   }`}>
                     {dbStatus.mode === 'postgres' && dbStatus.connected
-                      ? 'Base de datos conectada'
-                      : 'Almacenamiento local'}
+                      ? 'Database Connected'
+                      : 'Local Storage'}
                   </span>
                 )}
               </div>
               <p className="text-slate-400 text-xs mt-0.5">
-                Registra nuevos comerciales, consulta o actualiza sus contraseñas y revisa su actividad
+                Register new sales reps, view or reset passwords, and track team performance
               </p>
             </div>
           </div>
@@ -306,7 +306,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                 className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Volver a la lista de comerciales</span>
+                <span>Back to sales reps list</span>
               </button>
 
               {/* Profile & Credentials Card */}
@@ -320,27 +320,27 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                       <div className="flex items-center gap-2 flex-wrap">
                         <h2 className="text-lg font-display font-bold text-slate-900">{selectedUser.name}</h2>
                         <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">
-                          {selectedUser.role === 'admin' ? 'Supervisor' : 'Comercial'}
+                          {selectedUser.role === 'admin' ? 'Supervisor' : 'Sales Rep'}
                         </span>
                         {selectedUser.role !== 'admin' && (
                           selectedUser.blocked ? (
                             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 flex items-center gap-1">
-                              <Ban className="w-3 h-3" /> Acceso suspendido
+                              <Ban className="w-3 h-3" /> Access suspended
                             </span>
                           ) : (
                             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" /> Activo
+                              <CheckCircle2 className="w-3 h-3" /> Active
                             </span>
                           )
                         )}
                       </div>
-                      <p className="text-slate-500 text-xs mt-0.5">Usuario: @{selectedUser.username}</p>
+                      <p className="text-slate-500 text-xs mt-0.5">User: @{selectedUser.username}</p>
                     </div>
                   </div>
 
                   <div className="text-left sm:text-right text-xs text-slate-500">
-                    <span>Fecha de alta:</span>
-                    <p className="font-semibold text-slate-800 mt-0.5">{selectedUser.createdAt || 'Activo'}</p>
+                    <span>Registration date:</span>
+                    <p className="font-semibold text-slate-800 mt-0.5">{selectedUser.createdAt || 'Active'}</p>
                   </div>
                 </div>
 
@@ -349,27 +349,27 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
                       <Key className="w-4 h-4 text-amber-600" />
-                      <span>Credenciales de acceso</span>
+                      <span>Access Credentials</span>
                     </div>
                     <button
-                      onClick={() => copyToClipboard(`Usuario: ${selectedUser.username}\nContraseña: ${selectedUser.password}`, 'all')}
+                      onClick={() => copyToClipboard(`Username: ${selectedUser.username}\nPassword: ${selectedUser.password}`, 'all')}
                       className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       {copiedType === 'all' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copiedType === 'all' ? 'Copiado' : 'Copiar credenciales'}</span>
+                      <span>{copiedType === 'all' ? 'Copied' : 'Copy credentials'}</span>
                     </button>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-between border border-slate-200/80">
                       <div>
-                        <span className="text-[11px] font-medium text-slate-500 block">Usuario</span>
+                        <span className="text-[11px] font-medium text-slate-500 block">Username</span>
                         <span className="font-mono text-sm font-semibold text-slate-900 select-all">{selectedUser.username}</span>
                       </div>
                       <button
                         onClick={() => copyToClipboard(selectedUser.username, 'user')}
                         className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                        title="Copiar usuario"
+                        title="Copy username"
                       >
                         {copiedType === 'user' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                       </button>
@@ -377,7 +377,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
 
                     <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-between border border-slate-200/80">
                       <div className="flex-1 pr-2">
-                        <span className="text-[11px] font-medium text-slate-500 block">Contraseña</span>
+                        <span className="text-[11px] font-medium text-slate-500 block">Password</span>
                         <span className="font-mono text-sm font-semibold text-slate-900 select-all">
                           {showPasswordMap[selectedUser.username] ? selectedUser.password : '••••••••••••'}
                         </span>
@@ -386,14 +386,14 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                         <button
                           onClick={() => togglePasswordVisibility(selectedUser.username)}
                           className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                          title={showPasswordMap[selectedUser.username] ? 'Ocultar contraseña' : 'Ver contraseña'}
+                          title={showPasswordMap[selectedUser.username] ? 'Hide password' : 'Show password'}
                         >
                           {showPasswordMap[selectedUser.username] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                         <button
                           onClick={() => copyToClipboard(selectedUser.password, 'pass')}
                           className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                          title="Copiar contraseña"
+                          title="Copy password"
                         >
                           {copiedType === 'pass' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                         </button>
@@ -408,7 +408,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                           type="text"
                           value={newPasswordInput}
                           onChange={(e) => setNewPasswordInput(e.target.value)}
-                          placeholder="Escribe la nueva contraseña..."
+                          placeholder="Enter new password..."
                           className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-blue-600"
                         />
                         <button
@@ -416,7 +416,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                           disabled={changingPass}
                           className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-50"
                         >
-                          {changingPass ? 'Guardando...' : 'Guardar contraseña'}
+                          {changingPass ? 'Saving...' : 'Save password'}
                         </button>
                         <button
                           onClick={() => {
@@ -425,7 +425,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                           }}
                           className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-200 cursor-pointer"
                         >
-                          Cancelar
+                          Cancel
                         </button>
                       </div>
                     ) : (
@@ -437,7 +437,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                         className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1.5 cursor-pointer"
                       >
                         <Key className="w-3.5 h-3.5" />
-                        <span>Cambiar contraseña de este comercial</span>
+                        <span>Change password for this sales rep</span>
                       </button>
                     )}
                   </div>
@@ -447,26 +447,26 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
               {/* Metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-xl">
-                  <p className="text-xs font-medium text-slate-500">Prácticas realizadas</p>
+                  <p className="text-xs font-medium text-slate-500">Completed Practices</p>
                   <p className="text-xl font-display font-bold font-mono text-slate-900 mt-1">{selectedUser.callCount}</p>
                 </div>
 
                 <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-xl">
-                  <p className="text-xs font-medium text-slate-500">Promedio general</p>
+                  <p className="text-xs font-medium text-slate-500">Overall Average</p>
                   <p className="text-xl font-display font-bold font-mono text-slate-900 mt-1">
                     {selectedUser.avgScore} <span className="text-xs text-slate-400 font-sans font-normal">/ 100</span>
                   </p>
                 </div>
 
                 <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-xl">
-                  <p className="text-xs font-medium text-slate-500">Mejor puntuación</p>
+                  <p className="text-xs font-medium text-slate-500">Best Score</p>
                   <p className="text-xl font-display font-bold font-mono text-blue-600 mt-1">
                     {selectedUser.bestScore} <span className="text-xs text-slate-400 font-sans font-normal">/ 100</span>
                   </p>
                 </div>
 
                 <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-xl">
-                  <p className="text-xs font-medium text-slate-500">Aprobación (≥70)</p>
+                  <p className="text-xs font-medium text-slate-500">Pass Rate (≥70)</p>
                   <p className="text-xl font-display font-bold font-mono text-emerald-600 mt-1">{selectedUser.passRate}%</p>
                 </div>
               </div>
@@ -475,14 +475,14 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
               <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
                 <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                   <h4 className="font-display font-bold text-slate-900 text-xs sm:text-sm">
-                    Últimas sesiones de {selectedUser.name}
+                    Recent Sessions for {selectedUser.name}
                   </h4>
-                  <span className="text-xs text-slate-400">{selectedUser.recentCalls.length} mostradas</span>
+                  <span className="text-xs text-slate-400">{selectedUser.recentCalls.length} displayed</span>
                 </div>
 
                 {selectedUser.recentCalls.length === 0 ? (
                   <div className="p-8 text-center text-slate-400 text-xs">
-                    Este comercial aún no ha registrado prácticas.
+                    This sales rep has not completed any practice sessions yet.
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-100">
@@ -494,7 +494,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                           </div>
                           <div>
                             <p className="font-semibold text-slate-900 text-xs sm:text-sm">{call.companyName}</p>
-                            <p className="text-xs text-slate-500">Cliente: {call.contactName} · {call.date}</p>
+                            <p className="text-xs text-slate-500">Contact: {call.contactName} · {call.date}</p>
                           </div>
                         </div>
                         <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-full ${
@@ -525,12 +525,12 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                     {selectedUser.blocked ? (
                       <>
                         <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>Reactivar acceso</span>
+                        <span>Reactivate Access</span>
                       </>
                     ) : (
                       <>
                         <Ban className="w-4 h-4 text-amber-600" />
-                        <span>Suspender acceso</span>
+                        <span>Suspend Access</span>
                       </>
                     )}
                   </button>
@@ -540,7 +540,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                     className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-red-200"
                   >
                     <Trash2 className="w-4 h-4" />
-                    <span>Eliminar cuenta</span>
+                    <span>Delete Account</span>
                   </button>
                 </div>
               )}
@@ -549,8 +549,8 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h4 className="font-display font-bold text-slate-900 text-sm">Comerciales registrados</h4>
-                  <p className="text-xs text-slate-500">Selecciona un comercial para consultar su contraseña o ver sus llamadas.</p>
+                  <h4 className="font-display font-bold text-slate-900 text-sm">Registered Sales Reps</h4>
+                  <p className="text-xs text-slate-500">Select a sales rep to check credentials, view past calls, or manage access.</p>
                 </div>
 
                 <button
@@ -558,7 +558,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                   className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl font-display font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer self-start sm:self-auto"
                 >
                   <UserPlus className="w-4 h-4" />
-                  <span>{showCreateForm ? 'Cerrar formulario' : 'Registrar nuevo comercial'}</span>
+                  <span>{showCreateForm ? 'Close form' : 'Register new sales rep'}</span>
                 </button>
               </div>
 
@@ -566,7 +566,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                     <h4 className="font-display font-bold text-slate-900 text-sm">
-                      Nuevo comercial
+                      New Sales Rep
                     </h4>
                     <button onClick={() => setShowCreateForm(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                       <X className="w-4 h-4" />
@@ -576,13 +576,13 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                   <form onSubmit={handleCreateUser} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        Nombre completo
+                        Full name
                       </label>
                       <input
                         type="text"
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
-                        placeholder="Ej. Carlos Martínez"
+                        placeholder="e.g. Carlos Martinez"
                         className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 bg-white text-slate-900"
                         required
                       />
@@ -590,13 +590,13 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        Usuario
+                        Username
                       </label>
                       <input
                         type="text"
                         value={newUsername}
                         onChange={(e) => setNewUsername(e.target.value)}
-                        placeholder="Ej. carlosm"
+                        placeholder="e.g. carlosm"
                         className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 bg-white text-slate-900"
                         required
                       />
@@ -604,13 +604,13 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        Contraseña
+                        Password
                       </label>
                       <input
                         type="text"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Ej. Jyc2026*"
+                        placeholder="e.g. Jyc2026*"
                         className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 bg-white text-slate-900"
                         required
                       />
@@ -625,12 +625,12 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                         {creating ? (
                           <>
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span>Guardando...</span>
+                            <span>Saving...</span>
                           </>
                         ) : (
                           <>
                             <UserPlus className="w-3.5 h-3.5" />
-                            <span>Guardar comercial</span>
+                            <span>Save Sales Rep</span>
                           </>
                         )}
                       </button>
@@ -642,7 +642,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
               {loadingUsers ? (
                 <div className="py-12 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                  <span>Cargando comerciales...</span>
+                  <span>Loading sales reps...</span>
                 </div>
               ) : (
                 <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 bg-white">
@@ -665,21 +665,21 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                               @{u.username}
                             </span>
                             <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                              {u.role === 'admin' ? 'Supervisor' : 'Comercial'}
+                              {u.role === 'admin' ? 'Supervisor' : 'Sales Rep'}
                             </span>
                             {u.role !== 'admin' && u.blocked && (
                               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
-                                Suspendido
+                                Suspended
                               </span>
                             )}
                           </div>
 
                           <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
-                            <span>{u.callCount} {u.callCount === 1 ? 'práctica' : 'prácticas'}</span>
+                            <span>{u.callCount} {u.callCount === 1 ? 'practice' : 'practices'}</span>
                             {u.callCount > 0 && (
                               <>
                                 <span>·</span>
-                                <span>Promedio: <strong className="text-slate-700">{u.avgScore}/100</strong></span>
+                                <span>Average: <strong className="text-slate-700">{u.avgScore}/100</strong></span>
                               </>
                             )}
                           </div>
@@ -687,7 +687,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                       </div>
 
                       <div className="flex items-center gap-1 text-xs font-semibold text-blue-600 justify-end">
-                        <span>Ver detalles y clave</span>
+                        <span>View details & key</span>
                         <ChevronRight className="w-4 h-4" />
                       </div>
                     </div>
@@ -702,13 +702,13 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
         {/* Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center shrink-0">
           <span className="text-xs text-slate-500">
-            JYC Equipment · Gestión de equipo
+            JYC Equipment · Team Management
           </span>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
           >
-            Cerrar
+            Close
           </button>
         </div>
 

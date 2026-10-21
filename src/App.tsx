@@ -122,8 +122,8 @@ export default function App() {
     const newItem: HistoryItem = {
       id: options?.id || (Date.now().toString() + Math.random().toString().substring(2, 6)),
       userId: currentUser?.id || 'trainee_default',
-      userName: currentUser?.name || 'Comercial',
-      date: new Date().toLocaleDateString('es-ES', { 
+      userName: currentUser?.name || 'Sales Rep',
+      date: new Date().toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'short', 
         day: 'numeric',
@@ -192,7 +192,7 @@ export default function App() {
   };
 
   const currentModeInfo = MODES_LIST.find(m => m.id === mode);
-  const modeDescription = currentModeInfo?.description || 'Entrenamiento comercial para compra de maquinaria pesada';
+  const modeDescription = currentModeInfo?.description || 'Commercial training platform for heavy machinery acquisition';
 
   return (
     <div className="flex h-screen bg-[#F4F6F9] text-slate-900 font-sans overflow-hidden">
@@ -240,7 +240,7 @@ export default function App() {
             <Suspense fallback={
               <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#F4F6F9]">
                 <Loader2 className="w-7 h-7 animate-spin text-amber-500" />
-                <span className="text-xs font-medium text-slate-600">Preparando escenarios de llamada...</span>
+                <span className="text-xs font-medium text-slate-600">Preparing call scenarios...</span>
               </div>
             }>
               <LiveCall 
@@ -258,7 +258,7 @@ export default function App() {
             <Suspense fallback={
               <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#F4F6F9]">
                 <Loader2 className="w-7 h-7 animate-spin text-amber-500" />
-                <span className="text-xs font-medium text-slate-600">Cargando evaluación de grabaciones...</span>
+                <span className="text-xs font-medium text-slate-600">Loading recording evaluation...</span>
               </div>
             }>
               <RealCallAudit 
@@ -273,7 +273,7 @@ export default function App() {
             <Suspense fallback={
               <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#F4F6F9]">
                 <Loader2 className="w-7 h-7 animate-spin text-amber-500" />
-                <span className="text-xs font-medium text-slate-600">Cargando historial de sesiones...</span>
+                <span className="text-xs font-medium text-slate-600">Loading session history...</span>
               </div>
             }>
               <HistoryDashboard 

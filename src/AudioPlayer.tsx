@@ -160,7 +160,7 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
     if (!blobUrl) return;
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = `grabacion_jyc_${title ? title.replace(/\s+/g, '_') : 'llamada'}.mp3`;
+    a.download = `jyc_recording_${title ? title.replace(/\s+/g, '_') : 'call'}.mp3`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -197,10 +197,10 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
           </div>
           <div className="min-w-0">
             <h4 className="text-xs sm:text-sm font-display font-bold text-white truncate">
-              {title || 'Grabación de la llamada'}
+              {title || 'Call Audio Recording'}
             </h4>
             <p className="text-xs text-slate-400 truncate">
-              {subtitle || 'Reproduce la conversación completa'}
+              {subtitle || 'Listen to the complete audio'}
             </p>
           </div>
         </div>
@@ -211,7 +211,7 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
             onClick={togglePlay}
             disabled={!blobUrl}
             className="w-9 h-9 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center justify-center shrink-0 transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
-            title={isPlaying ? "Pausar" : "Reproducir"}
+            title={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
           </button>
@@ -240,7 +240,7 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
           <button
             onClick={handleSpeedToggle}
             className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition-colors cursor-pointer"
-            title="Velocidad de reproducción"
+            title="Playback speed"
           >
             {playbackRate}x
           </button>
@@ -249,7 +249,7 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
             <button
               onClick={toggleMute}
               className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
-              title={isMuted ? "Activar sonido" : "Silenciar"}
+              title={isMuted ? "Unmute" : "Mute"}
             >
               {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
@@ -267,7 +267,7 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
           <button
             onClick={handleDownload}
             className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-            title="Descargar audio"
+            title="Download audio"
           >
             <Download className="w-4 h-4" />
           </button>

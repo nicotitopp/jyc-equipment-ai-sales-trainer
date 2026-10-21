@@ -30,10 +30,10 @@ interface ScenarioConfig {
 const SCENARIOS: ScenarioConfig[] = [
   {
     id: 'concrete',
-    title: 'Concreto y canteras',
-    machinery: 'Cargadores frontales CAT (988, 966) y montacargas pesados',
-    context: 'Planta de agregados y prefabricados con renovación periódica de flota pesada.',
-    objective: 'Superar recepción, contactar al jefe de planta y calificar cargadores o montacargas disponibles.',
+    title: 'Concrete & Quarries',
+    machinery: 'CAT Wheel Loaders (988, 966) and heavy forklifts',
+    context: 'Aggregates and precast plant with periodic heavy fleet renewal.',
+    objective: 'Bypass reception, reach plant manager, and qualify surplus loaders or heavy forklifts.',
     defaults: {
       English: { company: 'Northern Quarries', contact: 'Charles', roleTitle: 'Plant Manager' },
       Spanish: { company: 'Canteras del Norte', contact: 'Carlos', roleTitle: 'Jefe de Planta' }
@@ -41,10 +41,10 @@ const SCENARIOS: ScenarioConfig[] = [
   },
   {
     id: 'plastic',
-    title: 'Plásticos e inyección',
-    machinery: 'Inyectoras de 500 a 2,000 Toneladas, extrusoras y chillers',
-    context: 'Fábrica de moldeo plástico actualizando líneas de inyección de gran tonelaje.',
-    objective: 'Contactar al gerente de operaciones, destacar que JYC cubre el desmontaje (rigging) y calificar unidades.',
+    title: 'Plastics & Injection Molding',
+    machinery: '500 to 2,000 Ton injection molders, extruders, and chillers',
+    context: 'Plastic molding plant upgrading large-tonnage injection lines.',
+    objective: 'Reach operations director, highlight JYC covers full turnkey rigging/removal, and qualify available units.',
     defaults: {
       English: { company: 'Matrix Plastics', contact: 'Sophie', roleTitle: 'Operations Director' },
       Spanish: { company: 'Plásticos y Polímeros', contact: 'Sofía', roleTitle: 'Directora de Operaciones' }
@@ -52,10 +52,10 @@ const SCENARIOS: ScenarioConfig[] = [
   },
   {
     id: 'ports',
-    title: 'Puertos y terminales',
-    machinery: 'Reach Stackers 45T, manipuladores de contenedores y tractores de patio',
-    context: 'Terminal marítima e intermodal con rotación de equipo de maniobra.',
-    objective: 'Comunicar con mantenimiento de flota y calificar Reach Stackers (Kalmar, Konecranes, Taylor, Hyster).',
+    title: 'Ports & Terminals',
+    machinery: '45T Reach Stackers, container handlers, and yard spotters',
+    context: 'Maritime and intermodal terminal rotating container handling equipment.',
+    objective: 'Reach fleet maintenance and qualify surplus Reach Stackers (Kalmar, Konecranes, Taylor, Hyster).',
     defaults: {
       English: { company: 'Pacific Port Terminals', contact: 'Frank', roleTitle: 'Fleet Manager' },
       Spanish: { company: 'Terminal Portuaria del Pacífico', contact: 'Francisco', roleTitle: 'Jefe de Flota' }
@@ -63,10 +63,10 @@ const SCENARIOS: ScenarioConfig[] = [
   },
   {
     id: 'metal',
-    title: 'Siderúrgica y acero',
-    machinery: 'Montacargas de 30,000 a 90,000 lbs y manejo de bobinas',
-    context: 'Planta procesadora de acero y tubería industrial con equipos de alto tonelaje.',
-    objective: 'Contactar al responsable de maquinaria y detectar montacargas pesados excedentes.',
+    title: 'Steel & Metal Processing',
+    machinery: '30,000 to 90,000 lbs heavy forklifts and coil handlers',
+    context: 'Steel tubing and metal processing facility operating heavy lifting machinery.',
+    objective: 'Reach equipment or plant manager to detect surplus heavy-duty forklifts.',
     defaults: {
       English: { company: 'Apex Steel Tubing', contact: 'Edward', roleTitle: 'Maintenance Manager' },
       Spanish: { company: 'Aceros Industriales', contact: 'Eduardo', roleTitle: 'Jefe de Mantenimiento' }
@@ -74,10 +74,10 @@ const SCENARIOS: ScenarioConfig[] = [
   },
   {
     id: 'sand_gravel',
-    title: 'Áridos, arena y grava',
-    machinery: 'Cargadores de ruedas, excavadoras y camiones articulados',
-    context: 'Operación de extracción de áridos con maquinaria de alto horómetro.',
-    objective: 'Identificar unidades fuera de uso o por renovar y acordar el envío de fotos y placa de datos.',
+    title: 'Sand & Gravel Aggregates',
+    machinery: 'Wheel loaders, excavators, and articulated dump trucks',
+    context: 'Sand and aggregate extraction site running high-hour machinery.',
+    objective: 'Identify offline units or machines up for renewal; arrange data plate and equipment photos.',
     defaults: {
       English: { company: 'Pioneer Sand & Gravel', contact: 'Tyler', roleTitle: 'Site Operations Lead' },
       Spanish: { company: 'Áridos y Gravas del Norte', contact: 'Mateo', roleTitle: 'Encargado de Operaciones' }
@@ -85,10 +85,10 @@ const SCENARIOS: ScenarioConfig[] = [
   },
   {
     id: 'lumber',
-    title: 'Aserraderos y madereras',
-    machinery: 'Cargadores forestales y montacargas industriales de patio',
-    context: 'Planta maderera con patio de maniobras y líneas de aserrío.',
-    objective: 'Calificar maquinaria disponible hoy o perfilar la cuenta con las 6 preguntas de futura referencia.',
+    title: 'Lumber & Sawmills',
+    machinery: 'Forestry loaders and heavy yard forklifts',
+    context: 'Lumber mill with active logistics yard and sawing lines.',
+    objective: 'Qualify machinery available today or profile account using the 6 future reference questions.',
     defaults: {
       English: { company: 'Timberlands Sawmill', contact: 'Robert', roleTitle: 'Yard Superintendent' },
       Spanish: { company: 'Maderas del Bosque', contact: 'Roberto', roleTitle: 'Superintendente de Planta' }
@@ -96,10 +96,10 @@ const SCENARIOS: ScenarioConfig[] = [
   },
   {
     id: 'medical',
-    title: 'Imagen médica (JYC Medical)',
-    machinery: 'Resonadores MRI (1.5T y 3.0T), tomógrafos CT y PET/CT',
-    context: 'Red hospitalaria o centro diagnóstico programando reemplazo de equipos de imagen.',
-    objective: 'Contactar al director de radiología, ofrecer desinstalación criogénica completa y calificar el sistema.',
+    title: 'Medical Imaging (JYC Medical)',
+    machinery: 'MRI Scanners (1.5T & 3.0T), CT and PET/CT scanners',
+    context: 'Hospital network or diagnostic imaging center scheduling scanner replacement.',
+    objective: 'Reach imaging director, offer complete cryogenic ramp-down & de-installation, and qualify system.',
     defaults: {
       English: { company: 'BioPharma Diagnostics', contact: 'Sarah', roleTitle: 'Imaging Director' },
       Spanish: { company: 'Centro Diagnóstico Nacional', contact: 'Elena', roleTitle: 'Directora de Imagenología' }
@@ -188,7 +188,7 @@ const ElevenLabsCallView = ({
     },
     onError: (err: any) => {
       console.error("ElevenLabs conversation error:", err);
-      setConnectionError(typeof err === 'string' ? err : (err?.message || "Se interrumpió la conexión de voz. Verifica tu micrófono e inténtalo de nuevo."));
+      setConnectionError(typeof err === 'string' ? err : (err?.message || "Voice connection was interrupted. Please check your microphone and try again."));
     }
   });
 
@@ -326,7 +326,7 @@ const ElevenLabsCallView = ({
       await conversation.startSession(sessionConfig);
     } catch (err: any) {
       console.error("Start call error:", err);
-      setConnectionError(err.message || 'Verifica tu conexión a internet y los permisos de tu micrófono.');
+      setConnectionError(err.message || 'Please check your internet connection and microphone permissions.');
     }
   };
 
@@ -420,16 +420,16 @@ Difficulty setting: ${difficulty}
 Dialogue Transcript:
 ${dialogueText}
 
-Please write all output critique fields (summary, strengths, weaknesses, objections feedback, recommendations) in Spanish.
+Please write all output critique fields (summary, strengths, weaknesses, objections feedback, recommendations) in English.
 
 Output strictly valid JSON with this exact schema:
 {
   "score": number, // 0 to 100
   "contactName": "${contactName}",
   "companyName": "${companyName}",
-  "summary": "Resumen ejecutivo en español...",
-  "strengths": ["Fortaleza 1", "Fortaleza 2"],
-  "weaknesses": ["Área a mejorar 1", "Área a mejorar 2"],
+  "summary": "Executive summary in English...",
+  "strengths": ["Strength 1", "Strength 2"],
+  "weaknesses": ["Improvement area 1", "Improvement area 2"],
   "checklist": {
     "gatekeeperBypass": boolean,
     "kpOpening": boolean,
@@ -440,9 +440,9 @@ Output strictly valid JSON with this exact schema:
     "nextStepsSecure": boolean
   },
   "objectionsHandled": [
-    { "objection": "Nombre de la objeción", "handledWell": boolean, "feedback": "Retroalimentación" }
+    { "objection": "Objection name", "handledWell": boolean, "feedback": "Constructive feedback" }
   ],
-  "recommendations": ["Recomendación 1", "Recomendación 2"]
+  "recommendations": ["Recommendation 1", "Recommendation 2"]
 }`;
 
       let response;
@@ -469,7 +469,7 @@ Output strictly valid JSON with this exact schema:
         }
       }
 
-      if (!response) throw lastErr || new Error("Fallo de comunicación con el evaluador.");
+      if (!response) throw lastErr || new Error("Failed to communicate with evaluation service.");
       const data = await response.json();
       const text = data.text;
 
@@ -483,7 +483,7 @@ Output strictly valid JSON with this exact schema:
         if (start !== -1 && end !== -1) {
           parsedData = JSON.parse(text.substring(start, end + 1));
         } else {
-          throw new Error("Respuesta inválida del evaluador");
+          throw new Error("Invalid evaluator response format");
         }
       }
 
@@ -514,7 +514,7 @@ Output strictly valid JSON with this exact schema:
       console.error("Evaluation error:", err);
       setEvaluation({
         score: 0,
-        summary: "No fue posible generar la evaluación automática: " + err.message,
+        summary: "Could not generate automatic evaluation: " + err.message,
         strengths: [],
         weaknesses: [err.message],
         checklist: {
@@ -527,7 +527,7 @@ Output strictly valid JSON with this exact schema:
           nextStepsSecure: false
         },
         objectionsHandled: [],
-        recommendations: ["Verifica tu conexión e intenta repetir la llamada."]
+        recommendations: ["Check your connection and try repeating the call."]
       });
     } finally {
       setEvaluating(false);
@@ -545,10 +545,10 @@ Output strictly valid JSON with this exact schema:
             </div>
             <div className="space-y-1.5">
               <h3 className="text-lg font-display font-bold text-slate-900">
-                Analizando tu conversación
+                Analyzing your conversation
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
-                Revisando el filtro con recepción, la apertura con {contactName}, las preguntas de calificación y el manejo de objeciones.
+                Reviewing gatekeeper bypass, opening with {contactName}, qualification questions, and objection handling.
               </p>
             </div>
           </div>
@@ -596,7 +596,7 @@ Output strictly valid JSON with this exact schema:
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
-                    <span className="text-slate-400">Objetivo:</span> {activeScenario.objective}
+                    <span className="text-slate-400">Objective:</span> {activeScenario.objective}
                   </p>
                 </div>
               </div>
@@ -606,7 +606,7 @@ Output strictly valid JSON with this exact schema:
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/90 border border-slate-700">
                   <span className={`w-2 h-2 rounded-full ${isConnecting ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
                   <span className="text-xs font-medium text-slate-200">
-                    {isConnecting ? 'Conectando...' : 'En llamada'}
+                    {isConnecting ? 'Connecting...' : 'In call'}
                   </span>
                   {isConnected && (
                     <span className="text-xs font-mono font-semibold text-white pl-1 border-l border-slate-700">
@@ -626,10 +626,10 @@ Output strictly valid JSON with this exact schema:
                   </div>
                   <div>
                     <p className="text-base font-display font-semibold text-white">
-                      Llamando a {companyName}...
+                      Calling {companyName}...
                     </p>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Prepárate para saludar a recepción cuando contesten
+                      Get ready to greet reception when they answer
                     </p>
                   </div>
                 </div>
@@ -644,10 +644,10 @@ Output strictly valid JSON with this exact schema:
                   </div>
                   <div>
                     <p className="text-base font-display font-semibold text-amber-300">
-                      {contactName} está hablando
+                      {contactName} is speaking
                     </p>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Escucha con atención para responder o calificar el equipo
+                      Listen closely to respond or qualify the equipment
                     </p>
                   </div>
                 </div>
@@ -658,10 +658,10 @@ Output strictly valid JSON with this exact schema:
                   </div>
                   <div>
                     <p className="text-base font-display font-semibold text-red-300">
-                      Tu micrófono está silenciado
+                      Your microphone is muted
                     </p>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Reactiva el micrófono abajo para continuar hablando
+                      Unmute below to continue speaking
                     </p>
                   </div>
                 </div>
@@ -673,10 +673,10 @@ Output strictly valid JSON with this exact schema:
                   </div>
                   <div>
                     <p className="text-base font-display font-semibold text-emerald-300">
-                      Tu turno de hablar — El cliente te escucha
+                      Your turn to speak — Prospect is listening
                     </p>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Habla con naturalidad hacia tu micrófono ({language === 'English' ? 'en inglés' : 'en español'})
+                      Speak naturally into your microphone ({language === 'English' ? 'in English' : 'in Spanish'})
                     </p>
                   </div>
                 </div>
@@ -699,12 +699,12 @@ Output strictly valid JSON with this exact schema:
                   {conversation.isMuted ? (
                     <>
                       <MicOff className="w-4 h-4 text-red-400" />
-                      <span>Activar micrófono</span>
+                      <span>Unmute microphone</span>
                     </>
                   ) : (
                     <>
                       <Mic className="w-4 h-4 text-emerald-400" />
-                      <span>Silenciar micrófono</span>
+                      <span>Mute microphone</span>
                     </>
                   )}
                 </button>
@@ -719,7 +719,7 @@ Output strictly valid JSON with this exact schema:
                   }`}
                 >
                   <BookOpen className="w-4 h-4" />
-                  <span>{showScriptHelper ? 'Ocultar guion de apoyo' : 'Ver guion de apoyo'}</span>
+                  <span>{showScriptHelper ? 'Hide script helper' : 'View script helper'}</span>
                 </button>
               </div>
 
@@ -729,7 +729,7 @@ Output strictly valid JSON with this exact schema:
                 className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-xs flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
               >
                 <PhoneOff className="w-4 h-4" />
-                <span>Finalizar y evaluar llamada</span>
+                <span>End & evaluate call</span>
               </button>
             </div>
           </div>
@@ -738,17 +738,17 @@ Output strictly valid JSON with this exact schema:
           <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col min-h-0 overflow-hidden">
             <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0">
               <span className="text-xs font-semibold text-slate-700">
-                Transcripción en vivo
+                Live transcript
               </span>
               <span className="text-xs text-slate-400">
-                {transcripts.length} {transcripts.length === 1 ? 'intervención' : 'intervenciones'}
+                {transcripts.length} {transcripts.length === 1 ? 'turn' : 'turns'}
               </span>
             </div>
 
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-3">
               {transcripts.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center py-8 text-slate-400 text-xs">
-                  <p>La transcripción aparecerá aquí a medida que converses con {contactName}.</p>
+                  <p>The transcript will appear here as you speak with {contactName}.</p>
                 </div>
               ) : (
                 transcripts.map((msg) => {
@@ -763,7 +763,7 @@ Output strictly valid JSON with this exact schema:
                         <div className={`text-[11px] font-semibold mb-0.5 ${
                           isTrainee ? 'text-blue-100' : 'text-slate-500'
                         }`}>
-                          {isTrainee ? 'Tú (Comercial)' : contactName}
+                          {isTrainee ? 'You (Sales Rep)' : contactName}
                         </div>
                         <div>{msg.text}</div>
                       </div>
@@ -782,7 +782,7 @@ Output strictly valid JSON with this exact schema:
             <div className="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-amber-600" />
-                <h3 className="text-sm font-display font-bold text-slate-900">Guion de apoyo rápido</h3>
+                <h3 className="text-sm font-display font-bold text-slate-900">Quick Reference Guide</h3>
               </div>
               <button
                 onClick={() => setShowScriptHelper(false)}
@@ -794,9 +794,9 @@ Output strictly valid JSON with this exact schema:
 
             <div className="flex border-b border-slate-200 px-3 pt-2 gap-1 bg-slate-50">
               {[
-                { id: 'opening', label: '1. Apertura' },
-                { id: 'qualify', label: '2. Calificación (7)' },
-                { id: 'objections', label: '3. Objeciones' },
+                { id: 'opening', label: '1. Opening' },
+                { id: 'qualify', label: '2. Qualify (7)' },
+                { id: 'objections', label: '3. Objections' },
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -816,19 +816,19 @@ Output strictly valid JSON with this exact schema:
               {scriptHelperTab === 'opening' && (
                 <div className="space-y-4">
                   <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                    <div className="font-semibold text-slate-900">Paso 1: Superar recepción (Gatekeeper)</div>
+                    <div className="font-semibold text-slate-900">Step 1: Bypass Reception (Gatekeeper)</div>
                     <p className="italic text-slate-800">
                       {language === 'English'
                         ? `"Good morning, could you please transfer me to the person in charge of plant operations or the used machinery?"`
                         : `"Buenos días, ¿me podría comunicar con el encargado de planta, operaciones o la maquinaria usada?"`}
                     </p>
                     <p className="text-[11px] text-amber-800 bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-200/70">
-                      Pide siempre por el <strong>Jefe de Planta u Operaciones</strong> para evitar que te transfieran al área de ventas.
+                      Always ask for the <strong>Plant or Operations Manager</strong> so reception avoids transferring you to sales.
                     </p>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                    <div className="font-semibold text-slate-900">Paso 2: Apertura con {contactName}</div>
+                    <div className="font-semibold text-slate-900">Step 2: Opening with {contactName}</div>
                     <p className="italic text-slate-800">
                       {language === 'English'
                         ? `"Hi ${contactName}, this is ${currentUser?.name || 'Alex'} with JYC Equipment. Did I catch you at a bad time? ... We are nationwide buyers of used industrial machinery. Do you have any surplus units for sale right now or coming up this year?"`
@@ -840,16 +840,16 @@ Output strictly valid JSON with this exact schema:
 
               {scriptHelperTab === 'qualify' && (
                 <div className="space-y-2.5">
-                  <p className="text-slate-600">Formula estas 7 preguntas en orden cuando confirmen que tienen un equipo:</p>
+                  <p className="text-slate-600">Ask these 7 questions in order when they confirm having machinery:</p>
                   <ol className="space-y-2">
                     {[
-                      '1. Tipo de equipo (inyectora, cargador, montacargas, reach stacker).',
-                      '2. Modelo exacto.',
-                      '3. Marca / fabricante (CAT, Kalmar, Krauss Maffei, Taylor...).',
-                      '4. Capacidad o tonelaje (ej. 500T, 45T, 30,000 lbs).',
-                      '5. Año de fabricación y horas aproximadas.',
-                      '6. Estado actual (¿está operando o requiere reparaciones?).',
-                      '7. Precio esperado y envío de fotos (incluyendo placa de datos y horómetro).'
+                      '1. Equipment type (injection molder, loader, forklift, reach stacker).',
+                      '2. Exact model.',
+                      '3. Make / manufacturer (CAT, Kalmar, Krauss Maffei, Taylor...).',
+                      '4. Capacity or tonnage (e.g. 500T, 45T, 30,000 lbs).',
+                      '5. Year of manufacture and approximate hours.',
+                      '6. Current condition (is it running or does it require repairs?).',
+                      '7. Expected price and photo request (including data plate and hour meter).'
                     ].map((q, i) => (
                       <li key={i} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 font-medium text-slate-800">
                         {q}
@@ -862,21 +862,21 @@ Output strictly valid JSON with this exact schema:
               {scriptHelperTab === 'objections' && (
                 <div className="space-y-3">
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                    <div className="font-semibold text-slate-900">"Dime cuánto me ofreces primero"</div>
+                    <div className="font-semibold text-slate-900">"Tell me what you offer first"</div>
                     <p className="text-slate-600">
-                      Explica que para no hacerle perder tiempo necesitas conocer marca, modelo, año y condición antes de presentar una oferta formal.
+                      Explain that to avoid wasting their time, you need the exact make, model, year, and condition before preparing a formal cash offer.
                     </p>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                    <div className="font-semibold text-slate-900">"Todo lo mandamos a subasta"</div>
+                    <div className="font-semibold text-slate-900">"We send everything to auction"</div>
                     <p className="text-slate-600">
-                      Recuérdale que las subastas cobran del 10% al 15% de comisión y flete. JYC paga en 24 horas sin comisión y se encarga de todo el desmontaje (rigging) y transporte.
+                      Remind them auctions charge 10% to 15% in seller commissions and freight. JYC pays within 24 hours, zero commissions, and handles all rigging/removal and transport.
                     </p>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                    <div className="font-semibold text-slate-900">"No tenemos nada en venta hoy"</div>
+                    <div className="font-semibold text-slate-900">"We don't have anything for sale today"</div>
                     <p className="text-slate-600">
-                      Haz las preguntas de referencia: cómo manejan sus bajas de equipo, si compran maquinaria usada y en cuántos meses (3, 6 o 12) conviene volver a llamar.
+                      Ask future reference questions: how do they handle surplus machines, do they buy used equipment, and when (3, 6, or 12 months) would be best to check back.
                     </p>
                   </div>
                 </div>
@@ -899,10 +899,10 @@ Output strictly valid JSON with this exact schema:
         <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1">
             <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-900 tracking-tight">
-              Hola{currentUser?.name ? `, ${currentUser.name.split(' ')[0]}` : ''}. ¿Qué llamada quieres practicar hoy?
+              Hello{currentUser?.name ? `, ${currentUser.name.split(' ')[0]}` : ''}. What call would you like to practice today?
             </h2>
             <p className="text-sm text-slate-600 max-w-2xl">
-              Elige un escenario industrial, revisa el objetivo con el cliente y comienza una conversación por voz para entrenar tu apertura, calificación y manejo de objeciones.
+              Select an industrial scenario, review customer objectives, and launch a voice call to practice your opening, equipment qualification, and objection handling.
             </p>
           </div>
 
@@ -915,14 +915,14 @@ Output strictly valid JSON with this exact schema:
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   <BookOpen className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Guiones y asesor</span>
+                  <span>Coach & Scripts</span>
                 </button>
                 <button
                   onClick={() => onNavigate('Real Call Audit')}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   <UploadCloud className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Evaluar grabación</span>
+                  <span>Audit Recording</span>
                 </button>
                 <button
                   onClick={() => onNavigate('History')}
@@ -930,7 +930,7 @@ Output strictly valid JSON with this exact schema:
                 >
                   <History className="w-3.5 h-3.5 text-slate-600" />
                   <span>
-                    {lastPractice ? `Historial (Última: ${lastPractice.score}/100)` : 'Historial de sesiones'}
+                    {lastPractice ? `History (Last: ${lastPractice.score}/100)` : 'Session History'}
                   </span>
                 </button>
               </>
@@ -957,10 +957,10 @@ Output strictly valid JSON with this exact schema:
           <div className="lg:col-span-7 space-y-3">
             <div className="flex items-center justify-between px-1">
               <h3 className="text-sm font-display font-bold text-slate-800">
-                1. Selecciona el escenario industrial
+                1. Select Target Industrial Scenario
               </h3>
               <span className="text-xs text-slate-500">
-                {SCENARIOS.length} sectores disponibles
+                {SCENARIOS.length} sectors available
               </span>
             </div>
 
@@ -987,7 +987,7 @@ Output strictly valid JSON with this exact schema:
                         </span>
                         {isSelected && (
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800">
-                            Seleccionado
+                            Selected
                           </span>
                         )}
                       </div>
@@ -1000,7 +1000,7 @@ Output strictly valid JSON with this exact schema:
                     </div>
 
                     <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                      <span>Cliente: <strong className="text-slate-700">{contactInfo.contact}</strong> ({contactInfo.company})</span>
+                      <span>Customer: <strong className="text-slate-700">{contactInfo.contact}</strong> ({contactInfo.company})</span>
                     </div>
                   </button>
                 );
@@ -1016,7 +1016,7 @@ Output strictly valid JSON with this exact schema:
               <div className="bg-[#0F172A] text-white p-5 sm:p-6 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-amber-400">
-                    2. Prepara e inicia tu llamada
+                    2. Prepare & Launch Call
                   </span>
                   <span className="text-xs text-slate-400">
                     {activeScenario.title}
@@ -1028,12 +1028,12 @@ Output strictly valid JSON with this exact schema:
                     {companyName}
                   </h3>
                   <p className="text-xs text-slate-300 mt-0.5">
-                    Interlocutor objetivo: <strong>{contactName}</strong> ({activeScenario.defaults[language].roleTitle})
+                    Target Contact: <strong>{contactName}</strong> ({activeScenario.defaults[language].roleTitle})
                   </p>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs text-slate-200 leading-relaxed">
-                  <span className="font-semibold text-amber-300 block mb-0.5">Objetivo de esta práctica:</span>
+                  <span className="font-semibold text-amber-300 block mb-0.5">Practice Objective:</span>
                   {activeScenario.objective}
                 </div>
               </div>
@@ -1045,7 +1045,7 @@ Output strictly valid JSON with this exact schema:
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Idioma de la llamada
+                      Call Language
                     </label>
                     <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl">
                       <button
@@ -1057,7 +1057,7 @@ Output strictly valid JSON with this exact schema:
                             : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
-                        Inglés
+                        English
                       </button>
                       <button
                         type="button"
@@ -1068,20 +1068,20 @@ Output strictly valid JSON with this exact schema:
                             : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
-                        Español
+                        Spanish
                       </button>
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Actitud del cliente
+                      Prospect Demeanor
                     </label>
                     <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-xl">
                       {[
-                        { id: 'friendly', label: 'Receptivo' },
-                        { id: 'challenging', label: 'Ocupado' },
-                        { id: 'hardcore', label: 'Difícil' }
+                        { id: 'friendly', label: 'Receptive' },
+                        { id: 'challenging', label: 'Busy' },
+                        { id: 'hardcore', label: 'Tough' }
                       ].map((lvl) => (
                         <button
                           key={lvl.id}
@@ -1104,7 +1104,7 @@ Output strictly valid JSON with this exact schema:
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1">
-                      Empresa del cliente
+                      Customer Company
                     </label>
                     <input
                       type="text"
@@ -1115,7 +1115,7 @@ Output strictly valid JSON with this exact schema:
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1">
-                      Nombre del responsable
+                      Target Contact Name
                     </label>
                     <input
                       type="text"
@@ -1131,8 +1131,8 @@ Output strictly valid JSON with this exact schema:
                   <div className="flex items-center gap-2.5">
                     <ShieldCheck className={`w-4 h-4 ${noiseSuppressionEnabled ? 'text-blue-600' : 'text-slate-400'}`} />
                     <div>
-                      <span className="text-xs font-semibold text-slate-800 block">Reducción de ruido ambiental</span>
-                      <span className="text-[11px] text-slate-500 block">Filtra ruidos de oficina en tu micrófono</span>
+                      <span className="text-xs font-semibold text-slate-800 block">Background Noise Suppression</span>
+                      <span className="text-[11px] text-slate-500 block">Filters office and background noises on your microphone</span>
                     </div>
                   </div>
                   <button
@@ -1158,11 +1158,11 @@ Output strictly valid JSON with this exact schema:
                     className="w-full py-3.5 px-5 bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-slate-950 font-display font-bold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer"
                   >
                     <PhoneCall className="w-4 h-4 fill-current" />
-                    <span>Iniciar llamada de práctica</span>
+                    <span>Start Practice Call</span>
                   </button>
 
                   <p className="text-[11px] text-center text-slate-500">
-                    Al finalizar la conversación recibirás una evaluación detallada con recomendaciones.
+                    Upon ending the conversation, you will receive a detailed performance evaluation with recommendations.
                   </p>
                 </div>
 

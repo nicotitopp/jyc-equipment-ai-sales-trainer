@@ -32,7 +32,7 @@ export default function HistoryDashboard({
   const traineesList = useMemo(() => {
     const map = new Map<string, { name: string; count: number; totalScore: number }>();
     for (const item of history) {
-      const name = item.userName || 'Comercial';
+      const name = item.userName || 'Sales Rep';
       const existing = map.get(name) || { name, count: 0, totalScore: 0 };
       existing.count += 1;
       existing.totalScore += (item.score || 0);
@@ -49,7 +49,7 @@ export default function HistoryDashboard({
     if (!isAdmin || selectedTraineeFilter === 'ALL') {
       return history;
     }
-    return history.filter(item => (item.userName || 'Comercial') === selectedTraineeFilter);
+    return history.filter(item => (item.userName || 'Sales Rep') === selectedTraineeFilter);
   }, [history, isAdmin, selectedTraineeFilter]);
 
   if (selectedItem) {
@@ -60,7 +60,7 @@ export default function HistoryDashboard({
             onClick={() => setSelectedItem(null)}
             className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200/80 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            ← Volver al historial
+            ← Back to history
           </button>
           <div className="flex items-center gap-2">
             {selectedItem.userName && (
@@ -69,7 +69,7 @@ export default function HistoryDashboard({
               </span>
             )}
             <span className="text-xs text-slate-500 hidden sm:inline">
-              {selectedItem.type === 'Live Call' ? 'Práctica simulada' : 'Grabación evaluada'} · {selectedItem.date}
+              {selectedItem.type === 'Live Call' ? 'Simulated practice' : 'Audited recording'} · {selectedItem.date}
             </span>
           </div>
         </div>
@@ -97,14 +97,14 @@ export default function HistoryDashboard({
   const chartItems = [...filteredHistory].slice(-10);
 
   const handleClear = () => {
-    if (window.confirm("¿Deseas borrar permanentemente el historial de llamadas?")) {
+    if (window.confirm("Do you want to permanently delete call history?")) {
       onClearHistory();
     }
   };
 
   const handleDeleteItem = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (window.confirm("¿Eliminar este registro de llamada?")) {
+    if (window.confirm("Delete this call record?")) {
       onDeleteHistoryItem?.(id);
     }
   };
@@ -118,22 +118,22 @@ export default function HistoryDashboard({
           <div className="flex items-center gap-2 mb-1">
             {isAdmin ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-semibold">
-                <Shield className="w-3 h-3" /> Supervisión de equipo
+                <Shield className="w-3 h-3" /> Team Supervision
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
-                <User className="w-3 h-3" /> Mi progreso
+                <User className="w-3 h-3" /> My Progress
               </span>
             )}
           </div>
 
           <h2 className="text-xl font-display font-bold text-slate-900 tracking-tight">
-            {isAdmin ? 'Seguimiento del equipo comercial' : 'Mis prácticas y evaluaciones'}
+            {isAdmin ? 'Commercial Team Performance Tracking' : 'My Practices & Evaluations'}
           </h2>
           <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
             {isAdmin 
-              ? 'Consulta las prácticas realizadas por cada comercial, escucha sus grabaciones y gestiona sus cuentas.'
-              : 'Revisa tus llamadas anteriores, escucha las grabaciones y consulta tus recomendaciones.'}
+              ? 'Review practice calls conducted by each sales rep, listen to audio recordings, and manage user accounts.'
+              : 'Review your past calls, listen to audio recordings, and check your improvement recommendations.'}
           </p>
         </div>
 
@@ -144,7 +144,7 @@ export default function HistoryDashboard({
               className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-xs transition-colors cursor-pointer shadow-xs"
             >
               <Users className="w-4 h-4 text-amber-400" />
-              <span>Gestionar comerciales</span>
+              <span>Manage Sales Reps</span>
             </button>
             {totalCalls > 0 && (
               <button
@@ -152,7 +152,7 @@ export default function HistoryDashboard({
                 className="flex items-center gap-1.5 px-3.5 py-2.5 bg-white hover:bg-red-50 text-slate-600 hover:text-red-700 rounded-xl font-semibold text-xs border border-slate-200 hover:border-red-200 transition-colors cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Limpiar historial</span>
+                <span>Clear History</span>
               </button>
             )}
           </div>
@@ -164,7 +164,7 @@ export default function HistoryDashboard({
         <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
             <Filter className="w-3.5 h-3.5 text-slate-500" />
-            <span>Filtrar por comercial:</span>
+            <span>Filter by sales rep:</span>
           </div>
 
           <div className="flex flex-wrap gap-1.5">
@@ -176,7 +176,7 @@ export default function HistoryDashboard({
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
               }`}
             >
-              Todos ({history.length})
+              All ({history.length})
             </button>
             {traineesList.map(t => (
               <button
@@ -205,9 +205,9 @@ export default function HistoryDashboard({
         <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs space-y-3.5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h3 className="font-display font-bold text-slate-900 text-sm">
-              Resumen por comercial
+              Sales Rep Overview
             </h3>
-            <span className="text-xs text-slate-500">{traineesList.length} comerciales activos</span>
+            <span className="text-xs text-slate-500">{traineesList.length} active reps</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -222,7 +222,7 @@ export default function HistoryDashboard({
                     <h4 className="font-display font-bold text-slate-900 text-sm truncate">
                       {trainee.name}
                     </h4>
-                    <p className="text-xs text-slate-500 mt-0.5">{trainee.count} {trainee.count === 1 ? 'práctica' : 'prácticas'}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{trainee.count} {trainee.count === 1 ? 'practice call' : 'practice calls'}</p>
                   </div>
                   <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-full ${
                     trainee.avgScore >= 80 
@@ -235,7 +235,7 @@ export default function HistoryDashboard({
                   </span>
                 </div>
                 <div className="flex items-center justify-end gap-1 mt-2 text-xs font-semibold text-blue-600">
-                  <span>Ver sesiones</span>
+                  <span>View sessions</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </div>
               </div>
@@ -250,9 +250,9 @@ export default function HistoryDashboard({
             <BarChart className="w-8 h-8" />
           </div>
           <div className="space-y-1.5 max-w-md">
-            <h3 className="text-base font-display font-bold text-slate-900">Aún no hay sesiones registradas</h3>
+            <h3 className="text-base font-display font-bold text-slate-900">No sessions recorded yet</h3>
             <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
-              Comienza una llamada de práctica o sube la grabación de una llamada real para ver aquí tus evaluaciones y escuchar tus audios.
+              Start a practice call or upload an audio recording to view your performance evaluations and listen to recorded calls.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2.5 w-full max-w-md pt-2">
@@ -261,14 +261,14 @@ export default function HistoryDashboard({
               className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl font-display font-bold text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Practicar llamada</span>
+              <span>Practice Call</span>
             </button>
             <button
               onClick={() => onNavigateToMode('Real Call Audit')}
               className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5" />
-              <span>Evaluar grabación</span>
+              <span>Audit Recording</span>
             </button>
           </div>
         </div>
@@ -283,7 +283,7 @@ export default function HistoryDashboard({
               </div>
               <div>
                 <p className="text-slate-500 text-xs font-medium">
-                  {selectedTraineeFilter === 'ALL' ? 'Puntuación media' : 'Promedio del comercial'}
+                  {selectedTraineeFilter === 'ALL' ? 'Average Score' : 'Sales Rep Average'}
                 </p>
                 <h4 className="text-2xl font-display font-bold font-mono text-slate-900 mt-0.5">
                   {averageScore} <span className="text-xs text-slate-400 font-sans font-normal">/ 100</span>
@@ -297,10 +297,10 @@ export default function HistoryDashboard({
               </div>
               <div>
                 <p className="text-slate-500 text-xs font-medium">
-                  Sesiones completadas
+                  Completed Calls
                 </p>
                 <h4 className="text-2xl font-display font-bold font-mono text-slate-900 mt-0.5">
-                  {totalCalls} <span className="text-xs text-slate-400 font-sans font-normal">{totalCalls === 1 ? 'llamada' : 'llamadas'}</span>
+                  {totalCalls} <span className="text-xs text-slate-400 font-sans font-normal">{totalCalls === 1 ? 'call' : 'calls'}</span>
                 </h4>
               </div>
             </div>
@@ -311,10 +311,10 @@ export default function HistoryDashboard({
               </div>
               <div>
                 <p className="text-slate-500 text-xs font-medium">
-                  Prácticas aprobadas (≥70)
+                  Passing Rate (≥70)
                 </p>
                 <h4 className="text-2xl font-display font-bold font-mono text-slate-900 mt-0.5">
-                  {passRate}% <span className="text-xs text-slate-400 font-sans font-normal">({passedCalls} de {totalCalls})</span>
+                  {passRate}% <span className="text-xs text-slate-400 font-sans font-normal">({passedCalls} of {totalCalls})</span>
                 </h4>
               </div>
             </div>
@@ -324,11 +324,11 @@ export default function HistoryDashboard({
           <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-xs space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <h3 className="font-display font-bold text-slate-900 text-sm">
-                Evolución de las últimas sesiones
+                Score Progression (Recent Sessions)
               </h3>
               {selectedTraineeFilter !== 'ALL' && (
                 <span className="text-xs font-semibold text-blue-600">
-                  Comercial: {selectedTraineeFilter}
+                  Sales Rep: {selectedTraineeFilter}
                 </span>
               )}
             </div>
@@ -362,10 +362,10 @@ export default function HistoryDashboard({
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-display font-bold text-slate-900 text-sm">
-                Sesiones registradas
+                Recorded Sessions
               </h3>
               <span className="text-xs text-slate-500">
-                Haz clic en una sesión para ver su evaluación y escuchar la llamada
+                Click any session to review its evaluation and listen to the call
               </span>
             </div>
 
@@ -397,12 +397,12 @@ export default function HistoryDashboard({
                         )}
 
                         <span className="text-xs text-slate-500">
-                          · {item.type === 'Live Call' ? 'Práctica por voz' : 'Grabación subida'}
+                          · {item.type === 'Live Call' ? 'Live voice call' : 'Uploaded recording'}
                         </span>
 
                         {(item.hasAudio ?? true) && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <Headphones className="w-3 h-3" /> Audio disponible
+                            <Headphones className="w-3 h-3" /> Audio available
                           </span>
                         )}
                       </div>
@@ -410,7 +410,7 @@ export default function HistoryDashboard({
                       <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-slate-500">
                         <span className="flex items-center gap-1">
                           <User className="w-3.5 h-3.5 text-slate-400" />
-                          Cliente: {item.contactName}
+                          Contact: {item.contactName}
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -437,7 +437,7 @@ export default function HistoryDashboard({
                       <button
                         onClick={(e) => handleDeleteItem(e, item.id)}
                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                        title="Eliminar sesión"
+                        title="Delete session"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

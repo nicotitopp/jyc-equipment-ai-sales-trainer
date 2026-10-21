@@ -15,25 +15,25 @@ interface CoachViewProps {
 
 const INITIAL_MESSAGE: Message = {
   role: 'model',
-  content: `### Asesor comercial JYC Equipment
+  content: `### JYC Equipment Sales Coach
 
-Estoy aquí para ayudarte a preparar tus llamadas de compra y adquisición de maquinaria pesada.
+I am here to help you prepare your heavy machinery acquisition and outbound sales calls.
 
-Puedes consultarme sobre:
-- **Cómo superar recepción** y lograr que te comuniquen con el jefe de planta u operaciones.
-- **Apertura y gancho comercial** según el sector (plásticos, puertos, concreto, acero, médico).
-- **Las 7 preguntas de calificación** para evaluar inyectoras, cargadores o reach stackers.
-- **Cómo responder objeciones** de precio, subastas, entrega a cuenta (trade-in) o leasing.
+You can ask me about:
+- **How to bypass reception (gatekeeper)** and get directly transferred to the plant or operations manager.
+- **Openings and commercial hooks** tailored to each sector (plastics, ports, concrete, steel, medical).
+- **The 7 qualification questions** to evaluate injection molders, wheel loaders, or reach stackers.
+- **How to overcome objections** regarding price, auctions, trade-in, or leasing.
 
-Elige una consulta frecuente abajo o escribe tu duda:`
+Choose a frequent question below or type your inquiry:`
 };
 
 const SCENARIO_CHIPS = [
-  "¿Qué respondo si dicen 'Nosotros solo vendemos en subasta'?",
-  "Dame el guion para superar recepción en una planta de plásticos",
-  "¿Cómo pedir fotos de la placa y horómetro con naturalidad?",
-  "El cliente me dice 'Dime cuánto me ofreces primero'. ¿Qué le digo?",
-  "Si hoy no tienen máquinas en venta, ¿qué preguntas debo hacer?"
+  "What do I say if they say 'We only sell through auctions'?",
+  "Give me the script to bypass reception at a plastics plant",
+  "How do I naturally ask for photos of the data plate and hour meter?",
+  "The prospect says 'Tell me your offer first'. What should I reply?",
+  "If they don't have machinery for sale today, what questions should I ask?"
 ];
 
 export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) {
@@ -65,7 +65,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
       window.speechSynthesis.cancel();
       const cleanText = text.replace(/[*_~`#\[\]]/g, '');
       const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'es-ES';
+      utterance.lang = 'en-US';
       window.speechSynthesis.speak(utterance);
     } catch (err) {
       console.warn('Speech synthesis error:', err);
@@ -75,7 +75,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
   const toggleRecording = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Tu navegador no soporta dictado por voz.");
+      alert("Your browser does not support voice dictation.");
       return;
     }
 
@@ -88,7 +88,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
     recognitionRef.current = new SpeechRecognition();
     recognitionRef.current.continuous = false;
     recognitionRef.current.interimResults = false;
-    recognitionRef.current.lang = 'es-ES';
+    recognitionRef.current.lang = 'en-US';
 
     recognitionRef.current.onstart = () => setIsRecording(true);
     recognitionRef.current.onresult = (event: any) => {
@@ -127,7 +127,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
       console.error(err);
       setMessages([
         ...newMessages,
-        { role: 'model', content: `No fue posible obtener respuesta en este momento: ${err.message || 'Intenta nuevamente.'}` }
+        { role: 'model', content: `Could not retrieve response at this time: ${err.message || 'Please try again.'}` }
       ]);
     } finally {
       setLoading(false);
@@ -147,7 +147,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
       {/* Mobile Switcher Bar */}
       <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between">
         <span className="text-xs font-semibold text-slate-700">
-          {showPlaybookMobile ? 'Guion comercial' : 'Asesor comercial'}
+          {showPlaybookMobile ? 'Sales Playbook' : 'Sales Coach'}
         </span>
         <button
           onClick={() => setShowPlaybookMobile(!showPlaybookMobile)}
@@ -156,12 +156,12 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
           {showPlaybookMobile ? (
             <>
               <MessageSquare className="w-3.5 h-3.5" />
-              <span>Ir al chat con el asesor</span>
+              <span>Go to Coach Chat</span>
             </>
           ) : (
             <>
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Ver guion completo</span>
+              <span>View Full Playbook</span>
             </>
           )}
         </button>
@@ -175,7 +175,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
         {/* Frequent Questions Bar */}
         <div className="px-4 sm:px-6 py-3 bg-white border-b border-slate-200/80 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
           <span className="text-xs font-semibold text-slate-500 shrink-0">
-            Consultas frecuentes:
+            Frequently asked questions:
           </span>
           {SCENARIO_CHIPS.map((chip, idx) => (
             <button
@@ -235,7 +235,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
               </div>
               <div className="bg-white border border-slate-200 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 flex items-center gap-2 shadow-2xs">
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
-                <span>Preparando recomendación comercial...</span>
+                <span>Preparing sales recommendation...</span>
               </div>
             </div>
           )}
@@ -253,7 +253,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
                   ? 'bg-red-50 border-red-300 text-red-600 animate-pulse'
                   : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
-              title={isRecording ? 'Detener dictado' : 'Dictar por micrófono'}
+              title={isRecording ? 'Stop dictation' : 'Dictate via microphone'}
             >
               {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </button>
@@ -263,7 +263,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={onKeyDown}
-                placeholder="Escribe una objeción del cliente o una duda sobre el guion..."
+                placeholder="Type a prospect objection or question about the script..."
                 className="w-full resize-none border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 text-slate-900 placeholder:text-slate-400 outline-none transition-all max-h-36 min-h-[42px]"
                 rows={1}
               />
@@ -273,7 +273,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
               onClick={() => handleSendPrompt(input)}
               disabled={!input.trim() || loading}
               className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0 shadow-xs"
-              title="Enviar consulta"
+              title="Send inquiry"
             >
               <Send className="w-4 h-4" />
             </button>

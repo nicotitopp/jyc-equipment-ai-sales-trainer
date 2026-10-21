@@ -27,33 +27,33 @@ export interface NavItemConfig {
 export const MODES_LIST: NavItemConfig[] = [
   { 
     id: 'Live Call Simulation', 
-    label: 'Práctica de llamada', 
-    shortTitle: 'Práctica de llamada por voz',
-    description: 'Entrena conversaciones telefónicas reales con clientes simulados por IA',
+    label: 'Call Practice', 
+    shortTitle: 'Voice Call Practice',
+    description: 'Train live phone calls with AI-simulated buyers',
     group: 'primary',
     icon: PhoneCall,
   },
   { 
     id: 'Coach', 
-    label: 'Asesor y guiones', 
-    shortTitle: 'Asesor comercial y guiones',
-    description: 'Prepara respuestas a objeciones y consulta el guion por sector industrial',
+    label: 'Coach & Playbook', 
+    shortTitle: 'Sales Coach & Playbooks',
+    description: 'Prepare objection responses and study sector-specific scripts',
     group: 'primary',
     icon: BookOpen,
   },
   { 
     id: 'Real Call Audit', 
-    label: 'Evaluar grabación', 
-    shortTitle: 'Evaluación de llamada grabada',
-    description: 'Sube el audio de una llamada real para analizar aciertos y oportunidades',
+    label: 'Audit Recording', 
+    shortTitle: 'Real Call Audio Audit',
+    description: 'Upload audio from actual calls to analyze strengths and opportunities',
     group: 'secondary',
     icon: UploadCloud,
   },
   { 
     id: 'History', 
-    label: 'Historial y progreso', 
-    shortTitle: 'Historial de prácticas y progreso',
-    description: 'Revisa tus llamadas anteriores, calificaciones y grabaciones',
+    label: 'History & Progress', 
+    shortTitle: 'Practice History & Analytics',
+    description: 'Review your past calls, scores, and audio recordings',
     group: 'secondary',
     icon: BarChart3,
   },
@@ -106,7 +106,7 @@ export default function Sidebar({
                 JYC Equipment
               </div>
               <div className="text-xs text-slate-400">
-                Entrenamiento comercial
+                Sales Training
               </div>
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function Sidebar({
           <button 
             className="md:hidden text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800"
             onClick={onClose}
-            aria-label="Cerrar menú"
+            aria-label="Close menu"
           >
             <X className="w-5 h-5" />
           </button>
@@ -126,10 +126,10 @@ export default function Sidebar({
           {/* Primary Section: Practice & Preparation */}
           <div>
             <div className="px-3 mb-2 text-xs font-medium text-slate-400">
-              Entrenamiento
+              Training
             </div>
 
-            <nav className="space-y-1" aria-label="Entrenamiento">
+            <nav className="space-y-1" aria-label="Training">
               {primaryModes.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentMode === item.id;
@@ -176,10 +176,10 @@ export default function Sidebar({
           {/* Secondary Section: Evaluation & Progress */}
           <div>
             <div className="px-3 mb-2 text-xs font-medium text-slate-400">
-              Análisis y seguimiento
+              Analysis & Progress
             </div>
 
-            <nav className="space-y-1" aria-label="Análisis y seguimiento">
+            <nav className="space-y-1" aria-label="Analysis & Progress">
               {secondaryModes.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentMode === item.id;
@@ -224,7 +224,7 @@ export default function Sidebar({
                 className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-slate-700/80 bg-slate-800/40 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                <span>Nueva consulta al asesor</span>
+                <span>New Coach Query</span>
               </button>
             </div>
           )}
@@ -253,7 +253,7 @@ export default function Sidebar({
                     ) : (
                       <>
                         <User className="w-3 h-3 text-slate-400" />
-                        <span>Comercial</span>
+                        <span>Sales Rep</span>
                       </>
                     )}
                   </div>
@@ -263,7 +263,7 @@ export default function Sidebar({
               <button
                 onClick={onLogout}
                 className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shrink-0"
-                title="Cerrar sesión"
+                title="Sign out"
               >
                 <LogOut className="w-4 h-4" />
               </button>
