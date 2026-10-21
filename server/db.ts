@@ -235,6 +235,37 @@ export async function initDatabase() {
   }
 }
 
+export async function getDatabaseStatus(): Promise<{
+  mode: 'postgres' | 'local_json';
+  connected: boolean;
+  hasEnvUrl: boolean;
+  error?: string;
+}> {
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      await pool.query('SELECT NOW()');
+      return {
+        mode: 'postgres',
+        connected: true,
+        hasEnvUrl: true,
+      };
+    } catch (err: any) {
+      return {
+        mode: 'postgres',
+        connected: false,
+        hasEnvUrl: true,
+        error: err.message,
+      };
+    }
+  }
+  return {
+    mode: 'local_json',
+    connected: true,
+    hasEnvUrl: false,
+  };
+}
+
 // Local JSON fallback helpers
 function readDb(): DatabaseSchema {
   try {

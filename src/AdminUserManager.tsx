@@ -55,10 +55,15 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
 
   // Feedback message
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [dbStatus, setDbStatus] = useState<{ mode?: string; connected?: boolean } | null>(null);
 
   const fetchUsers = async (keepSelectedUsername?: string) => {
     setLoadingUsers(true);
     try {
+      fetch('/api/status').then(r => r.json()).then(d => {
+        if (d && d.database) setDbStatus(d.database);
+      }).catch(() => {});
+
       const res = await fetch('/api/users/list');
       if (res.ok) {
         const data = await res.json();
@@ -244,8 +249,21 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
               <Users className="w-5 h-5" />
             </div>
             <div className="text-left">
-              <h3 className="font-extrabold text-base tracking-tight">Gestión de Vendedores & Accesos</h3>
-              <p className="text-slate-400 text-xs">Crea vendedores, consulta sus contraseñas y audita su actividad</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-extrabold text-base tracking-tight">Gestión de Vendedores & Accesos</h3>
+                {dbStatus && (
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                    dbStatus.mode === 'postgres' && dbStatus.connected
+                      ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60'
+                      : 'bg-amber-950/80 text-amber-300 border-amber-700/60'
+                  }`}>
+                    {dbStatus.mode === 'postgres' && dbStatus.connected
+                      ? '● BD: PostgreSQL (Neon) Persistente'
+                      : '○ BD: Archivo Local (data/database.json)'}
+                  </span>
+                )}
+              </div>
+              <p className="text-slate-400 text-xs mt-0.5">Crea vendedores, consulta sus contraseñas y audita su actividad</p>
             </div>
           </div>
           <button 

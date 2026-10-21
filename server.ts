@@ -13,6 +13,7 @@ import {
   saveAudioFile,
   getAudioFile,
   initDatabase,
+  getDatabaseStatus,
   updateUserPassword,
   getAllUsers,
   createUser,
@@ -32,6 +33,20 @@ async function startServer() {
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   // API Routes
+  app.get("/api/status", async (req, res) => {
+    try {
+      const dbStatus = await getDatabaseStatus();
+      res.json({
+        status: "ok",
+        service: "JYC Equipment Sales Trainer",
+        timestamp: new Date().toISOString(),
+        database: dbStatus
+      });
+    } catch (err: any) {
+      res.status(500).json({ status: "error", error: err.message });
+    }
+  });
+
   app.post("/api/chat", async (req, res) => {
     try {
       const { messages, systemInstruction } = req.body;
