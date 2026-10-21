@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { Pool } from 'pg';
 
 export interface UserAccount {
   id: string;
@@ -43,11 +44,37 @@ const DEFAULT_USERS: UserAccount[] = [
     username: 'admin',
     password: 'JYC!@2026*!!@',
     name: 'Administrador JYC',
-    role: 'admin'
+    role: 'admin',
+    createdAt: 'Registrado por Sistema',
+    blocked: false
   }
 ];
 
-export function ensureDirectories() {
+// PostgreSQL Client Pool
+let pgPool: Pool | null = null;
+
+export function getPgPool(): Pool | null {
+  if (pgPool) return pgPool;
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) return null;
+
+  try {
+    const isLocal = databaseUrl.includes('localhost') || databaseUrl.includes('127.0.0.1');
+    pgPool = new Pool({
+      connectionString: databaseUrl,
+      ssl: isLocal ? false : { rejectUnauthorized: false },
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
+    return pgPool;
+  } catch (err) {
+    console.error('[DB] Failed to initialize PostgreSQL pool:', err);
+    return null;
+  }
+}
+
+export async function ensureDirectories() {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
@@ -63,26 +90,138 @@ export function ensureDirectories() {
   }
 }
 
-function readDb(): DatabaseSchema {
-  ensureDirectories();
+export async function initDatabase() {
+  await ensureDirectories();
+  const pool = getPgPool();
+
+  if (!pool) {
+    console.log('[DB] No DATABASE_URL provided. Operating in local JSON mode (data/database.json).');
+    return;
+  }
+
   try {
+    console.log('[DB] Connecting to PostgreSQL database...');
+    // Create tables
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        name TEXT NOT NULL,
+        role TEXT NOT NULL,
+        created_at TEXT,
+        blocked BOOLEAN DEFAULT FALSE
+      );
+
+      CREATE TABLE IF NOT EXISTS history (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        user_name TEXT NOT NULL,
+        user_role TEXT NOT NULL,
+        date TEXT NOT NULL,
+        timestamp BIGINT NOT NULL,
+        type TEXT NOT NULL,
+        contact_name TEXT NOT NULL,
+        company_name TEXT NOT NULL,
+        score INTEGER NOT NULL,
+        evaluation JSONB NOT NULL,
+        has_audio BOOLEAN DEFAULT TRUE,
+        conversation_id TEXT,
+        audio_url TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS call_audios (
+        id TEXT PRIMARY KEY,
+        audio_base64 TEXT NOT NULL,
+        mime_type TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Ensure default admin exists
+    await pool.query(`
+      INSERT INTO users (id, username, password, name, role, created_at, blocked)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      ON CONFLICT (username) DO NOTHING;
+    `, [
+      'admin_default',
+      'admin',
+      'JYC!@2026*!!@',
+      'Administrador JYC',
+      'admin',
+      'Registrado por Sistema',
+      false
+    ]);
+
+    // Migrate any users from local JSON file to PostgreSQL if they don't exist yet
+    try {
+      const local = readDb();
+      for (const u of local.users) {
+        if (u.username !== 'admin') {
+          await pool.query(`
+            INSERT INTO users (id, username, password, name, role, created_at, blocked)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (username) DO NOTHING;
+          `, [
+            u.id || `user_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            u.username.toLowerCase().trim(),
+            u.password,
+            u.name,
+            u.role || 'trainee',
+            u.createdAt || 'Migrado de JSON',
+            !!u.blocked
+          ]);
+        }
+      }
+      for (const h of local.history) {
+        await pool.query(`
+          INSERT INTO history (id, user_id, user_name, user_role, date, timestamp, type, contact_name, company_name, score, evaluation, has_audio, conversation_id, audio_url)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+          ON CONFLICT (id) DO NOTHING;
+        `, [
+          h.id,
+          h.userId,
+          h.userName,
+          h.userRole,
+          h.date,
+          h.timestamp || Date.now(),
+          h.type,
+          h.contactName,
+          h.companyName,
+          h.score,
+          JSON.stringify(h.evaluation),
+          h.hasAudio ?? true,
+          h.conversationId || null,
+          h.audioUrl || null
+        ]);
+      }
+    } catch (migErr) {
+      console.warn('[DB] Non-critical migration note:', migErr);
+    }
+
+    console.log('[DB] PostgreSQL database initialized successfully & fully persistent.');
+  } catch (err: any) {
+    console.error('[DB] PostgreSQL initialization failed, falling back to local JSON:', err.message);
+  }
+}
+
+// Local JSON fallback helpers
+function readDb(): DatabaseSchema {
+  try {
+    if (!fs.existsSync(DB_FILE)) {
+      return { users: DEFAULT_USERS, history: [] };
+    }
     const content = fs.readFileSync(DB_FILE, 'utf-8');
     const parsed = JSON.parse(content);
     if (!parsed.users) parsed.users = DEFAULT_USERS;
     if (!parsed.history) parsed.history = [];
     return parsed;
   } catch (err) {
-    console.error('Error reading database file, resetting to default:', err);
-    const initialDb: DatabaseSchema = {
-      users: DEFAULT_USERS,
-      history: []
-    };
-    return initialDb;
+    return { users: DEFAULT_USERS, history: [] };
   }
 }
 
 function writeDb(data: DatabaseSchema) {
-  ensureDirectories();
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
   } catch (err) {
@@ -90,29 +229,55 @@ function writeDb(data: DatabaseSchema) {
   }
 }
 
-export function authenticate(username: string, password?: string, customName?: string): { id: string; username: string; name: string; role: 'trainee' | 'admin'; blocked?: boolean } | null {
-  const db = readDb();
+// ==========================================================
+// Authentication
+// ==========================================================
+export async function authenticate(
+  username: string, 
+  password?: string, 
+  customName?: string
+): Promise<{ id: string; username: string; name: string; role: 'trainee' | 'admin'; blocked?: boolean } | null> {
   const cleanUsername = (username || '').trim().toLowerCase();
   const cleanPassword = (password || '').trim();
 
-  // Password is required for all roles
-  if (!cleanPassword) {
-    return null;
+  if (!cleanPassword) return null;
+
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      const res = await pool.query(
+        'SELECT id, username, password, name, role, blocked FROM users WHERE LOWER(username) = $1',
+        [cleanUsername]
+      );
+      if (res.rows.length > 0) {
+        const u = res.rows[0];
+        if (u.password !== cleanPassword) return null;
+
+        const displayName = (u.role === 'trainee' && customName?.trim()) 
+          ? customName.trim() 
+          : u.name;
+
+        return {
+          id: u.id,
+          username: u.username,
+          name: displayName,
+          role: u.role,
+          blocked: !!u.blocked
+        };
+      }
+      return null;
+    } catch (err) {
+      console.error('[DB] Error during PG authenticate, falling back to JSON:', err);
+    }
   }
 
-  // Match predefined users
+  // Fallback JSON
+  const db = readDb();
   const user = db.users.find(u => u.username.toLowerCase() === cleanUsername);
-
-  if (user) {
-    // Strictly verify password
-    if (user.password !== cleanPassword) {
-      return null;
-    }
-
+  if (user && user.password === cleanPassword) {
     const displayName = (user.role === 'trainee' && customName?.trim()) 
       ? customName.trim() 
       : user.name;
-
     return {
       id: user.id,
       username: user.username,
@@ -125,20 +290,39 @@ export function authenticate(username: string, password?: string, customName?: s
   return null;
 }
 
-export function updateUserPassword(username: string, newPassword: string): boolean {
-  const db = readDb();
+export async function updateUserPassword(username: string, newPassword: string): Promise<boolean> {
   const cleanUsername = username.trim().toLowerCase();
+  const cleanPassword = newPassword.trim();
+  const pool = getPgPool();
+
+  if (pool) {
+    try {
+      const res = await pool.query(
+        'UPDATE users SET password = $1 WHERE LOWER(username) = $2',
+        [cleanPassword, cleanUsername]
+      );
+      return (res.rowCount ?? 0) > 0;
+    } catch (err) {
+      console.error('[DB] Error during PG updateUserPassword:', err);
+    }
+  }
+
+  // Fallback JSON
+  const db = readDb();
   const user = db.users.find(u => u.username.toLowerCase() === cleanUsername);
   if (user) {
-    user.password = newPassword.trim();
+    user.password = cleanPassword;
     writeDb(db);
     return true;
   }
   return false;
 }
 
-export function createUser(username: string, password: string, name: string): { success: boolean; user?: Omit<UserAccount, 'password'>; error?: string } {
-  const db = readDb();
+export async function createUser(
+  username: string, 
+  password: string, 
+  name: string
+): Promise<{ success: boolean; user?: Omit<UserAccount, 'password'>; error?: string }> {
   const cleanUsername = username.trim().toLowerCase().replace(/\s+/g, '');
   const cleanPassword = password.trim();
   const cleanName = name.trim();
@@ -153,6 +337,47 @@ export function createUser(username: string, password: string, name: string): { 
     return { success: false, error: "El nombre completo del vendedor es requerido." };
   }
 
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      const existing = await pool.query('SELECT id FROM users WHERE LOWER(username) = $1', [cleanUsername]);
+      if (existing.rows.length > 0) {
+        return { success: false, error: `El nombre de usuario '${cleanUsername}' ya está registrado.` };
+      }
+
+      const id = `user_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const createdAt = new Date().toLocaleDateString('es-ES', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+
+      await pool.query(`
+        INSERT INTO users (id, username, password, name, role, created_at, blocked)
+        VALUES ($1, $2, $3, $4, 'trainee', $5, false)
+      `, [id, cleanUsername, cleanPassword, cleanName, createdAt]);
+
+      return {
+        success: true,
+        user: {
+          id,
+          username: cleanUsername,
+          name: cleanName,
+          role: 'trainee',
+          createdAt,
+          blocked: false
+        }
+      };
+    } catch (err: any) {
+      console.error('[DB] Error creating user in PG:', err);
+      return { success: false, error: err.message || 'Error en base de datos.' };
+    }
+  }
+
+  // Fallback JSON
+  const db = readDb();
   const existing = db.users.find(u => u.username.toLowerCase() === cleanUsername);
   if (existing) {
     return { success: false, error: `El nombre de usuario '${cleanUsername}' ya está registrado.` };
@@ -170,7 +395,8 @@ export function createUser(username: string, password: string, name: string): { 
       day: 'numeric', 
       hour: '2-digit', 
       minute: '2-digit' 
-    })
+    }),
+    blocked: false
   };
 
   db.users.push(newUser);
@@ -182,19 +408,35 @@ export function createUser(username: string, password: string, name: string): { 
       id: newUser.id,
       username: newUser.username,
       name: newUser.name,
-      role: newUser.role
+      role: newUser.role,
+      createdAt: newUser.createdAt,
+      blocked: false
     }
   };
 }
 
-export function deleteUser(username: string): { success: boolean; error?: string } {
-  const db = readDb();
+export async function deleteUser(username: string): Promise<{ success: boolean; error?: string }> {
   const cleanUsername = username.trim().toLowerCase();
 
   if (cleanUsername === 'admin') {
     return { success: false, error: "No es posible eliminar al Administrador principal." };
   }
 
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      const res = await pool.query('DELETE FROM users WHERE LOWER(username) = $1', [cleanUsername]);
+      if ((res.rowCount ?? 0) > 0) {
+        return { success: true };
+      }
+      return { success: false, error: "Usuario no encontrado." };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Fallback JSON
+  const db = readDb();
   const index = db.users.findIndex(u => u.username.toLowerCase() === cleanUsername);
   if (index === -1) {
     return { success: false, error: "Usuario no encontrado." };
@@ -205,14 +447,30 @@ export function deleteUser(username: string): { success: boolean; error?: string
   return { success: true };
 }
 
-export function toggleUserBlock(username: string): { success: boolean; blocked?: boolean; error?: string } {
-  const db = readDb();
+export async function toggleUserBlock(username: string): Promise<{ success: boolean; blocked?: boolean; error?: string }> {
   const cleanUsername = username.trim().toLowerCase();
 
   if (cleanUsername === 'admin') {
     return { success: false, error: "No es posible bloquear la cuenta del Administrador principal." };
   }
 
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      const current = await pool.query('SELECT blocked FROM users WHERE LOWER(username) = $1', [cleanUsername]);
+      if (current.rows.length === 0) {
+        return { success: false, error: "Usuario no encontrado." };
+      }
+      const newBlocked = !current.rows[0].blocked;
+      await pool.query('UPDATE users SET blocked = $1 WHERE LOWER(username) = $2', [newBlocked, cleanUsername]);
+      return { success: true, blocked: newBlocked };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  // Fallback JSON
+  const db = readDb();
   const user = db.users.find(u => u.username.toLowerCase() === cleanUsername);
   if (!user) {
     return { success: false, error: "Usuario no encontrado." };
@@ -220,7 +478,6 @@ export function toggleUserBlock(username: string): { success: boolean; blocked?:
 
   user.blocked = !user.blocked;
   writeDb(db);
-
   return { success: true, blocked: user.blocked };
 }
 
@@ -247,7 +504,61 @@ export interface DetailedUserRecord {
   }[];
 }
 
-export function getAllUsersWithStats(): DetailedUserRecord[] {
+export async function getAllUsersWithStats(): Promise<DetailedUserRecord[]> {
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      const usersRes = await pool.query('SELECT id, username, password, name, role, created_at as "createdAt", blocked FROM users ORDER BY role ASC, created_at DESC');
+      const historyRes = await pool.query('SELECT id, user_id, user_name, date, timestamp, type, contact_name, company_name, score FROM history ORDER BY timestamp DESC');
+
+      const allUsers = usersRes.rows;
+      const allHistory = historyRes.rows;
+
+      return allUsers.map(u => {
+        const userCalls = allHistory.filter(h =>
+          h.user_id === u.id ||
+          h.user_name?.toLowerCase() === u.name.toLowerCase() ||
+          h.user_name?.toLowerCase() === u.username.toLowerCase()
+        );
+
+        const count = userCalls.length;
+        const avgScore = count > 0 ? Math.round(userCalls.reduce((acc, curr) => acc + (Number(curr.score) || 0), 0) / count) : 0;
+        const bestScore = count > 0 ? Math.max(...userCalls.map(c => Number(c.score) || 0)) : 0;
+        const passedCount = userCalls.filter(c => (Number(c.score) || 0) >= 70).length;
+        const passRate = count > 0 ? Math.round((passedCount / count) * 100) : 0;
+        const lastActive = count > 0 ? userCalls[0].date : undefined;
+
+        const recentCalls = userCalls.slice(0, 5).map(c => ({
+          id: c.id,
+          date: c.date,
+          companyName: c.company_name,
+          contactName: c.contact_name,
+          score: Number(c.score) || 0,
+          type: c.type
+        }));
+
+        return {
+          id: u.id,
+          username: u.username,
+          name: u.name,
+          role: u.role,
+          password: u.password,
+          createdAt: u.createdAt || 'Registrado',
+          blocked: !!u.blocked,
+          callCount: count,
+          avgScore,
+          bestScore,
+          passRate,
+          lastActive,
+          recentCalls
+        };
+      });
+    } catch (err) {
+      console.error('[DB] Error during PG getAllUsersWithStats:', err);
+    }
+  }
+
+  // Fallback JSON
   const db = readDb();
   return db.users.map(u => {
     const userCalls = (db.history || []).filter(h => 
@@ -290,7 +601,17 @@ export function getAllUsersWithStats(): DetailedUserRecord[] {
   });
 }
 
-export function getAllUsers(): { id: string; username: string; name: string; role: 'trainee' | 'admin' }[] {
+export async function getAllUsers(): Promise<{ id: string; username: string; name: string; role: 'trainee' | 'admin' }[]> {
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      const res = await pool.query('SELECT id, username, name, role FROM users ORDER BY username ASC');
+      return res.rows;
+    } catch (err) {
+      console.error('[DB] Error during PG getAllUsers:', err);
+    }
+  }
+
   const db = readDb();
   return db.users.map(u => ({
     id: u.id,
@@ -300,7 +621,58 @@ export function getAllUsers(): { id: string; username: string; name: string; rol
   }));
 }
 
-export function getHistory(filter?: { role?: string; userId?: string; userName?: string }): DbHistoryItem[] {
+// ==========================================================
+// History & Audits
+// ==========================================================
+export async function getHistory(filter?: { role?: string; userId?: string; userName?: string }): Promise<DbHistoryItem[]> {
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      let query = `
+        SELECT 
+          id, 
+          user_id as "userId", 
+          user_name as "userName", 
+          user_role as "userRole", 
+          date, 
+          timestamp, 
+          type, 
+          contact_name as "contactName", 
+          company_name as "companyName", 
+          score, 
+          evaluation, 
+          has_audio as "hasAudio", 
+          conversation_id as "conversationId", 
+          audio_url as "audioUrl"
+        FROM history
+      `;
+      const params: any[] = [];
+
+      if (filter?.role === 'trainee' && (filter.userId || filter.userName)) {
+        if (filter.userId) {
+          params.push(filter.userId);
+          query += ` WHERE user_id = $${params.length}`;
+        } else if (filter.userName) {
+          params.push(filter.userName.toLowerCase());
+          query += ` WHERE LOWER(user_name) = $${params.length}`;
+        }
+      }
+
+      query += ` ORDER BY timestamp DESC`;
+
+      const res = await pool.query(query, params);
+      return res.rows.map(r => ({
+        ...r,
+        timestamp: Number(r.timestamp),
+        score: Number(r.score),
+        evaluation: typeof r.evaluation === 'string' ? JSON.parse(r.evaluation) : r.evaluation
+      }));
+    } catch (err) {
+      console.error('[DB] Error during PG getHistory:', err);
+    }
+  }
+
+  // Fallback JSON
   const db = readDb();
   let list = db.history || [];
 
@@ -311,30 +683,71 @@ export function getHistory(filter?: { role?: string; userId?: string; userName?:
     );
   }
 
-  // Sort descending by timestamp or date
   return list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 }
 
-export function saveHistoryItem(item: Omit<DbHistoryItem, 'timestamp'> & { timestamp?: number }): DbHistoryItem {
-  const db = readDb();
+export async function saveHistoryItem(item: Omit<DbHistoryItem, 'timestamp'> & { timestamp?: number }): Promise<DbHistoryItem> {
   const fullItem: DbHistoryItem = {
     ...item,
     timestamp: item.timestamp || Date.now()
   };
 
-  // Avoid duplicates
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      await pool.query(`
+        INSERT INTO history (id, user_id, user_name, user_role, date, timestamp, type, contact_name, company_name, score, evaluation, has_audio, conversation_id, audio_url)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        ON CONFLICT (id) DO UPDATE SET
+          score = EXCLUDED.score,
+          evaluation = EXCLUDED.evaluation,
+          audio_url = COALESCE(EXCLUDED.audio_url, history.audio_url)
+      `, [
+        fullItem.id,
+        fullItem.userId,
+        fullItem.userName,
+        fullItem.userRole,
+        fullItem.date,
+        fullItem.timestamp,
+        fullItem.type,
+        fullItem.contactName,
+        fullItem.companyName,
+        fullItem.score,
+        JSON.stringify(fullItem.evaluation),
+        fullItem.hasAudio ?? true,
+        fullItem.conversationId || null,
+        fullItem.audioUrl || null
+      ]);
+      return fullItem;
+    } catch (err) {
+      console.error('[DB] Error saving history to PG:', err);
+    }
+  }
+
+  // Fallback JSON
+  const db = readDb();
   const existingIdx = db.history.findIndex(h => h.id === fullItem.id);
   if (existingIdx >= 0) {
     db.history[existingIdx] = fullItem;
   } else {
     db.history.unshift(fullItem);
   }
-
   writeDb(db);
   return fullItem;
 }
 
-export function deleteHistoryItem(id: string): boolean {
+export async function deleteHistoryItem(id: string): Promise<boolean> {
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      const res = await pool.query('DELETE FROM history WHERE id = $1', [id]);
+      return (res.rowCount ?? 0) > 0;
+    } catch (err) {
+      console.error('[DB] Error deleting history from PG:', err);
+    }
+  }
+
+  // Fallback JSON
   const db = readDb();
   const initialLength = db.history.length;
   db.history = db.history.filter(h => h.id !== id);
@@ -345,7 +758,22 @@ export function deleteHistoryItem(id: string): boolean {
   return false;
 }
 
-export function clearHistory(filter?: { userId?: string }): void {
+export async function clearHistory(filter?: { userId?: string }): Promise<void> {
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      if (filter?.userId) {
+        await pool.query('DELETE FROM history WHERE user_id = $1', [filter.userId]);
+      } else {
+        await pool.query('DELETE FROM history');
+      }
+      return;
+    } catch (err) {
+      console.error('[DB] Error clearing history in PG:', err);
+    }
+  }
+
+  // Fallback JSON
   const db = readDb();
   if (filter?.userId) {
     db.history = db.history.filter(h => h.userId !== filter.userId);
@@ -355,8 +783,8 @@ export function clearHistory(filter?: { userId?: string }): void {
   writeDb(db);
 }
 
-export function getRegisteredTrainees(): { id: string; name: string; username: string; callCount: number; avgScore: number }[] {
-  const db = readDb();
+export async function getRegisteredTrainees(): Promise<{ id: string; name: string; username: string; callCount: number; avgScore: number }[]> {
+  const history = await getHistory();
   const traineeMap = new Map<string, { id: string; name: string; username: string; callCount: number; totalScore: number }>();
 
   // Add default trainee
@@ -368,7 +796,7 @@ export function getRegisteredTrainees(): { id: string; name: string; username: s
     totalScore: 0
   });
 
-  for (const h of db.history) {
+  for (const h of history) {
     if (h.userRole === 'admin') continue;
     const key = h.userName || h.userId || 'Practicante';
     const existing = traineeMap.get(key) || {
@@ -392,36 +820,78 @@ export function getRegisteredTrainees(): { id: string; name: string; username: s
   }));
 }
 
-export function saveAudioFile(id: string, base64Data: string, mimeType: string = 'audio/mpeg'): string {
-  ensureDirectories();
-  const filePath = path.join(AUDIOS_DIR, `${id}.audio`);
-  const metaPath = path.join(AUDIOS_DIR, `${id}.meta.json`);
-  
-  const buffer = Buffer.from(base64Data, 'base64');
-  fs.writeFileSync(filePath, buffer);
-  fs.writeFileSync(metaPath, JSON.stringify({ mimeType, size: buffer.length, createdAt: new Date().toISOString() }));
-  
+// ==========================================================
+// Audio Storage (Dual Storage: Cloud Postgres DB + Local Cache)
+// ==========================================================
+export async function saveAudioFile(id: string, base64Data: string, mimeType: string = 'audio/mpeg'): Promise<string> {
+  // Always write local file as quick cache
+  try {
+    ensureDirectories();
+    const filePath = path.join(AUDIOS_DIR, `${id}.audio`);
+    const metaPath = path.join(AUDIOS_DIR, `${id}.meta.json`);
+    const buffer = Buffer.from(base64Data, 'base64');
+    fs.writeFileSync(filePath, buffer);
+    fs.writeFileSync(metaPath, JSON.stringify({ mimeType, size: buffer.length, createdAt: new Date().toISOString() }));
+  } catch (err) {
+    console.warn('[DB] Could not save audio to local disk:', err);
+  }
+
+  // Also store in PostgreSQL if available (survives Render restarts!)
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      await pool.query(`
+        INSERT INTO call_audios (id, audio_base64, mime_type)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (id) DO UPDATE SET
+          audio_base64 = EXCLUDED.audio_base64,
+          mime_type = EXCLUDED.mime_type
+      `, [id, base64Data, mimeType]);
+    } catch (err) {
+      console.error('[DB] Error saving audio to PG call_audios:', err);
+    }
+  }
+
   return `/api/audios/${id}`;
 }
 
-export function getAudioFile(id: string): { buffer: Buffer; mimeType: string } | null {
-  ensureDirectories();
-  const filePath = path.join(AUDIOS_DIR, `${id}.audio`);
-  const metaPath = path.join(AUDIOS_DIR, `${id}.meta.json`);
-
-  if (!fs.existsSync(filePath)) {
-    return null;
-  }
-
-  const buffer = fs.readFileSync(filePath);
-  let mimeType = 'audio/mpeg';
-
-  if (fs.existsSync(metaPath)) {
+export async function getAudioFile(id: string): Promise<{ buffer: Buffer; mimeType: string } | null> {
+  // 1. Try PostgreSQL first if configured (permanent cloud storage)
+  const pool = getPgPool();
+  if (pool) {
     try {
-      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
-      if (meta.mimeType) mimeType = meta.mimeType;
-    } catch {}
+      const res = await pool.query('SELECT audio_base64, mime_type FROM call_audios WHERE id = $1', [id]);
+      if (res.rows.length > 0) {
+        const row = res.rows[0];
+        const buffer = Buffer.from(row.audio_base64, 'base64');
+        return { buffer, mimeType: row.mime_type || 'audio/mpeg' };
+      }
+    } catch (err) {
+      console.error('[DB] Error reading audio from PG call_audios:', err);
+    }
   }
 
-  return { buffer, mimeType };
+  // 2. Try local filesystem cache
+  try {
+    const filePath = path.join(AUDIOS_DIR, `${id}.audio`);
+    const metaPath = path.join(AUDIOS_DIR, `${id}.meta.json`);
+
+    if (fs.existsSync(filePath)) {
+      const buffer = fs.readFileSync(filePath);
+      let mimeType = 'audio/mpeg';
+
+      if (fs.existsSync(metaPath)) {
+        try {
+          const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+          if (meta.mimeType) mimeType = meta.mimeType;
+        } catch {}
+      }
+
+      return { buffer, mimeType };
+    }
+  } catch (err) {
+    console.warn('[DB] Error reading audio from local cache:', err);
+  }
+
+  return null;
 }

@@ -12,7 +12,7 @@ import {
   getRegisteredTrainees,
   saveAudioFile,
   getAudioFile,
-  ensureDirectories,
+  initDatabase,
   updateUserPassword,
   getAllUsers,
   createUser,
@@ -24,7 +24,7 @@ import {
 dotenv.config();
 
 async function startServer() {
-  ensureDirectories();
+  await initDatabase();
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
@@ -261,14 +261,14 @@ You must return ONLY a JSON object with this exact structure:
   // ==========================================
   // Authentication & User Session API
   // ==========================================
-  app.post("/api/auth/login", (req, res) => {
+  app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password, customName } = req.body;
       if (!username || !password || !password.trim()) {
         return res.status(400).json({ error: "El usuario y la contraseña son obligatorios." });
       }
 
-      const user = authenticate(username, password, customName);
+      const user = await authenticate(username, password, customName);
       if (!user) {
         return res.status(401).json({ error: "Credenciales incorrectas. Verifica tu usuario y contraseña." });
       }
@@ -284,9 +284,9 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
-  app.get("/api/users/list", (req, res) => {
+  app.get("/api/users/list", async (req, res) => {
     try {
-      const users = getAllUsersWithStats();
+      const users = await getAllUsersWithStats();
       res.json({ users });
     } catch (error: any) {
       console.error("Error fetching user list:", error);
@@ -294,14 +294,14 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
-  app.post("/api/admin/users", (req, res) => {
+  app.post("/api/admin/users", async (req, res) => {
     try {
       const { requesterRole, username, password, name } = req.body;
       if (requesterRole !== 'admin') {
         return res.status(403).json({ error: "Permiso denegado. Solo un administrador puede crear nuevos usuarios." });
       }
 
-      const result = createUser(username, password, name);
+      const result = await createUser(username, password, name);
       if (!result.success) {
         return res.status(400).json({ error: result.error });
       }
@@ -313,7 +313,7 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
-  app.delete("/api/admin/users/:username", (req, res) => {
+  app.delete("/api/admin/users/:username", async (req, res) => {
     try {
       const { requesterRole } = req.body || {};
       const { username } = req.params;
@@ -322,7 +322,7 @@ You must return ONLY a JSON object with this exact structure:
         return res.status(403).json({ error: "Permiso denegado. Solo un administrador puede eliminar usuarios." });
       }
 
-      const result = deleteUser(username);
+      const result = await deleteUser(username);
       if (!result.success) {
         return res.status(400).json({ error: result.error });
       }
@@ -334,7 +334,7 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
-  app.post("/api/admin/users/toggle-block", (req, res) => {
+  app.post("/api/admin/users/toggle-block", async (req, res) => {
     try {
       const { requesterRole, targetUsername } = req.body;
       if (requesterRole !== 'admin') {
@@ -344,7 +344,7 @@ You must return ONLY a JSON object with this exact structure:
         return res.status(400).json({ error: "Debes especificar el usuario a modificar." });
       }
 
-      const result = toggleUserBlock(targetUsername);
+      const result = await toggleUserBlock(targetUsername);
       if (!result.success) {
         return res.status(400).json({ error: result.error });
       }
@@ -362,7 +362,7 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
-  app.post("/api/users/change-password", (req, res) => {
+  app.post("/api/users/change-password", async (req, res) => {
     try {
       const { requesterRole, targetUsername, newPassword } = req.body;
       if (requesterRole !== 'admin') {
@@ -372,7 +372,7 @@ You must return ONLY a JSON object with this exact structure:
         return res.status(400).json({ error: "Debes especificar el usuario y la nueva contraseña." });
       }
 
-      const updated = updateUserPassword(targetUsername, newPassword);
+      const updated = await updateUserPassword(targetUsername, newPassword);
       if (!updated) {
         return res.status(404).json({ error: `Usuario '${targetUsername}' no encontrado en la base de datos.` });
       }
@@ -387,10 +387,10 @@ You must return ONLY a JSON object with this exact structure:
   // ==========================================
   // Central Database History & Audit API
   // ==========================================
-  app.get("/api/history", (req, res) => {
+  app.get("/api/history", async (req, res) => {
     try {
       const { role, userId, userName } = req.query;
-      const history = getHistory({
+      const history = await getHistory({
         role: role as string,
         userId: userId as string,
         userName: userName as string
@@ -402,14 +402,14 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
-  app.post("/api/history", (req, res) => {
+  app.post("/api/history", async (req, res) => {
     try {
       const item = req.body;
-      if (!item || !item.score === undefined) {
+      if (!item || item.score === undefined) {
         return res.status(400).json({ error: "Invalid history item data" });
       }
 
-      const saved = saveHistoryItem(item);
+      const saved = await saveHistoryItem(item);
       res.json({ success: true, item: saved });
     } catch (error: any) {
       console.error("Error saving history item:", error);
@@ -417,10 +417,10 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
-  app.delete("/api/history/:id", (req, res) => {
+  app.delete("/api/history/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const deleted = deleteHistoryItem(id);
+      const deleted = await deleteHistoryItem(id);
       res.json({ success: deleted });
     } catch (error: any) {
       console.error("Error deleting history item:", error);
@@ -428,14 +428,13 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
-  app.post("/api/history/clear", (req, res) => {
+  app.post("/api/history/clear", async (req, res) => {
     try {
       const { userId, role } = req.body;
-      // Only admin can clear all, trainees can only clear their own
       if (role === 'admin') {
-        clearHistory(userId ? { userId } : undefined);
+        await clearHistory(userId ? { userId } : undefined);
       } else if (userId) {
-        clearHistory({ userId });
+        await clearHistory({ userId });
       }
       res.json({ success: true });
     } catch (error: any) {
@@ -444,9 +443,9 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
-  app.get("/api/trainees", (req, res) => {
+  app.get("/api/trainees", async (req, res) => {
     try {
-      const trainees = getRegisteredTrainees();
+      const trainees = await getRegisteredTrainees();
       res.json({ trainees });
     } catch (error: any) {
       console.error("Error fetching trainees:", error);
@@ -457,14 +456,14 @@ You must return ONLY a JSON object with this exact structure:
   // ==========================================
   // Audio Persistence API
   // ==========================================
-  app.post("/api/audios/upload", (req, res) => {
+  app.post("/api/audios/upload", async (req, res) => {
     try {
       const { id, audioBase64, mimeType } = req.body;
       if (!id || !audioBase64) {
         return res.status(400).json({ error: "Missing audio id or data" });
       }
 
-      const audioUrl = saveAudioFile(id, audioBase64, mimeType || 'audio/mpeg');
+      const audioUrl = await saveAudioFile(id, audioBase64, mimeType || 'audio/mpeg');
       res.json({ success: true, audioUrl });
     } catch (error: any) {
       console.error("Error saving audio file:", error);
@@ -472,10 +471,10 @@ You must return ONLY a JSON object with this exact structure:
     }
   });
 
-  app.get("/api/audios/:id", (req, res) => {
+  app.get("/api/audios/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const audio = getAudioFile(id);
+      const audio = await getAudioFile(id);
       if (!audio) {
         return res.status(404).json({ error: "Audio file not found" });
       }
