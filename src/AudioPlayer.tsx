@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Download, RotateCcw, Headphones, FastForward, Activity } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Download, Headphones } from 'lucide-react';
 import { getAudio, saveAudio } from './audioDb';
 
 interface AudioPlayerProps {
@@ -23,14 +23,12 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Load audio source from blob / indexedDb / url
   useEffect(() => {
     let active = true;
 
     async function loadAudioSource() {
       setLoading(true);
 
-      // 1. Direct blob provided from user upload
       if (audioBlob && audioBlob.size > 0) {
         const url = URL.createObjectURL(audioBlob);
         if (active) {
@@ -40,14 +38,12 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
         return;
       }
 
-      // 2. If audioId exists, check if we already have the mixed MP3 in IndexedDB
       if (audioId) {
         try {
           const cachedBlob = await getAudio(audioId);
           if (cachedBlob && cachedBlob.size > 0 && active) {
             const url = URL.createObjectURL(cachedBlob);
             setBlobUrl(url);
-            // If it's already the full MP3 (or no audioUrl to fetch), finish loading
             if (cachedBlob.type === 'audio/mpeg' || !audioUrl) {
               setLoading(false);
               return;
@@ -58,7 +54,6 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
         }
       }
 
-      // 3. Fetch full 2-way conversation audio from ElevenLabs (user + AI voice)
       if (audioUrl) {
         try {
           const res = await fetch(audioUrl);
@@ -79,7 +74,6 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
         }
       }
 
-      // 4. Fallback to whatever is in IndexedDB
       if (audioId && active) {
         try {
           const fallbackBlob = await getAudio(audioId);
@@ -166,17 +160,17 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
     if (!blobUrl) return;
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = `jyc_call_recording_${title ? title.replace(/\s+/g, '_') : 'audio'}.mp3`;
+    a.download = `grabacion_jyc_${title ? title.replace(/\s+/g, '_') : 'llamada'}.mp3`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   };
 
   const formatTime = (secs: number) => {
-    if (isNaN(secs) || secs < 0) return '00:00';
+    if (isNaN(secs) || secs < 0) return '0:00';
     const mins = Math.floor(secs / 60);
     const remainder = Math.floor(secs % 60);
-    return `${mins < 10 ? '0' : ''}${mins}:${remainder < 10 ? '0' : ''}${remainder}`;
+    return `${mins}:${remainder < 10 ? '0' : ''}${remainder}`;
   };
 
   if (!blobUrl && !loading) {
@@ -184,11 +178,7 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
   }
 
   return (
-    <div className={`bg-[#0A0F17] text-slate-100 rounded-2xl p-4 sm:p-5 shadow-2xl border border-[#1E293B] relative overflow-hidden ${className}`}>
-      
-      {/* Glow highlight */}
-      <div className="absolute top-0 left-0 w-64 h-12 bg-cyan-500/5 blur-2xl pointer-events-none"></div>
-
+    <div className={`bg-[#0F172A] text-white rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-800 ${className}`}>
       <audio
         ref={audioRef}
         src={blobUrl || undefined}
@@ -198,44 +188,35 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
         preload="metadata"
       />
 
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         
         {/* Left: Info */}
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="w-10 h-10 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/40 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
             <Headphones className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h4 className="text-xs font-mono font-bold text-slate-100 truncate">
-                {title || 'CINTA DE AUDIO // TELEFONÍA FORENSE'}
-              </h4>
-              {isPlaying && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-              )}
-            </div>
-            <p className="text-[10px] font-mono text-slate-400 truncate">
-              {subtitle || 'Master de audio con canal dual de prospección y cliente'}
+            <h4 className="text-xs sm:text-sm font-display font-bold text-white truncate">
+              {title || 'Grabación de la llamada'}
+            </h4>
+            <p className="text-xs text-slate-400 truncate">
+              {subtitle || 'Reproduce la conversación completa'}
             </p>
           </div>
         </div>
 
-        {/* Center: Play Controls & Progress Scrubber */}
-        <div className="flex-1 w-full max-w-lg flex items-center gap-3 bg-[#080C14] px-3.5 py-2 rounded-xl border border-[#1E293B]">
+        {/* Center: Play Controls & Progress */}
+        <div className="flex-1 w-full max-w-lg flex items-center gap-3">
           <button
             onClick={togglePlay}
             disabled={!blobUrl}
-            className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all cursor-pointer disabled:opacity-40 ${
-              isPlaying
-                ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.3)]'
-                : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.3)]'
-            }`}
+            className="w-9 h-9 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center justify-center shrink-0 transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
             title={isPlaying ? "Pausar" : "Reproducir"}
           >
             {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
           </button>
 
-          <span className="text-[11px] font-mono font-bold text-cyan-300 min-w-[36px] text-right">
+          <span className="text-xs font-mono text-slate-300 min-w-[34px] text-right">
             {formatTime(currentTime)}
           </span>
 
@@ -246,33 +227,31 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
             step={0.1}
             value={currentTime}
             onChange={handleSeek}
-            className="flex-1 h-1.5 bg-[#1E293B] rounded-lg appearance-none cursor-pointer accent-cyan-400 focus:outline-none"
+            className="flex-1 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500 focus:outline-none"
           />
 
-          <span className="text-[11px] font-mono text-slate-400 min-w-[36px]">
+          <span className="text-xs font-mono text-slate-400 min-w-[34px]">
             {formatTime(duration)}
           </span>
         </div>
 
         {/* Right: Secondary Actions */}
         <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-          {/* Speed Stepper */}
           <button
             onClick={handleSpeedToggle}
-            className="px-2.5 py-1.5 bg-[#080C14] hover:bg-[#111A29] text-cyan-300 rounded-lg text-[10px] font-mono font-bold border border-[#1E293B] hover:border-cyan-500/50 transition-colors cursor-pointer"
+            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition-colors cursor-pointer"
             title="Velocidad de reproducción"
           >
             {playbackRate}x
           </button>
 
-          {/* Volume */}
-          <div className="flex items-center gap-1.5 bg-[#080C14] px-2 py-1.5 rounded-lg border border-[#1E293B]">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={toggleMute}
-              className="p-1 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
-              title={isMuted ? "Activar audio" : "Silenciar"}
+              className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title={isMuted ? "Activar sonido" : "Silenciar"}
             >
-              {isMuted ? <VolumeX className="w-3.5 h-3.5 text-red-400" /> : <Volume2 className="w-3.5 h-3.5 text-cyan-400" />}
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
             <input
               type="range"
@@ -281,15 +260,14 @@ export default function AudioPlayer({ audioId, audioBlob, audioUrl, title, subti
               step={0.05}
               value={isMuted ? 0 : volume}
               onChange={handleVolumeChange}
-              className="w-14 h-1 bg-[#1E293B] rounded-lg appearance-none cursor-pointer accent-cyan-400 hidden lg:block"
+              className="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500 hidden lg:block"
             />
           </div>
 
-          {/* Download Button */}
           <button
             onClick={handleDownload}
-            className="p-2 bg-[#080C14] hover:bg-[#111A29] text-slate-300 hover:text-cyan-300 rounded-lg border border-[#1E293B] hover:border-cyan-500/50 transition-colors cursor-pointer"
-            title="Descargar archivo MP3"
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+            title="Descargar audio"
           >
             <Download className="w-4 h-4" />
           </button>

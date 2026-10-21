@@ -5,8 +5,7 @@ import { api } from '../services/api';
 import Playbook from '../Playbook';
 import ReactMarkdown from 'react-markdown';
 import { 
-  Send, User, Bot, Loader2, Mic, MicOff, BookOpen, 
-  Sparkles, Terminal, Volume2, HelpCircle, ArrowRight
+  Send, User, Bot, Loader2, Mic, MicOff, BookOpen, MessageSquare
 } from 'lucide-react';
 
 interface CoachViewProps {
@@ -16,25 +15,25 @@ interface CoachViewProps {
 
 const INITIAL_MESSAGE: Message = {
   role: 'model',
-  content: `### TERMINAL DE ENTRENAMIENTO COMERCIAL // JYC EQUIPMENT
+  content: `### Asesor comercial JYC Equipment
 
-Bienvenido a la consola de inteligencia de ventas para la **compra y adquisición de maquinaria pesada**.
+Estoy aquí para ayudarte a preparar tus llamadas de compra y adquisición de maquinaria pesada.
 
-#### Capacidades del Entrenador:
-- **Técnicas de Bypass:** Cómo superar al operador/recepcionista y conectar con el *Jefe de Planta / Operaciones / Flota*.
-- **Apertura con KP:** Aplicación del gancho correcto y pregunta de respeto de tiempo.
-- **Calificación en 7 pasos:** Tipo de equipo, marca, modelo, capacidad/tonelaje, año, estado/reparaciones y precio pretendido con fotos.
-- **Neutralización de Objeciones:** Subastas, consignaciones, contratos de leasing o exigencia de precio inicial.
+Puedes consultarme sobre:
+- **Cómo superar recepción** y lograr que te comuniquen con el jefe de planta u operaciones.
+- **Apertura y gancho comercial** según el sector (plásticos, puertos, concreto, acero, médico).
+- **Las 7 preguntas de calificación** para evaluar inyectoras, cargadores o reach stackers.
+- **Cómo responder objeciones** de precio, subastas, entrega a cuenta (trade-in) o leasing.
 
-*Selecciona un escenario rápido abajo o escribe tu consulta comercial:*`
+Elige una consulta frecuente abajo o escribe tu duda:`
 };
 
 const SCENARIO_CHIPS = [
-  "¿Cómo responder si el prospecto dice 'Nosotros solo vendemos en subastas'?",
-  "Dame el guion exacto de bypass para la operadora en una planta de plásticos",
-  "¿Cómo pedir fotos de la placa de datos y horómetro sin parecer insistente?",
-  "El prospecto dice 'Dime cuánto me pagas tú primero'. ¿Qué respondo?",
-  "Si no tienen máquinas a la venta hoy, ¿qué preguntas de referencia hago?"
+  "¿Qué respondo si dicen 'Nosotros solo vendemos en subasta'?",
+  "Dame el guion para superar recepción en una planta de plásticos",
+  "¿Cómo pedir fotos de la placa y horómetro con naturalidad?",
+  "El cliente me dice 'Dime cuánto me ofreces primero'. ¿Qué le digo?",
+  "Si hoy no tienen máquinas en venta, ¿qué preguntas debo hacer?"
 ];
 
 export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) {
@@ -76,7 +75,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
   const toggleRecording = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Tu navegador no soporta reconocimiento de voz Web Speech API.");
+      alert("Tu navegador no soporta dictado por voz.");
       return;
     }
 
@@ -128,7 +127,7 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
       console.error(err);
       setMessages([
         ...newMessages,
-        { role: 'model', content: `**Error de terminal:** ${err.message || 'No se pudo generar respuesta.'}` }
+        { role: 'model', content: `No fue posible obtener respuesta en este momento: ${err.message || 'Intenta nuevamente.'}` }
       ]);
     } finally {
       setLoading(false);
@@ -143,78 +142,84 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
   };
 
   return (
-    <div className="flex-1 flex flex-col lg:flex-row min-h-0 h-full overflow-hidden bg-[#080B10]">
+    <div className="flex-1 flex flex-col lg:flex-row min-h-0 h-full overflow-hidden bg-[#F4F6F9]">
       
-      {/* Mobile Playbook Toggle Bar */}
-      <div className="lg:hidden bg-[#0B1017] border-b border-[#1C2634] px-4 py-2 flex items-center justify-between">
-        <span className="text-xs font-mono font-bold text-slate-300 flex items-center gap-1.5">
-          <Terminal className="w-3.5 h-3.5 text-sky-400" />
-          TERMINAL DE ENTRENAMIENTO
+      {/* Mobile Switcher Bar */}
+      <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between">
+        <span className="text-xs font-semibold text-slate-700">
+          {showPlaybookMobile ? 'Guion comercial' : 'Asesor comercial'}
         </span>
         <button
           onClick={() => setShowPlaybookMobile(!showPlaybookMobile)}
-          className="text-xs font-mono font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1 py-1 px-2.5 rounded bg-sky-950/60 border border-sky-500/40"
+          className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 py-1.5 px-3 rounded-lg bg-blue-50 border border-blue-200 cursor-pointer"
         >
-          <BookOpen className="w-3.5 h-3.5" />
-          {showPlaybookMobile ? 'VER CHAT' : 'VER PLAYBOOK'}
+          {showPlaybookMobile ? (
+            <>
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Ir al chat con el asesor</span>
+            </>
+          ) : (
+            <>
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Ver guion completo</span>
+            </>
+          )}
         </button>
       </div>
 
-      {/* Main Terminal Chat Pane */}
-      <div className={`flex-1 flex flex-col min-w-0 h-full border-r border-[#151D29] bg-[#070A0F] ${
+      {/* Left Pane: AI Coach Conversation */}
+      <div className={`flex-1 flex flex-col min-w-0 h-full ${
         showPlaybookMobile ? 'hidden lg:flex' : 'flex'
       }`}>
         
-        {/* Scenario Quick Launcher Strip */}
-        <div className="px-4 py-2.5 bg-[#0A0E15] border-b border-[#151D29] flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
-          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-sky-400" /> ESCENARIOS:
+        {/* Frequent Questions Bar */}
+        <div className="px-4 sm:px-6 py-3 bg-white border-b border-slate-200/80 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+          <span className="text-xs font-semibold text-slate-500 shrink-0">
+            Consultas frecuentes:
           </span>
           {SCENARIO_CHIPS.map((chip, idx) => (
             <button
               key={idx}
               onClick={() => handleSendPrompt(chip)}
               disabled={loading}
-              className="text-[11px] font-mono whitespace-nowrap px-2.5 py-1 rounded bg-[#0F1520] hover:bg-[#162030] text-slate-300 hover:text-white border border-[#1E293B] hover:border-sky-500/50 transition-colors cursor-pointer shrink-0 disabled:opacity-40"
+              className="text-xs font-medium whitespace-nowrap px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-700 hover:text-slate-900 transition-colors cursor-pointer shrink-0 disabled:opacity-40"
             >
               {chip}
             </button>
           ))}
         </div>
 
-        {/* Dialogue Stream */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 dark-scrollbar">
+        {/* Messages Stream */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {messages.map((msg, idx) => (
             <div 
               key={idx} 
-              className={`flex gap-3 max-w-4xl ${
+              className={`flex gap-3 max-w-3xl ${
                 msg.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
               }`}
             >
-              {/* Avatar Pill */}
               <div 
-                className={`shrink-0 w-8 h-8 rounded flex items-center justify-center font-mono font-bold text-xs ${
+                className={`shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-xs ${
                   msg.role === 'user' 
-                    ? 'bg-blue-900/60 text-blue-200 border border-blue-500/40' 
-                    : 'bg-sky-950/60 text-sky-300 border border-sky-500/40'
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-slate-900 text-amber-400'
                 }`}
               >
                 {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
               </div>
 
-              {/* Message Bubble */}
               <div className={`min-w-0 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
                 <div 
-                  className={`inline-block rounded px-4 py-3 text-xs sm:text-sm leading-relaxed shadow-lg ${
+                  className={`inline-block rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed shadow-2xs ${
                     msg.role === 'user'
-                      ? 'bg-[#152238] border border-blue-500/40 text-slate-100 font-medium text-left'
-                      : 'bg-[#0D121B] border border-[#1C2634] text-slate-200'
+                      ? 'bg-blue-600 text-white text-left'
+                      : 'bg-white border border-slate-200/90 text-slate-800'
                   }`}
                 >
                   {msg.role === 'user' ? (
-                    <div className="whitespace-pre-wrap font-sans">{msg.content}</div>
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
                   ) : (
-                    <div className="markdown-body prose prose-invert prose-xs sm:prose-sm max-w-none text-slate-200">
+                    <div className="markdown-body max-w-none text-slate-700">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                   )}
@@ -224,13 +229,13 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
           ))}
 
           {loading && (
-            <div className="flex gap-3 max-w-3xl mr-auto items-center">
-              <div className="w-8 h-8 rounded bg-sky-950/60 border border-sky-500/40 text-sky-400 flex items-center justify-center">
+            <div className="flex gap-3 max-w-2xl mr-auto items-center">
+              <div className="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center">
                 <Bot className="w-4 h-4" />
               </div>
-              <div className="bg-[#0D121B] border border-[#1C2634] px-4 py-2.5 rounded text-xs font-mono text-slate-400 flex items-center gap-2">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400" />
-                <span>Consultando Playbook de Maquinaria JYC y generando respuesta técnica...</span>
+              <div className="bg-white border border-slate-200 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 flex items-center gap-2 shadow-2xs">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
+                <span>Preparando recomendación comercial...</span>
               </div>
             </div>
           )}
@@ -238,17 +243,17 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Bar */}
-        <div className="p-3 sm:p-4 bg-[#0A0E15] border-t border-[#151D29]">
-          <div className="max-w-4xl mx-auto flex items-end gap-2">
+        {/* Input Box */}
+        <div className="p-4 bg-white border-t border-slate-200/80">
+          <div className="max-w-3xl mx-auto flex items-end gap-2">
             <button
               onClick={toggleRecording}
-              className={`p-2.5 rounded border transition-all cursor-pointer shrink-0 ${
+              className={`p-2.5 rounded-xl border transition-all cursor-pointer shrink-0 ${
                 isRecording
-                  ? 'bg-red-950/80 border-red-500 text-red-400 animate-pulse'
-                  : 'bg-[#0E141D] border-[#1C2634] text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? 'bg-red-50 border-red-300 text-red-600 animate-pulse'
+                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
-              title={isRecording ? 'Detener dictado' : 'Hablar por micrófono'}
+              title={isRecording ? 'Detener dictado' : 'Dictar por micrófono'}
             >
               {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </button>
@@ -258,8 +263,8 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={onKeyDown}
-                placeholder="Escribe tu consulta de ventas, objeción o argumento... (Enter para enviar)"
-                className="w-full resize-none border border-[#1E293B] focus:border-sky-500 rounded px-3.5 py-2.5 text-xs sm:text-sm bg-[#070A0F] text-slate-100 placeholder:text-slate-500 outline-none transition-all max-h-36 min-h-[44px] font-sans"
+                placeholder="Escribe una objeción del cliente o una duda sobre el guion..."
+                className="w-full resize-none border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 text-slate-900 placeholder:text-slate-400 outline-none transition-all max-h-36 min-h-[42px]"
                 rows={1}
               />
             </div>
@@ -267,21 +272,17 @@ export default function CoachView({ voiceEnabled, onResetRef }: CoachViewProps) 
             <button
               onClick={() => handleSendPrompt(input)}
               disabled={!input.trim() || loading}
-              className="p-2.5 rounded bg-sky-600 hover:bg-sky-500 text-black font-bold transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-md shadow-sky-600/20"
+              className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0 shadow-xs"
               title="Enviar consulta"
             >
-              <Send className="w-4 h-4 fill-current" />
+              <Send className="w-4 h-4" />
             </button>
-          </div>
-          <div className="max-w-4xl mx-auto mt-1.5 flex items-center justify-between text-[10px] font-mono text-slate-500 px-1">
-            <span>Shift + Enter para salto de línea</span>
-            <span className="hidden sm:inline">MOTOR IA: GEMINI 2.5/3.5 FLASH • CONTEXTO B2B JYC</span>
           </div>
         </div>
       </div>
 
-      {/* Playbook Sidebar Pane (Field Dossier) */}
-      <div className={`lg:w-[480px] xl:w-[520px] h-full shrink-0 border-l border-[#151D29] bg-[#070A0F] overflow-hidden ${
+      {/* Right Pane: Playbook Guide */}
+      <div className={`lg:w-[460px] xl:w-[500px] h-full shrink-0 p-4 lg:pl-0 overflow-hidden ${
         showPlaybookMobile ? 'w-full flex-1' : 'hidden lg:block'
       }`}>
         <Playbook />

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Users, UserPlus, Key, Trash2, X, Shield, UserCheck, 
-  CheckCircle2, AlertCircle, Loader2, RefreshCw, Lock, Eye, EyeOff,
-  Copy, Award, PhoneCall, Calendar, ChevronRight, ArrowLeft, BarChart3, Check, Ban, Sparkles
+  Users, UserPlus, Key, Trash2, X, 
+  CheckCircle2, AlertCircle, Loader2, Eye, EyeOff,
+  Copy, PhoneCall, ChevronRight, ArrowLeft, Check, Ban
 } from 'lucide-react';
 
 interface AdminUserManagerProps {
@@ -39,21 +39,18 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [selectedUser, setSelectedUser] = useState<DetailedUser | null>(null);
 
-  // New user form state
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [newName, setNewName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [creating, setCreating] = useState(false);
 
-  // Password visibility & editing in details
   const [showPasswordMap, setShowPasswordMap] = useState<Record<string, boolean>>({});
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [newPasswordInput, setNewPasswordInput] = useState('');
   const [changingPass, setChangingPass] = useState(false);
   const [copiedType, setCopiedType] = useState<string | null>(null);
 
-  // Feedback message
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [dbStatus, setDbStatus] = useState<{ mode?: string; connected?: boolean } | null>(null);
 
@@ -94,7 +91,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
     setFeedback(null);
 
     if (!newUsername.trim() || !newName.trim() || !newPassword.trim()) {
-      setFeedback({ type: 'error', message: 'Todos los campos son obligatorios.' });
+      setFeedback({ type: 'error', message: 'Completa todos los campos para registrar al comercial.' });
       return;
     }
 
@@ -115,12 +112,12 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Error al crear usuario.');
+        throw new Error(data.error || 'No se pudo crear el usuario.');
       }
 
       setFeedback({ 
         type: 'success', 
-        message: `¡Vendedor '@${data.user.username}' (${data.user.name}) creado exitosamente!` 
+        message: `Comercial '${data.user.name}' (@${data.user.username}) registrado correctamente.` 
       });
       setNewUsername('');
       setNewName('');
@@ -136,7 +133,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
 
   const handleChangePassword = async (username: string) => {
     if (!newPasswordInput.trim()) {
-      alert('Por favor ingresa una nueva contraseña.');
+      alert('Escribe una nueva contraseña.');
       return;
     }
 
@@ -155,12 +152,12 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Error al actualizar contraseña.');
+        throw new Error(data.error || 'No se pudo actualizar la contraseña.');
       }
 
       setFeedback({ 
         type: 'success', 
-        message: `¡Contraseña de '@${username}' actualizada con éxito en la base de datos central!` 
+        message: `Contraseña de '@${username}' actualizada.` 
       });
       setIsEditingPassword(false);
       setNewPasswordInput('');
@@ -173,7 +170,7 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
   };
 
   const handleDeleteUser = async (username: string, name: string) => {
-    if (!window.confirm(`¿Estás seguro de eliminar permanentemente al usuario '@${username}' (${name})?`)) {
+    if (!window.confirm(`¿Deseas eliminar permanentemente al usuario '@${username}' (${name})?`)) {
       return;
     }
 
@@ -187,10 +184,10 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Error al eliminar usuario.');
+        throw new Error(data.error || 'No se pudo eliminar el usuario.');
       }
 
-      setFeedback({ type: 'success', message: `Usuario '@${username}' eliminado correctamente.` });
+      setFeedback({ type: 'success', message: `Usuario '@${username}' eliminado.` });
       if (selectedUser?.username === username) {
         setSelectedUser(null);
       }
@@ -201,8 +198,8 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
   };
 
   const handleToggleBlock = async (username: string, currentlyBlocked?: boolean) => {
-    const actionText = currentlyBlocked ? 'desbloquear y reactivar el acceso para' : 'bloquear el acceso para';
-    if (!window.confirm(`¿Estás seguro de ${actionText} el usuario '@${username}'?`)) {
+    const actionText = currentlyBlocked ? 'reactivar el acceso para' : 'suspender temporalmente el acceso para';
+    if (!window.confirm(`¿Confirmas que deseas ${actionText} '@${username}'?`)) {
       return;
     }
 
@@ -218,13 +215,13 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Error al cambiar estado de bloqueo.');
+        throw new Error(data.error || 'Error al cambiar el estado de acceso.');
       }
 
       setFeedback({ type: 'success', message: data.message });
       await fetchUsers(username);
     } catch (err: any) {
-      setFeedback({ type: 'error', message: err.message || 'Error al modificar estado de bloqueo.' });
+      setFeedback({ type: 'error', message: err.message || 'Error al modificar el estado.' });
     }
   };
 
@@ -239,34 +236,32 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#040609]/90 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-[#0A0F17] rounded-3xl shadow-2xl border border-[#1E293B] max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-slate-100">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-900">
         
-        {/* Modal Header */}
-        <div className="bg-[#080C14] p-5 sm:p-6 text-slate-100 flex items-center justify-between shrink-0 border-b border-[#1E293B]">
+        {/* Header */}
+        <div className="bg-[#0F172A] p-5 sm:p-6 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-cyan-950/60 text-cyan-400 flex items-center justify-center border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center border border-amber-500/30">
               <Users className="w-5 h-5" />
             </div>
             <div className="text-left">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-mono font-bold text-sm sm:text-base tracking-wide uppercase">
-                  Gestión de Operadores & Clearance de Acceso
-                </h3>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h3 className="font-display font-bold text-base">Gestión de comerciales y accesos</h3>
                 {dbStatus && (
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                  <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${
                     dbStatus.mode === 'postgres' && dbStatus.connected
                       ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60'
                       : 'bg-amber-950/80 text-amber-300 border-amber-700/60'
                   }`}>
                     {dbStatus.mode === 'postgres' && dbStatus.connected
-                      ? '● BD: PostgreSQL (Neon) Persistente'
-                      : '○ BD: Archivo Local (data/database.json)'}
+                      ? 'Base de datos conectada'
+                      : 'Almacenamiento local'}
                   </span>
                 )}
               </div>
-              <p className="text-slate-400 text-xs font-mono mt-0.5">
-                Alta de vendedores, inspección de contraseñas y auditoría individual de llamadas
+              <p className="text-slate-400 text-xs mt-0.5">
+                Registra nuevos comerciales, consulta o actualiza sus contraseñas y revisa su actividad
               </p>
             </div>
           </div>
@@ -278,153 +273,135 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
           </button>
         </div>
 
-        {/* Modal Content */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-6 text-left flex-1 custom-scrollbar">
+        {/* Content */}
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-6 text-left flex-1">
           
           {feedback && (
-            <div className={`p-4 rounded-xl text-xs font-mono flex items-center justify-between border ${
+            <div className={`p-4 rounded-xl text-xs sm:text-sm flex items-center justify-between border ${
               feedback.type === 'success' 
-                ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300' 
-                : 'bg-red-950/40 border-red-500/50 text-red-300'
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+                : 'bg-red-50 border-red-200 text-red-800'
             }`}>
               <div className="flex items-center gap-2">
                 {feedback.type === 'success' ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 ) : (
-                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
                 )}
-                <span>{feedback.message}</span>
+                <span className="font-medium">{feedback.message}</span>
               </div>
-              <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-slate-200">
-                <X className="w-3.5 h-3.5" />
+              <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-4 h-4" />
               </button>
             </div>
           )}
 
-          {/* VIEW 1: SELECTED USER DETAILS */}
           {selectedUser ? (
-            <div className="space-y-6 animate-in fade-in duration-150">
-              
-              {/* Back to list button */}
+            <div className="space-y-6">
               <button
                 onClick={() => {
                   setSelectedUser(null);
                   setIsEditingPassword(false);
                 }}
-                className="flex items-center gap-2 px-3 py-1.5 bg-[#0E1522] hover:bg-[#162032] border border-[#1E293B] text-cyan-300 rounded-lg text-xs font-mono font-bold transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Volver a la lista de operadores</span>
+                <span>Volver a la lista de comerciales</span>
               </button>
 
-              {/* User Overview Profile Card */}
-              <div className="bg-[#080C14] text-slate-100 rounded-2xl p-5 sm:p-6 border border-[#1E293B] shadow-2xl space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1E293B] pb-4">
+              {/* Profile & Credentials Card */}
+              <div className="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-200 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
                   <div className="flex items-center gap-3.5">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-mono font-black text-lg border ${
-                      selectedUser.role === 'admin' 
-                        ? 'bg-indigo-950/80 text-indigo-300 border-indigo-700/60 shadow-[0_0_12px_rgba(99,102,241,0.2)]' 
-                        : 'bg-cyan-950/80 text-cyan-300 border-cyan-700/60 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
-                    }`}>
+                    <div className="w-12 h-12 rounded-xl bg-[#0F172A] text-amber-400 flex items-center justify-center shrink-0 font-display font-bold text-lg">
                       {selectedUser.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-base sm:text-lg font-mono font-bold tracking-tight text-slate-100">{selectedUser.name}</h2>
-                        <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded border ${
-                          selectedUser.role === 'admin' 
-                            ? 'bg-indigo-950 text-indigo-300 border-indigo-800' 
-                            : 'bg-cyan-950 text-cyan-300 border-cyan-800'
-                        }`}>
-                          {selectedUser.role === 'admin' ? 'ADMINISTRADOR' : 'OPERADOR COMERCIAL'}
+                        <h2 className="text-lg font-display font-bold text-slate-900">{selectedUser.name}</h2>
+                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                          {selectedUser.role === 'admin' ? 'Supervisor' : 'Comercial'}
                         </span>
                         {selectedUser.role !== 'admin' && (
                           selectedUser.blocked ? (
-                            <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-800 flex items-center gap-1">
-                              <Ban className="w-3 h-3" /> BLOQUEADO
+                            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 flex items-center gap-1">
+                              <Ban className="w-3 h-3" /> Acceso suspendido
                             </span>
                           ) : (
-                            <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" /> ACTIVO
+                            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> Activo
                             </span>
                           )
                         )}
                       </div>
-                      <p className="text-cyan-400 font-mono text-xs mt-0.5">CLEARANCE: @{selectedUser.username}</p>
+                      <p className="text-slate-500 text-xs mt-0.5">Usuario: @{selectedUser.username}</p>
                     </div>
                   </div>
 
-                  <div className="text-left sm:text-right font-mono">
-                    <span className="text-[10px] text-slate-400 uppercase">Fecha de Registro:</span>
-                    <p className="text-xs font-bold text-slate-200 mt-0.5">{selectedUser.createdAt || 'Activo'}</p>
+                  <div className="text-left sm:text-right text-xs text-slate-500">
+                    <span>Fecha de alta:</span>
+                    <p className="font-semibold text-slate-800 mt-0.5">{selectedUser.createdAt || 'Activo'}</p>
                   </div>
                 </div>
 
-                {/* Password / Credentials Inspection Box */}
-                <div className="bg-[#0E1522] rounded-xl p-4 border border-[#1E293B] space-y-3">
+                {/* Credentials Box */}
+                <div className="bg-white rounded-xl p-4 border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Key className="w-4 h-4 text-cyan-400" />
-                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300">
-                        Credenciales de Acceso Verificadas
-                      </span>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <Key className="w-4 h-4 text-amber-600" />
+                      <span>Credenciales de acceso</span>
                     </div>
                     <button
                       onClick={() => copyToClipboard(`Usuario: ${selectedUser.username}\nContraseña: ${selectedUser.password}`, 'all')}
-                      className="px-3 py-1 bg-[#080C14] hover:bg-[#111A29] border border-[#1E293B] text-slate-200 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
-                      {copiedType === 'all' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copiedType === 'all' ? '¡COPIADO!' : 'COPIAR ACCESO COMPLETO'}</span>
+                      {copiedType === 'all' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedType === 'all' ? 'Copiado' : 'Copiar credenciales'}</span>
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    
-                    {/* Username pill */}
-                    <div className="bg-[#080C14] rounded-lg p-3 flex items-center justify-between border border-[#1E293B]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-between border border-slate-200/80">
                       <div>
-                        <span className="text-[9px] uppercase font-mono font-bold text-slate-400 block">Usuario</span>
-                        <span className="font-mono text-xs sm:text-sm font-bold text-slate-100 select-all">@{selectedUser.username}</span>
+                        <span className="text-[11px] font-medium text-slate-500 block">Usuario</span>
+                        <span className="font-mono text-sm font-semibold text-slate-900 select-all">{selectedUser.username}</span>
                       </div>
                       <button
                         onClick={() => copyToClipboard(selectedUser.username, 'user')}
-                        className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                        className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                         title="Copiar usuario"
                       >
-                        {copiedType === 'user' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedType === 'user' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                       </button>
                     </div>
 
-                    {/* Password pill with Reveal & Change */}
-                    <div className="bg-[#080C14] rounded-lg p-3 flex items-center justify-between border border-[#1E293B]">
+                    <div className="bg-slate-50 rounded-xl p-3 flex items-center justify-between border border-slate-200/80">
                       <div className="flex-1 pr-2">
-                        <span className="text-[9px] uppercase font-mono font-bold text-slate-400 block">Contraseña Registrada</span>
-                        <span className="font-mono text-xs sm:text-sm font-bold text-amber-300 select-all tracking-wider">
+                        <span className="text-[11px] font-medium text-slate-500 block">Contraseña</span>
+                        <span className="font-mono text-sm font-semibold text-slate-900 select-all">
                           {showPasswordMap[selectedUser.username] ? selectedUser.password : '••••••••••••'}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => togglePasswordVisibility(selectedUser.username)}
-                          className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                          title={showPasswordMap[selectedUser.username] ? 'Ocultar contraseña' : 'Ver contraseña creada'}
+                          className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                          title={showPasswordMap[selectedUser.username] ? 'Ocultar contraseña' : 'Ver contraseña'}
                         >
                           {showPasswordMap[selectedUser.username] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                         <button
                           onClick={() => copyToClipboard(selectedUser.password, 'pass')}
-                          className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                           title="Copiar contraseña"
                         >
-                          {copiedType === 'pass' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedType === 'pass' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                         </button>
                       </div>
                     </div>
-
                   </div>
 
-                  {/* Option to change password */}
-                  <div className="pt-2 border-t border-[#1E293B] flex items-center justify-between">
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                     {isEditingPassword ? (
                       <div className="flex items-center gap-2 w-full">
                         <input
@@ -432,21 +409,21 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                           value={newPasswordInput}
                           onChange={(e) => setNewPasswordInput(e.target.value)}
                           placeholder="Escribe la nueva contraseña..."
-                          className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-[#080C14] border border-cyan-500 text-slate-100 placeholder-slate-500 font-mono focus:outline-none"
+                          className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-slate-50 border border-slate-300 text-slate-900 focus:outline-none focus:border-blue-600"
                         />
                         <button
                           onClick={() => handleChangePassword(selectedUser.username)}
                           disabled={changingPass}
-                          className="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-mono font-bold cursor-pointer disabled:opacity-50"
+                          className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-50"
                         >
-                          {changingPass ? 'Guardando...' : 'Guardar Nueva Clave'}
+                          {changingPass ? 'Guardando...' : 'Guardar contraseña'}
                         </button>
                         <button
                           onClick={() => {
                             setIsEditingPassword(false);
                             setNewPasswordInput('');
                           }}
-                          className="px-3 py-1.5 bg-[#080C14] text-slate-400 rounded-lg text-xs font-mono hover:text-slate-200 cursor-pointer"
+                          className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-200 cursor-pointer"
                         >
                           Cancelar
                         </button>
@@ -457,83 +434,77 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                           setIsEditingPassword(true);
                           setNewPasswordInput('');
                         }}
-                        className="text-xs text-cyan-400 hover:text-cyan-300 font-mono font-bold flex items-center gap-1.5 cursor-pointer underline underline-offset-4"
+                        className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1.5 cursor-pointer"
                       >
                         <Key className="w-3.5 h-3.5" />
-                        <span>Modificar o asignar una nueva contraseña a este operador</span>
+                        <span>Cambiar contraseña de este comercial</span>
                       </button>
                     )}
                   </div>
-
                 </div>
-
               </div>
 
-              {/* Performance Metrics Cards */}
+              {/* Metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-[#080C14] border border-[#1E293B] p-4 rounded-xl">
-                  <p className="text-[9px] uppercase font-mono font-bold text-slate-400">Total Llamadas</p>
-                  <p className="text-xl font-mono font-extrabold text-slate-100 mt-1">{selectedUser.callCount}</p>
+                <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-xl">
+                  <p className="text-xs font-medium text-slate-500">Prácticas realizadas</p>
+                  <p className="text-xl font-display font-bold font-mono text-slate-900 mt-1">{selectedUser.callCount}</p>
                 </div>
 
-                <div className="bg-[#080C14] border border-[#1E293B] p-4 rounded-xl">
-                  <p className="text-[9px] uppercase font-mono font-bold text-slate-400">Promedio General</p>
-                  <p className={`text-xl font-mono font-extrabold mt-1 ${
-                    selectedUser.avgScore >= 80 ? 'text-emerald-400' : selectedUser.avgScore >= 60 ? 'text-amber-400' : 'text-red-400'
-                  }`}>
-                    {selectedUser.avgScore} <span className="text-xs text-slate-400 font-sans font-normal">/100</span>
+                <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-xl">
+                  <p className="text-xs font-medium text-slate-500">Promedio general</p>
+                  <p className="text-xl font-display font-bold font-mono text-slate-900 mt-1">
+                    {selectedUser.avgScore} <span className="text-xs text-slate-400 font-sans font-normal">/ 100</span>
                   </p>
                 </div>
 
-                <div className="bg-[#080C14] border border-[#1E293B] p-4 rounded-xl">
-                  <p className="text-[9px] uppercase font-mono font-bold text-slate-400">Mejor Puntuación</p>
-                  <p className="text-xl font-mono font-extrabold text-cyan-400 mt-1">{selectedUser.bestScore} <span className="text-xs text-slate-400 font-sans font-normal">/100</span></p>
+                <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-xl">
+                  <p className="text-xs font-medium text-slate-500">Mejor puntuación</p>
+                  <p className="text-xl font-display font-bold font-mono text-blue-600 mt-1">
+                    {selectedUser.bestScore} <span className="text-xs text-slate-400 font-sans font-normal">/ 100</span>
+                  </p>
                 </div>
 
-                <div className="bg-[#080C14] border border-[#1E293B] p-4 rounded-xl">
-                  <p className="text-[9px] uppercase font-mono font-bold text-slate-400">Tasa Aprobación (≥70)</p>
-                  <p className="text-xl font-mono font-extrabold text-indigo-400 mt-1">{selectedUser.passRate}%</p>
+                <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-xl">
+                  <p className="text-xs font-medium text-slate-500">Aprobación (≥70)</p>
+                  <p className="text-xl font-display font-bold font-mono text-emerald-600 mt-1">{selectedUser.passRate}%</p>
                 </div>
               </div>
 
-              {/* Recent Calls by this user */}
-              <div className="bg-[#080C14] border border-[#1E293B] rounded-2xl overflow-hidden shadow-2xl">
-                <div className="p-4 sm:p-5 border-b border-[#1E293B] flex items-center justify-between">
-                  <h4 className="font-mono font-bold text-slate-200 text-xs uppercase tracking-wider">
-                    Llamadas Recientes de {selectedUser.name}
+              {/* Recent Calls */}
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                  <h4 className="font-display font-bold text-slate-900 text-xs sm:text-sm">
+                    Últimas sesiones de {selectedUser.name}
                   </h4>
-                  <span className="text-xs text-slate-400 font-mono">{selectedUser.recentCalls.length} registros</span>
+                  <span className="text-xs text-slate-400">{selectedUser.recentCalls.length} mostradas</span>
                 </div>
 
                 {selectedUser.recentCalls.length === 0 ? (
-                  <div className="p-8 text-center text-slate-400 text-xs font-mono">
-                    Este vendedor aún no ha completado llamadas de entrenamiento.
+                  <div className="p-8 text-center text-slate-400 text-xs">
+                    Este comercial aún no ha registrado prácticas.
                   </div>
                 ) : (
-                  <div className="divide-y divide-[#1E293B]">
+                  <div className="divide-y divide-slate-100">
                     {selectedUser.recentCalls.map((call) => (
-                      <div key={call.id} className="p-4 flex items-center justify-between gap-3 hover:bg-[#0E1522] transition-colors">
+                      <div key={call.id} className="p-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg text-xs font-mono font-bold border ${
-                            call.type === 'Live Call' 
-                              ? 'bg-blue-950/60 text-blue-400 border-blue-700/60' 
-                              : 'bg-amber-950/60 text-amber-400 border-amber-700/60'
-                          }`}>
+                          <div className="p-2 rounded-lg bg-slate-100 text-slate-600">
                             <PhoneCall className="w-3.5 h-3.5" />
                           </div>
                           <div>
-                            <p className="font-mono font-bold text-slate-100 text-xs">{call.companyName}</p>
-                            <p className="text-[11px] text-slate-400 font-mono">Contacto: {call.contactName} • {call.date}</p>
+                            <p className="font-semibold text-slate-900 text-xs sm:text-sm">{call.companyName}</p>
+                            <p className="text-xs text-slate-500">Cliente: {call.contactName} · {call.date}</p>
                           </div>
                         </div>
-                        <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-lg border ${
+                        <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-full ${
                           call.score >= 80 
-                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60' 
+                            ? 'bg-emerald-100 text-emerald-800' 
                             : call.score >= 60 
-                              ? 'bg-amber-950/80 text-amber-300 border-amber-700/60' 
-                              : 'bg-red-950/80 text-red-300 border-red-700/60'
+                              ? 'bg-amber-100 text-amber-800' 
+                              : 'bg-red-100 text-red-800'
                         }`}>
-                          {call.score}/100 PTS
+                          {call.score}/100
                         </span>
                       </div>
                     ))}
@@ -541,134 +512,125 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                 )}
               </div>
 
-              {/* Actions: Block/Unblock & Delete (Only for non-admin) */}
               {selectedUser.role !== 'admin' && (
-                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-[#1E293B]">
+                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-slate-200">
                   <button
                     onClick={() => handleToggleBlock(selectedUser.username, selectedUser.blocked)}
-                    className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer border shadow-sm ${
+                    className={`flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
                       selectedUser.blocked
-                        ? 'bg-emerald-950/60 hover:bg-emerald-950 text-emerald-300 border-emerald-600'
-                        : 'bg-amber-950/60 hover:bg-amber-950 text-amber-300 border-amber-600'
+                        ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+                        : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200'
                     }`}
                   >
                     {selectedUser.blocked ? (
                       <>
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        <span>Desbloquear y Reactivar Acceso</span>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>Reactivar acceso</span>
                       </>
                     ) : (
                       <>
-                        <Ban className="w-4 h-4 text-amber-400" />
-                        <span>Bloquear Acceso (Suspender Operador)</span>
+                        <Ban className="w-4 h-4 text-amber-600" />
+                        <span>Suspender acceso</span>
                       </>
                     )}
                   </button>
 
                   <button
                     onClick={() => handleDeleteUser(selectedUser.username, selectedUser.name)}
-                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-950/40 hover:bg-red-950/80 text-red-300 rounded-xl text-xs font-mono font-bold transition-colors cursor-pointer border border-red-700/60"
+                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-red-200"
                   >
                     <Trash2 className="w-4 h-4" />
-                    <span>Eliminar Registro Permanente</span>
+                    <span>Eliminar cuenta</span>
                   </button>
                 </div>
               )}
-
             </div>
           ) : (
-            /* VIEW 2: LIST OF ALL USERS + CREATE FORM */
-            <div className="space-y-6 animate-in fade-in duration-150">
-              
-              {/* Top Action Bar */}
+            <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h4 className="font-mono font-bold text-slate-100 text-sm">Operadores Comerciales Registrados</h4>
-                  <p className="text-xs text-slate-400 font-mono">Haz clic en cualquier operador para inspeccionar su contraseña creada y su historial.</p>
+                  <h4 className="font-display font-bold text-slate-900 text-sm">Comerciales registrados</h4>
+                  <p className="text-xs text-slate-500">Selecciona un comercial para consultar su contraseña o ver sus llamadas.</p>
                 </div>
 
                 <button
                   onClick={() => setShowCreateForm(!showCreateForm)}
-                  className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl font-mono font-bold text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.3)] transition-all cursor-pointer self-start sm:self-auto"
+                  className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl font-display font-bold text-xs flex items-center gap-2 shadow-xs transition-all cursor-pointer self-start sm:self-auto"
                 >
                   <UserPlus className="w-4 h-4" />
-                  <span>{showCreateForm ? 'Cerrar Registro' : 'Registrar Nuevo Vendedor'}</span>
+                  <span>{showCreateForm ? 'Cerrar formulario' : 'Registrar nuevo comercial'}</span>
                 </button>
               </div>
 
-              {/* Collapsible Form: Create New User */}
               {showCreateForm && (
-                <div className="bg-[#080C14] border border-cyan-800/60 rounded-2xl p-6 space-y-4 shadow-2xl animate-in fade-in duration-150">
-                  <div className="flex items-center justify-between border-b border-[#1E293B] pb-3">
-                    <div className="flex items-center gap-2">
-                      <UserPlus className="w-4 h-4 text-cyan-400" />
-                      <h4 className="font-mono font-bold text-slate-100 text-xs uppercase tracking-wider">
-                        Alta de Operador Comercial
-                      </h4>
-                    </div>
-                    <button onClick={() => setShowCreateForm(false)} className="text-slate-400 hover:text-slate-200">
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <h4 className="font-display font-bold text-slate-900 text-sm">
+                      Nuevo comercial
+                    </h4>
+                    <button onClick={() => setShowCreateForm(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
 
                   <form onSubmit={handleCreateUser} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-[11px] font-mono font-bold text-slate-300 mb-1 uppercase">
-                        Nombre Completo:
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Nombre completo
                       </label>
                       <input
                         type="text"
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
                         placeholder="Ej. Carlos Martínez"
-                        className="w-full px-3 py-2 text-xs border border-[#1E293B] rounded-xl focus:outline-none focus:ring-1 focus:ring-cyan-500 bg-[#0E1522] text-slate-100 font-mono"
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 bg-white text-slate-900"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-mono font-bold text-slate-300 mb-1 uppercase">
-                        Usuario (Login):
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Usuario
                       </label>
                       <input
                         type="text"
                         value={newUsername}
                         onChange={(e) => setNewUsername(e.target.value)}
                         placeholder="Ej. carlosm"
-                        className="w-full px-3 py-2 text-xs border border-[#1E293B] rounded-xl focus:outline-none focus:ring-1 focus:ring-cyan-500 bg-[#0E1522] text-slate-100 font-mono"
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 bg-white text-slate-900"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-mono font-bold text-slate-300 mb-1 uppercase">
-                        Contraseña Asignada:
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Contraseña
                       </label>
                       <input
                         type="text"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Ej. Jyc2026*"
-                        className="w-full px-3 py-2 text-xs border border-[#1E293B] rounded-xl focus:outline-none focus:ring-1 focus:ring-cyan-500 bg-[#0E1522] text-slate-100 font-mono"
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 bg-white text-slate-900"
                         required
                       />
                     </div>
 
-                    <div className="sm:col-span-3 pt-2 flex justify-end">
+                    <div className="sm:col-span-3 pt-1 flex justify-end">
                       <button
                         type="submit"
                         disabled={creating}
-                        className="py-2.5 px-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl font-mono font-bold text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.3)] cursor-pointer disabled:opacity-50 transition-all"
+                        className="py-2.5 px-5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
                       >
                         {creating ? (
                           <>
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span>Guardando en PostgreSQL...</span>
+                            <span>Guardando...</span>
                           </>
                         ) : (
                           <>
                             <UserPlus className="w-3.5 h-3.5" />
-                            <span>Crear Operador en Base de Datos</span>
+                            <span>Guardar comercial</span>
                           </>
                         )}
                       </button>
@@ -677,100 +639,76 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                 </div>
               )}
 
-              {/* Users Interactive List */}
               {loadingUsers ? (
-                <div className="py-12 text-center text-slate-400 text-xs font-mono flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
-                  <span>Sincronizando operadores desde base de datos...</span>
+                <div className="py-12 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                  <span>Cargando comerciales...</span>
                 </div>
               ) : (
-                <div className="border border-[#1E293B] rounded-2xl overflow-hidden divide-y divide-[#1E293B] bg-[#080C14] shadow-2xl">
+                <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 bg-white">
                   {users.map((u) => (
                     <div 
                       key={u.id}
                       onClick={() => setSelectedUser(u)}
-                      className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#0E1522] cursor-pointer transition-all group"
+                      className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 cursor-pointer transition-colors group"
                     >
                       <div className="flex items-center gap-3.5">
-                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 font-mono font-black text-sm border ${
-                          u.role === 'admin' 
-                            ? 'bg-indigo-950/80 text-indigo-300 border-indigo-700/60' 
-                            : 'bg-cyan-950/80 text-cyan-300 border-cyan-700/60'
-                        }`}>
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center shrink-0 font-display font-bold text-sm">
                           {u.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono font-bold text-slate-100 text-sm group-hover:text-cyan-300 transition-colors">
+                            <span className="font-display font-bold text-slate-900 text-sm group-hover:text-blue-600 transition-colors">
                               {u.name}
                             </span>
-                            <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded bg-[#0E1522] text-slate-400 border border-[#1E293B]">
+                            <span className="text-xs text-slate-500">
                               @{u.username}
                             </span>
-                            <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded border ${
-                              u.role === 'admin' 
-                                ? 'bg-indigo-950 text-indigo-300 border-indigo-800' 
-                                : 'bg-cyan-950 text-cyan-300 border-cyan-800'
-                            }`}>
-                              {u.role === 'admin' ? 'Admin' : 'Vendedor'}
+                            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                              {u.role === 'admin' ? 'Supervisor' : 'Comercial'}
                             </span>
-                            {u.role !== 'admin' && (
-                              u.blocked ? (
-                                <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-800 flex items-center gap-1">
-                                  <Ban className="w-2.5 h-2.5" /> Bloqueado
-                                </span>
-                              ) : (
-                                <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                                  Activo
-                                </span>
-                              )
+                            {u.role !== 'admin' && u.blocked && (
+                              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                                Suspendido
+                              </span>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-3 mt-1 text-xs text-slate-400 font-mono">
-                            <span>
-                              Clave: <strong className="text-amber-300">{showPasswordMap[u.username] ? u.password : '••••••••'}</strong>
-                            </span>
-                            <span>•</span>
-                            <span>{u.callCount} {u.callCount === 1 ? 'llamada' : 'llamadas'}</span>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+                            <span>{u.callCount} {u.callCount === 1 ? 'práctica' : 'prácticas'}</span>
                             {u.callCount > 0 && (
                               <>
-                                <span>•</span>
-                                <span>Promedio: <strong className="text-slate-200">{u.avgScore}/100</strong></span>
+                                <span>·</span>
+                                <span>Promedio: <strong className="text-slate-700">{u.avgScore}/100</strong></span>
                               </>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Right indicator */}
-                      <div className="flex items-center gap-2 justify-end">
-                        <span className="text-xs font-mono font-bold text-cyan-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-                          <span>Ver expediente & clave</span>
-                          <ChevronRight className="w-4 h-4" />
-                        </span>
+                      <div className="flex items-center gap-1 text-xs font-semibold text-blue-600 justify-end">
+                        <span>Ver detalles y clave</span>
+                        <ChevronRight className="w-4 h-4" />
                       </div>
-
                     </div>
                   ))}
                 </div>
               )}
-
             </div>
           )}
 
         </div>
 
-        {/* Modal Footer */}
-        <div className="p-4 bg-[#080C14] border-t border-[#1E293B] flex justify-between items-center shrink-0">
-          <div className="text-[10px] font-mono text-slate-400">
-            JYC SALES COCKPIT • PERSISTENCIA POSTGRESQL / NEON
-          </div>
+        {/* Footer */}
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center shrink-0">
+          <span className="text-xs text-slate-500">
+            JYC Equipment · Gestión de equipo
+          </span>
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-[#0E1522] hover:bg-[#162032] border border-[#1E293B] text-slate-200 rounded-xl text-xs font-mono font-bold transition-colors cursor-pointer"
+            className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
           >
-            Listo / Cerrar
+            Cerrar
           </button>
         </div>
 

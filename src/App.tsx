@@ -8,28 +8,28 @@ import { clearAllAudios } from './audioDb';
 import { api } from './services/api';
 import { Loader2 } from 'lucide-react';
 
-// Code-split heavy views to reduce initial bundle and improve TTI
+// Code-split views
 const LiveCall = lazy(() => import('./LiveCall'));
 const RealCallAudit = lazy(() => import('./RealCallAudit'));
 const HistoryDashboard = lazy(() => import('./HistoryDashboard'));
 
 const MODE_TO_HASH: Record<Mode, string> = {
-  'Coach': '#coach',
   'Live Call Simulation': '#live-call',
+  'Coach': '#coach',
   'Real Call Audit': '#audit',
   'History': '#history',
 };
 
 const HASH_TO_MODE: Record<string, Mode> = {
-  '#coach': 'Coach',
   '#live-call': 'Live Call Simulation',
+  '#coach': 'Coach',
   '#audit': 'Real Call Audit',
   '#history': 'History',
 };
 
 function getModeFromHash(): Mode {
   const hash = window.location.hash.toLowerCase();
-  return HASH_TO_MODE[hash] || 'Coach';
+  return HASH_TO_MODE[hash] || 'Live Call Simulation';
 }
 
 export default function App() {
@@ -77,7 +77,7 @@ export default function App() {
 
   const handleSelectMode = (newMode: Mode) => {
     setMode(newMode);
-    const targetHash = MODE_TO_HASH[newMode] || '#coach';
+    const targetHash = MODE_TO_HASH[newMode] || '#live-call';
     if (window.location.hash !== targetHash) {
       window.location.hash = targetHash;
     }
@@ -122,7 +122,7 @@ export default function App() {
     const newItem: HistoryItem = {
       id: options?.id || (Date.now().toString() + Math.random().toString().substring(2, 6)),
       userId: currentUser?.id || 'trainee_default',
-      userName: currentUser?.name || 'Vendedor Practicante',
+      userName: currentUser?.name || 'Comercial',
       date: new Date().toLocaleDateString('es-ES', { 
         year: 'numeric', 
         month: 'short', 
@@ -192,10 +192,10 @@ export default function App() {
   };
 
   const currentModeInfo = MODES_LIST.find(m => m.id === mode);
-  const modeDescription = currentModeInfo?.description || 'Plataforma de Adquisición de Maquinaria';
+  const modeDescription = currentModeInfo?.description || 'Entrenamiento comercial para compra de maquinaria pesada';
 
   return (
-    <div className="flex h-screen bg-[#06090E] text-slate-100 font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F4F6F9] text-slate-900 font-sans overflow-hidden">
       
       {/* Sidebar Navigation */}
       <Sidebar
@@ -224,6 +224,7 @@ export default function App() {
           onOpenSidebar={() => setSidebarOpen(true)}
           onLogout={handleLogout}
           modeDescription={modeDescription}
+          onSelectMode={handleSelectMode}
         />
 
         {/* View Router */}
@@ -237,12 +238,15 @@ export default function App() {
 
           {mode === 'Live Call Simulation' && (
             <Suspense fallback={
-              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#06090E]">
-                <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-                <span className="text-xs font-mono font-bold text-cyan-300">CARGANDO COCKPIT TELEFÓNICO ELEVENLABS...</span>
+              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#F4F6F9]">
+                <Loader2 className="w-7 h-7 animate-spin text-amber-500" />
+                <span className="text-xs font-medium text-slate-600">Preparando escenarios de llamada...</span>
               </div>
             }>
               <LiveCall 
+                currentUser={currentUser}
+                recentHistory={history}
+                onNavigate={handleSelectMode}
                 onEvaluationComplete={(score, evalData, contact, company, opts) => 
                   appendToHistory(score, evalData, contact, company, 'Live Call', opts)
                 } 
@@ -252,9 +256,9 @@ export default function App() {
 
           {mode === 'Real Call Audit' && (
             <Suspense fallback={
-              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#06090E]">
-                <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-                <span className="text-xs font-mono font-bold text-cyan-300">CARGANDO LABORATORIO FORENSE DE AUDIO...</span>
+              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#F4F6F9]">
+                <Loader2 className="w-7 h-7 animate-spin text-amber-500" />
+                <span className="text-xs font-medium text-slate-600">Cargando evaluación de grabaciones...</span>
               </div>
             }>
               <RealCallAudit 
@@ -267,9 +271,9 @@ export default function App() {
 
           {mode === 'History' && (
             <Suspense fallback={
-              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#06090E]">
-                <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-                <span className="text-xs font-mono font-bold text-cyan-300">CARGANDO CONSOLA DE TELEMETRÍA E HISTORIAL...</span>
+              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#F4F6F9]">
+                <Loader2 className="w-7 h-7 animate-spin text-amber-500" />
+                <span className="text-xs font-medium text-slate-600">Cargando historial de sesiones...</span>
               </div>
             }>
               <HistoryDashboard 

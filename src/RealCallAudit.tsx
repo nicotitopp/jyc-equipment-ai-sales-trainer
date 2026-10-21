@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { 
-  UploadCloud, FileAudio, Loader2, AlertCircle, FileCheck, ShieldCheck, 
-  Activity, Radio, CheckCircle2, ArrowRight, Zap, FileText
+  UploadCloud, FileAudio, Loader2, AlertCircle, FileCheck, ShieldCheck
 } from 'lucide-react';
 import Scorecard from './Scorecard';
 import { saveAudio } from './audioDb';
@@ -21,7 +20,6 @@ export default function RealCallAudit({
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [loadingStep, setLoadingStep] = useState(1);
   const [evaluation, setEvaluation] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +47,7 @@ export default function RealCallAudit({
         setFile(droppedFile);
         setError(null);
       } else {
-        setError("Por favor sube un archivo de audio válido (.mp3, .wav, .m4a).");
+        setError("Selecciona un archivo de audio compatible (.mp3, .wav o .m4a).");
       }
     }
   };
@@ -77,8 +75,7 @@ export default function RealCallAudit({
 
     setLoading(true);
     setError(null);
-    setLoadingStep(1);
-    setLoadingMessage("Leyendo archivo de audio local...");
+    setLoadingMessage("Preparando archivo de audio...");
 
     try {
       const reader = new FileReader();
@@ -89,8 +86,7 @@ export default function RealCallAudit({
           const base64Data = commaIndex !== -1 ? result.substring(commaIndex + 1) : result;
           const mimeType = file.type || 'audio/mp3';
 
-          setLoadingStep(2);
-          setLoadingMessage("Transcribiendo onda acústica con IA de alta precisión...");
+          setLoadingMessage("Transcribiendo la llamada y analizando la conversación...");
 
           let response;
           let retries = 3;
@@ -98,9 +94,6 @@ export default function RealCallAudit({
 
           while (retries > 0) {
             try {
-              if (retries < 3) {
-                setLoadingMessage(`Reintentando conexión con servidor (${4 - retries}/3)...`);
-              }
               response = await fetch('/api/audit-audio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -133,12 +126,9 @@ export default function RealCallAudit({
             throw lastErr || new Error("No se pudo conectar al servidor tras varios intentos.");
           }
 
-          setLoadingStep(3);
-          setLoadingMessage("Auditando contra matriz técnica JYC (Bypass, Gancho y Calificación)...");
-
           const data = await response.json();
           if (!response.ok) {
-            throw new Error(data.error || 'Fallo al analizar el audio de la llamada');
+            throw new Error(data.error || 'No fue posible analizar el audio de la llamada.');
           }
 
           const text = data.text;
@@ -146,13 +136,13 @@ export default function RealCallAudit({
           try {
             const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
             parsedData = JSON.parse(cleanText);
-          } catch (err) {
+          } catch {
             const start = text.indexOf('{');
             const end = text.lastIndexOf('}');
             if (start !== -1 && end !== -1) {
               parsedData = JSON.parse(text.substring(start, end + 1));
             } else {
-              throw new Error("Respuesta JSON no válida del auditor: " + text);
+              throw new Error("Respuesta no válida del evaluador.");
             }
           }
 
@@ -193,7 +183,7 @@ export default function RealCallAudit({
             parsedData.score, 
             parsedData, 
             parsedData.contactName || "No identificado", 
-            parsedData.companyName || "Empresa Prospecto", 
+            parsedData.companyName || "Empresa cliente", 
             { id: auditId, hasAudio: true, audioUrl: serverAudioUrl }
           );
           setLoading(false);
@@ -206,7 +196,7 @@ export default function RealCallAudit({
       };
 
       reader.onerror = () => {
-        setError("Error al leer el archivo local.");
+        setError("Error al leer el archivo seleccionado.");
         setLoading(false);
       };
 
@@ -221,97 +211,66 @@ export default function RealCallAudit({
 
   if (evaluation) {
     return (
-      <Scorecard 
-        evaluation={evaluation} 
-        onReset={handleReset} 
-        audioBlob={file}
-        audioId={currentId || undefined}
-      />
+      <div className="flex-1 overflow-y-auto bg-[#F4F6F9]">
+        <Scorecard 
+          evaluation={evaluation} 
+          onReset={handleReset} 
+          audioBlob={file}
+          audioId={currentId || undefined}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start p-4 sm:p-6 bg-[#06090E] overflow-y-auto text-left">
-      <div className="max-w-2xl w-full bg-[#0A0F17] rounded-2xl shadow-2xl border border-[#1E293B] p-6 sm:p-8 space-y-6 relative overflow-hidden">
+    <div className="flex-1 flex flex-col items-center justify-start p-4 sm:p-6 lg:p-8 bg-[#F4F6F9] overflow-y-auto text-left">
+      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xs border border-slate-200/90 p-6 sm:p-8 space-y-6">
         
-        {/* Glow ambient background */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
-
-        {/* Header HUD */}
-        <div className="flex items-start justify-between border-b border-[#1E293B] pb-5 relative z-10">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 bg-cyan-950/60 text-cyan-400 rounded-xl flex items-center justify-center shrink-0 border border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
-              <UploadCloud className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-mono font-bold text-slate-100 tracking-tight uppercase">
-                  Laboratorio Forense de Auditoría de Audio
-                </h2>
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
-                  MOD-03
-                </span>
-              </div>
-              <p className="text-slate-400 text-xs font-mono mt-0.5">
-                Evaluación cognitiva de llamadas grabadas contra los 7 estándares de prospección JYC
-              </p>
-            </div>
+        {/* Header */}
+        <div className="flex items-start gap-4 border-b border-slate-100 pb-5">
+          <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0 border border-blue-100">
+            <UploadCloud className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-display font-bold text-slate-900 tracking-tight">
+              Evaluar grabación de llamada real
+            </h2>
+            <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
+              Sube el audio de una llamada telefónica para analizar cómo se realizó el filtro en recepción, la calificación de maquinaria y el manejo de objeciones.
+            </p>
           </div>
         </div>
 
         {loading ? (
-          <div className="py-12 flex flex-col items-center justify-center space-y-6 text-center relative z-10">
-            {/* Radar / Scanning Visualizer */}
-            <div className="relative flex items-center justify-center">
-              <div className="w-24 h-24 rounded-full border-2 border-cyan-500/30 animate-ping absolute"></div>
-              <div className="w-20 h-20 rounded-full border border-cyan-500/50 flex items-center justify-center bg-cyan-950/40">
-                <Loader2 className="w-10 h-10 animate-spin text-cyan-400" />
-              </div>
-              <div className="absolute w-8 h-8 rounded-full bg-[#080C14] flex items-center justify-center border border-cyan-500/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]">
-                <Activity className="w-4 h-4 text-cyan-300 animate-pulse" />
-              </div>
+          <div className="py-12 flex flex-col items-center justify-center space-y-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+              <Loader2 className="w-7 h-7 animate-spin" />
             </div>
-
-            {/* Stepper info */}
-            <div className="space-y-2 max-w-md">
-              <div className="flex items-center justify-center gap-2 font-mono text-[10px] text-cyan-400">
-                <span className={`px-2 py-0.5 rounded ${loadingStep >= 1 ? 'bg-cyan-950 border border-cyan-600 text-cyan-200' : 'bg-slate-800 text-slate-500'}`}>01. DECODE</span>
-                <ArrowRight className="w-3 h-3 text-slate-600" />
-                <span className={`px-2 py-0.5 rounded ${loadingStep >= 2 ? 'bg-cyan-950 border border-cyan-600 text-cyan-200' : 'bg-slate-800 text-slate-500'}`}>02. TRANSCRIBE</span>
-                <ArrowRight className="w-3 h-3 text-slate-600" />
-                <span className={`px-2 py-0.5 rounded ${loadingStep >= 3 ? 'bg-cyan-950 border border-cyan-600 text-cyan-200' : 'bg-slate-800 text-slate-500'}`}>03. AUDIT</span>
-              </div>
-
-              <h3 className="text-sm font-mono font-bold text-slate-100">{loadingMessage}</h3>
-              <p className="text-slate-400 text-xs font-mono">
-                Extrayendo métricas de prospección con Gemini 2.5 Cognitive Engine...
+            <div className="space-y-1 max-w-sm">
+              <h3 className="text-base font-display font-bold text-slate-900">{loadingMessage}</h3>
+              <p className="text-slate-500 text-xs sm:text-sm">
+                Esto toma unos segundos dependiendo de la duración de la llamada.
               </p>
             </div>
           </div>
         ) : (
-          <div className="space-y-5 relative z-10">
+          <div className="space-y-5">
             
-            {/* Tactical Dropzone with reticle corners */}
+            {/* Dropzone */}
             <div 
               onDragEnter={handleDrag}
               onDragOver={handleDrag}
               onDragLeave={handleDrag}
               onDrop={handleDrop}
               onClick={triggerUploadClick}
-              className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3.5 cursor-pointer transition-all relative group ${
+              className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${
                 dragActive 
-                  ? 'border-cyan-400 bg-cyan-950/30 shadow-[0_0_20px_rgba(6,182,212,0.25)]' 
+                  ? 'border-blue-500 bg-blue-50/40' 
                   : file 
-                    ? 'border-emerald-500/60 bg-[#0E1522]'
-                    : 'border-[#1E293B] bg-[#080C14] hover:border-cyan-500/50 hover:bg-[#0C121D]'
+                    ? 'border-emerald-300 bg-emerald-50/20'
+                    : 'border-slate-300 hover:border-slate-400 bg-slate-50/60 hover:bg-slate-50'
               }`}
             >
-              {/* Corner brackets */}
-              <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-slate-600 group-hover:border-cyan-400 transition-colors"></div>
-              <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-slate-600 group-hover:border-cyan-400 transition-colors"></div>
-              <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-slate-600 group-hover:border-cyan-400 transition-colors"></div>
-              <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-slate-600 group-hover:border-cyan-400 transition-colors"></div>
-
               <input 
                 ref={fileInputRef}
                 type="file" 
@@ -320,71 +279,52 @@ export default function RealCallAudit({
                 onChange={handleFileChange}
               />
               
-              <div className={`p-3.5 rounded-xl border transition-colors ${
-                file 
-                  ? 'bg-emerald-950/60 text-emerald-400 border-emerald-500/50' 
-                  : 'bg-slate-900 text-cyan-400 border-[#1E293B] group-hover:border-cyan-500/40'
+              <div className={`p-3.5 rounded-xl ${
+                file ? 'bg-emerald-100 text-emerald-700' : 'bg-white border border-slate-200 text-slate-500'
               }`}>
-                {file ? <FileCheck className="w-7 h-7" /> : <FileAudio className="w-7 h-7" />}
+                {file ? <FileCheck className="w-6 h-6" /> : <FileAudio className="w-6 h-6" />}
               </div>
               
               {file ? (
                 <div className="text-center space-y-1">
-                  <p className="font-mono font-bold text-slate-100 text-xs sm:text-sm flex items-center justify-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <p className="font-semibold text-slate-900 text-sm">
                     {file.name}
                   </p>
-                  <p className="text-[11px] font-mono text-cyan-300">
-                    PESO: {(file.size / (1024 * 1024)).toFixed(2)} MB • FORMATO: {file.type || 'audio/mp3'}
-                  </p>
-                  <p className="text-[10px] font-mono text-slate-400 pt-1">
-                    [Archivo listo para inyección al motor de auditoría]
+                  <p className="text-xs text-slate-500">
+                    {(file.size / (1024 * 1024)).toFixed(2)} MB · Haz clic para cambiar de archivo
                   </p>
                 </div>
               ) : (
-                <div className="text-center space-y-1.5">
-                  <p className="font-mono font-bold text-slate-200 text-xs sm:text-sm">
-                    Arrastra y suelta tu archivo de audio aquí
+                <div className="text-center space-y-1">
+                  <p className="font-semibold text-slate-800 text-sm">
+                    Arrastra tu grabación aquí o haz clic para seleccionarla
                   </p>
-                  <p className="text-[11px] font-mono text-slate-400">
-                    Formatos compatibles: .mp3, .wav, .m4a hasta 25MB
+                  <p className="text-xs text-slate-500">
+                    Formatos compatibles: .mp3, .wav, .m4a (hasta 25 MB)
                   </p>
-                  <span className="inline-block mt-1 px-2.5 py-1 rounded bg-[#111A29] border border-[#1E293B] text-[10px] font-mono text-cyan-400">
-                    O haz clic para explorar tu disco local
-                  </span>
                 </div>
               )}
             </div>
 
             {error && (
-              <div className="p-3 bg-red-950/40 border border-red-500/50 rounded-xl flex items-center gap-2.5 text-red-300 text-xs font-mono">
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+              <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2.5 text-red-700 text-xs sm:text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
-            {/* Submit Action Button */}
             <button
               onClick={handleAudit}
               disabled={!file}
-              className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-mono font-bold text-xs transition-all shadow-[0_0_20px_rgba(6,182,212,0.25)] flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+              className="w-full py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 rounded-xl font-display font-bold text-sm transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Zap className="w-4 h-4 fill-white" />
-              <span>EJECUTAR AUDITORÍA COGNITIVA & EVALUACIÓN</span>
+              <UploadCloud className="w-4 h-4" />
+              <span>Analizar y calificar llamada</span>
             </button>
 
-            {/* Verification checklist pills */}
-            <div className="pt-3 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-slate-400 border-t border-[#1E293B]">
-              <span className="flex items-center gap-1.5 text-cyan-300">
-                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                Verificación automatizada de 4 fases:
-              </span>
-              <div className="flex flex-wrap gap-2 text-[9px]">
-                <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">1. BYPASS</span>
-                <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">2. GANCHO</span>
-                <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">3. 7 PREGUNTAS</span>
-                <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">4. CIERRE</span>
-              </div>
+            <div className="pt-2 flex items-center justify-center gap-1.5 text-xs text-slate-500 border-t border-slate-100">
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
+              <span>Evalúa filtro en recepción, apertura con responsable, las 7 preguntas y cierre</span>
             </div>
 
           </div>

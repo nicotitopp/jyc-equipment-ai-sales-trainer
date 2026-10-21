@@ -4,8 +4,8 @@ import Scorecard from './Scorecard';
 import AdminUserManager from './AdminUserManager';
 import { 
   BarChart, Calendar, Award, User, 
-  Trash2, ArrowRight, Play, Upload, MessageSquare, Check, Headphones,
-  Shield, Filter, Users, ChevronRight, Activity, Sparkles, PhoneCall
+  Trash2, ArrowRight, Play, Upload, Check, Headphones,
+  Shield, Filter, Users, ChevronRight, PhoneCall
 } from 'lucide-react';
 
 interface HistoryDashboardProps {
@@ -29,11 +29,10 @@ export default function HistoryDashboard({
 
   const isAdmin = currentUser?.role === 'admin';
 
-  // Get unique trainees from history
   const traineesList = useMemo(() => {
     const map = new Map<string, { name: string; count: number; totalScore: number }>();
     for (const item of history) {
-      const name = item.userName || 'Vendedor Practicante';
+      const name = item.userName || 'Comercial';
       const existing = map.get(name) || { name, count: 0, totalScore: 0 };
       existing.count += 1;
       existing.totalScore += (item.score || 0);
@@ -46,32 +45,31 @@ export default function HistoryDashboard({
     }));
   }, [history]);
 
-  // Filter history based on selected trainee
   const filteredHistory = useMemo(() => {
     if (!isAdmin || selectedTraineeFilter === 'ALL') {
       return history;
     }
-    return history.filter(item => (item.userName || 'Vendedor Practicante') === selectedTraineeFilter);
+    return history.filter(item => (item.userName || 'Comercial') === selectedTraineeFilter);
   }, [history, isAdmin, selectedTraineeFilter]);
 
   if (selectedItem) {
     return (
-      <div className="flex-1 overflow-y-auto bg-[#06090E] text-slate-100">
-        <div className="bg-[#0A0F17] px-4 sm:px-6 py-3.5 border-b border-[#1E293B] flex items-center justify-between no-print shadow-xl">
+      <div className="flex-1 overflow-y-auto bg-[#F4F6F9]">
+        <div className="bg-white px-4 sm:px-6 py-3 border-b border-slate-200/80 flex items-center justify-between no-print">
           <button 
             onClick={() => setSelectedItem(null)}
-            className="px-3.5 py-1.5 bg-[#0E1522] hover:bg-[#162032] border border-[#1E293B] hover:border-slate-600 text-cyan-300 rounded-lg text-xs font-mono font-bold flex items-center gap-2 transition-colors cursor-pointer"
+            className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200/80 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            ← Volver a la Consola de Historial
+            ← Volver al historial
           </button>
           <div className="flex items-center gap-2">
             {selectedItem.userName && (
-              <span className="px-2.5 py-1 bg-cyan-950/80 text-cyan-300 border border-cyan-800 rounded-md text-xs font-mono font-bold">
-                OPERADOR: {selectedItem.userName}
+              <span className="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold">
+                {selectedItem.userName}
               </span>
             )}
-            <span className="text-xs text-slate-400 font-mono hidden sm:inline">
-              {selectedItem.type} // {selectedItem.date}
+            <span className="text-xs text-slate-500 hidden sm:inline">
+              {selectedItem.type === 'Live Call' ? 'Práctica simulada' : 'Grabación evaluada'} · {selectedItem.date}
             </span>
           </div>
         </div>
@@ -81,12 +79,12 @@ export default function HistoryDashboard({
           audioId={selectedItem.id}
           audioUrl={selectedItem.audioUrl}
           conversationId={selectedItem.conversationId}
+          scenarioTitle={`${selectedItem.companyName} (${selectedItem.contactName})`}
         />
       </div>
     );
   }
 
-  // Calculate KPIs on filtered history
   const totalCalls = filteredHistory.length;
   const averageScore = totalCalls > 0 
     ? Math.round(filteredHistory.reduce((acc, curr) => acc + curr.score, 0) / totalCalls) 
@@ -96,11 +94,10 @@ export default function HistoryDashboard({
     ? Math.round((passedCalls / totalCalls) * 100) 
     : 0;
 
-  // Last 10 items for the chart
   const chartItems = [...filteredHistory].slice(-10);
 
   const handleClear = () => {
-    if (window.confirm("¿Estás seguro de que deseas borrar permanentemente el historial de llamadas?")) {
+    if (window.confirm("¿Deseas borrar permanentemente el historial de llamadas?")) {
       onClearHistory();
     }
   };
@@ -113,55 +110,49 @@ export default function HistoryDashboard({
   };
 
   return (
-    <div className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 bg-[#06090E] overflow-y-auto space-y-5 text-left text-slate-100">
+    <div className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 bg-[#F4F6F9] overflow-y-auto space-y-6 text-left text-slate-900">
       
-      {/* Header Banner - Executive Operations Telemetry Board */}
-      <div className="bg-[#0A0F17] rounded-2xl p-5 sm:p-6 border border-[#1E293B] shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
-        
-        {/* Glow accent */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
-
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-1.5">
+      {/* Header Banner */}
+      <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
             {isAdmin ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 text-[10px] font-mono font-bold uppercase tracking-wider">
-                <Shield className="w-3 h-3 text-indigo-400" /> Panel de Supervisión & Auditoría Central
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-semibold">
+                <Shield className="w-3 h-3" /> Supervisión de equipo
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-800 text-[10px] font-mono font-bold uppercase tracking-wider">
-                <User className="w-3 h-3 text-cyan-400" /> Registro de Desempeño Comercial
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
+                <User className="w-3 h-3" /> Mi progreso
               </span>
             )}
-            <span className="text-[10px] font-mono text-slate-400">CH-04</span>
           </div>
 
-          <h2 className="text-lg sm:text-xl font-mono font-bold text-slate-100 tracking-tight uppercase">
-            {isAdmin ? 'Telemetría de Desempeño Comercial' : 'Mi Historial de Entrenamiento'}
+          <h2 className="text-xl font-display font-bold text-slate-900 tracking-tight">
+            {isAdmin ? 'Seguimiento del equipo comercial' : 'Mis prácticas y evaluaciones'}
           </h2>
-          <p className="text-slate-400 text-xs font-mono mt-0.5">
+          <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
             {isAdmin 
-              ? 'Audita grabaciones de audio, métricas de retención de guion y calificación de la fuerza de ventas.'
-              : 'Monitorea tu evolución, fortalezas registradas y grabaciones de práctica con el agente de voz.'}
+              ? 'Consulta las prácticas realizadas por cada comercial, escucha sus grabaciones y gestiona sus cuentas.'
+              : 'Revisa tus llamadas anteriores, escucha las grabaciones y consulta tus recomendaciones.'}
           </p>
         </div>
 
         {isAdmin && (
-          <div className="flex flex-wrap items-center gap-2 shrink-0 relative z-10">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               onClick={() => setShowManageUsers(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-xl font-mono font-bold text-xs transition-all cursor-pointer shadow-[0_0_15px_rgba(99,102,241,0.3)]"
-              title="Crear vendedores, consultar contraseñas y suspender accesos"
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-xs transition-colors cursor-pointer shadow-xs"
             >
-              <Users className="w-3.5 h-3.5" />
-              <span>Gestión de Vendedores</span>
+              <Users className="w-4 h-4 text-amber-400" />
+              <span>Gestionar comerciales</span>
             </button>
             {totalCalls > 0 && (
               <button
                 onClick={handleClear}
-                className="flex items-center gap-1.5 px-3 py-2 bg-[#0E1522] hover:bg-red-950/60 text-slate-400 hover:text-red-300 rounded-xl font-mono font-semibold text-xs border border-[#1E293B] hover:border-red-700/60 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2.5 bg-white hover:bg-red-50 text-slate-600 hover:text-red-700 rounded-xl font-semibold text-xs border border-slate-200 hover:border-red-200 transition-colors cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Limpiar</span>
+                <span>Limpiar historial</span>
               </button>
             )}
           </div>
@@ -170,36 +161,36 @@ export default function HistoryDashboard({
 
       {/* Admin Filter Bar */}
       {isAdmin && traineesList.length > 0 && (
-        <div className="bg-[#0A0F17] rounded-2xl p-4 border border-[#1E293B] shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-slate-300">
-            <Filter className="w-3.5 h-3.5 text-cyan-400" />
-            <span>FILTRO POR VENDEDOR:</span>
+        <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+            <Filter className="w-3.5 h-3.5 text-slate-500" />
+            <span>Filtrar por comercial:</span>
           </div>
 
           <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setSelectedTraineeFilter('ALL')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer border ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 selectedTraineeFilter === 'ALL'
-                  ? 'bg-cyan-950/80 text-cyan-300 border-cyan-600 shadow-[0_0_10px_rgba(6,182,212,0.2)]'
-                  : 'bg-[#080C14] text-slate-400 border-[#1E293B] hover:text-slate-200'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
               }`}
             >
-              TODOS ({history.length})
+              Todos ({history.length})
             </button>
             {traineesList.map(t => (
               <button
                 key={t.name}
                 onClick={() => setSelectedTraineeFilter(t.name)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                   selectedTraineeFilter === t.name
-                    ? 'bg-cyan-950/80 text-cyan-300 border-cyan-600 shadow-[0_0_10px_rgba(6,182,212,0.2)]'
-                    : 'bg-[#080C14] text-slate-400 border-[#1E293B] hover:text-slate-200'
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
                 }`}
               >
                 <span>{t.name}</span>
-                <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                  selectedTraineeFilter === t.name ? 'bg-cyan-900 text-cyan-200' : 'bg-slate-800 text-slate-400'
+                <span className={`text-[11px] font-mono px-1.5 py-0.2 rounded-md ${
+                  selectedTraineeFilter === t.name ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700'
                 }`}>
                   {t.count}
                 </span>
@@ -209,17 +200,14 @@ export default function HistoryDashboard({
         </div>
       )}
 
-      {/* Trainees Leaderboard Cards for Admin */}
+      {/* Comparative Cards for Admin */}
       {isAdmin && selectedTraineeFilter === 'ALL' && traineesList.length > 1 && (
-        <div className="bg-[#0A0F17] rounded-2xl p-5 border border-[#1E293B] shadow-2xl space-y-3">
-          <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-cyan-400" />
-              <h3 className="font-mono font-bold text-slate-200 text-xs uppercase tracking-wider">
-                Desempeño Comparativo de Fuerza Comercial
-              </h3>
-            </div>
-            <span className="text-xs text-slate-400 font-mono">{traineesList.length} operadores registrados</span>
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs space-y-3.5">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <h3 className="font-display font-bold text-slate-900 text-sm">
+              Resumen por comercial
+            </h3>
+            <span className="text-xs text-slate-500">{traineesList.length} comerciales activos</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -227,28 +215,28 @@ export default function HistoryDashboard({
               <div 
                 key={trainee.name}
                 onClick={() => setSelectedTraineeFilter(trainee.name)}
-                className="p-3.5 rounded-xl bg-[#080C14] border border-[#1E293B] hover:border-cyan-500/50 hover:bg-[#0E1522] transition-all cursor-pointer group space-y-2"
+                className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-slate-300 hover:bg-slate-100/60 transition-all cursor-pointer group"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <h4 className="font-mono font-bold text-slate-100 text-xs truncate group-hover:text-cyan-300 transition-colors">
+                    <h4 className="font-display font-bold text-slate-900 text-sm truncate">
                       {trainee.name}
                     </h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5 font-mono">{trainee.count} {trainee.count === 1 ? 'llamada' : 'llamadas'}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{trainee.count} {trainee.count === 1 ? 'práctica' : 'prácticas'}</p>
                   </div>
-                  <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded border ${
+                  <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-full ${
                     trainee.avgScore >= 80 
-                      ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60' 
+                      ? 'bg-emerald-100 text-emerald-800' 
                       : trainee.avgScore >= 60 
-                        ? 'bg-amber-950/80 text-amber-300 border-amber-700/60' 
-                        : 'bg-red-950/80 text-red-300 border-red-700/60'
+                        ? 'bg-amber-100 text-amber-800' 
+                        : 'bg-red-100 text-red-800'
                   }`}>
-                    {trainee.avgScore} pts
+                    {trainee.avgScore}/100
                   </span>
                 </div>
-                <div className="flex items-center justify-end gap-1 text-[10px] font-mono font-bold text-cyan-400">
-                  <span>Filtrar</span>
-                  <ChevronRight className="w-3 h-3" />
+                <div className="flex items-center justify-end gap-1 mt-2 text-xs font-semibold text-blue-600">
+                  <span>Ver sesiones</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </div>
               </div>
             ))}
@@ -257,214 +245,205 @@ export default function HistoryDashboard({
       )}
 
       {totalCalls === 0 ? (
-        <div className="bg-[#0A0F17] rounded-2xl p-12 border border-[#1E293B] text-center space-y-4 flex flex-col items-center">
-          <div className="p-4 bg-[#0E1522] text-cyan-400 rounded-2xl border border-[#1E293B]">
+        <div className="bg-white rounded-2xl p-12 border border-slate-200/90 text-center space-y-4 flex flex-col items-center">
+          <div className="p-4 bg-slate-100 text-slate-500 rounded-2xl">
             <BarChart className="w-8 h-8" />
           </div>
           <div className="space-y-1.5 max-w-md">
-            <h3 className="text-base font-mono font-bold text-slate-100 uppercase">Sin Llamadas Registradas en la Bitácora</h3>
-            <p className="text-slate-400 text-xs font-mono leading-relaxed">
-              {isAdmin 
-                ? 'Las simulaciones telefónicas y las auditorías de archivos se sincronizan en tiempo real en la base de datos central.'
-                : 'Tus evaluaciones se registrarán automáticamente al finalizar una llamada o al auditar un audio.'}
+            <h3 className="text-base font-display font-bold text-slate-900">Aún no hay sesiones registradas</h3>
+            <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
+              Comienza una llamada de práctica o sube la grabación de una llamada real para ver aquí tus evaluaciones y escuchar tus audios.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2.5 w-full max-w-md pt-2">
             <button
               onClick={() => onNavigateToMode('Live Call Simulation')}
-              className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl font-mono font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(37,99,235,0.3)]"
+              className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl font-display font-bold text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
             >
-              <Play className="w-3.5 h-3.5 fill-white" />
-              <span>Simulación Telefónica</span>
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Practicar llamada</span>
             </button>
             <button
               onClick={() => onNavigateToMode('Real Call Audit')}
-              className="flex-1 py-3 bg-[#0E1522] hover:bg-[#162032] border border-[#1E293B] text-cyan-300 rounded-xl font-mono font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5" />
-              <span>Auditar Archivo de Audio</span>
+              <span>Evaluar grabación</span>
             </button>
           </div>
         </div>
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-6">
           
-          {/* KPI Dashboard Grid */}
+          {/* Summary Indicators */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            
-            <div className="bg-[#0A0F17] rounded-2xl p-4 sm:p-5 border border-[#1E293B] flex items-center gap-3.5 shadow-2xl relative overflow-hidden">
-              <div className="p-3 bg-blue-950/60 text-blue-400 border border-blue-700/60 rounded-xl">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 flex items-center gap-4 shadow-xs">
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
                 <Award className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-slate-400 text-[10px] font-mono font-bold uppercase tracking-wider">
-                  {selectedTraineeFilter === 'ALL' ? 'Promedio Global' : 'Promedio Vendedor'}
+                <p className="text-slate-500 text-xs font-medium">
+                  {selectedTraineeFilter === 'ALL' ? 'Puntuación media' : 'Promedio del comercial'}
                 </p>
-                <h4 className="text-xl font-mono font-extrabold text-slate-100 mt-0.5">
-                  {averageScore} <span className="text-xs text-slate-400 font-sans font-normal">/100 PTS</span>
+                <h4 className="text-2xl font-display font-bold font-mono text-slate-900 mt-0.5">
+                  {averageScore} <span className="text-xs text-slate-400 font-sans font-normal">/ 100</span>
                 </h4>
               </div>
             </div>
 
-            <div className="bg-[#0A0F17] rounded-2xl p-4 sm:p-5 border border-[#1E293B] flex items-center gap-3.5 shadow-2xl relative overflow-hidden">
-              <div className="p-3 bg-indigo-950/60 text-indigo-400 border border-indigo-700/60 rounded-xl">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 flex items-center gap-4 shadow-xs">
+              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
                 <PhoneCall className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-slate-400 text-[10px] font-mono font-bold uppercase tracking-wider">
-                  Llamadas Auditadas
+                <p className="text-slate-500 text-xs font-medium">
+                  Sesiones completadas
                 </p>
-                <h4 className="text-xl font-mono font-extrabold text-slate-100 mt-0.5">
-                  {totalCalls} <span className="text-xs text-slate-400 font-sans font-normal">sesiones</span>
+                <h4 className="text-2xl font-display font-bold font-mono text-slate-900 mt-0.5">
+                  {totalCalls} <span className="text-xs text-slate-400 font-sans font-normal">{totalCalls === 1 ? 'llamada' : 'llamadas'}</span>
                 </h4>
               </div>
             </div>
 
-            <div className="bg-[#0A0F17] rounded-2xl p-4 sm:p-5 border border-[#1E293B] flex items-center gap-3.5 shadow-2xl relative overflow-hidden">
-              <div className="p-3 bg-emerald-950/60 text-emerald-400 border border-emerald-700/60 rounded-xl">
-                <Check className="w-5 h-5 stroke-[3]" />
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/90 flex items-center gap-4 shadow-xs">
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                <Check className="w-5 h-5 stroke-[2.5]" />
               </div>
               <div>
-                <p className="text-slate-400 text-[10px] font-mono font-bold uppercase tracking-wider">
-                  Tasa Aprobación (≥70)
+                <p className="text-slate-500 text-xs font-medium">
+                  Prácticas aprobadas (≥70)
                 </p>
-                <h4 className="text-xl font-mono font-extrabold text-slate-100 mt-0.5">
-                  {passRate}% <span className="text-xs text-slate-400 font-sans font-normal">({passedCalls}/{totalCalls})</span>
+                <h4 className="text-2xl font-display font-bold font-mono text-slate-900 mt-0.5">
+                  {passRate}% <span className="text-xs text-slate-400 font-sans font-normal">({passedCalls} de {totalCalls})</span>
                 </h4>
               </div>
             </div>
-
           </div>
 
           {/* Progress Chart */}
-          <div className="bg-[#0A0F17] rounded-2xl p-5 border border-[#1E293B] shadow-2xl space-y-3">
-            <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
-              <h3 className="font-mono font-bold text-slate-200 text-xs uppercase tracking-wider flex items-center gap-2">
-                <Activity className="w-4 h-4 text-cyan-400" />
-                Evolución Cronológica de Rendimiento (Últimas 10 llamadas)
+          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-xs space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h3 className="font-display font-bold text-slate-900 text-sm">
+                Evolución de las últimas sesiones
               </h3>
               {selectedTraineeFilter !== 'ALL' && (
-                <span className="text-xs font-mono font-bold text-cyan-400">
-                  Filtro: {selectedTraineeFilter}
+                <span className="text-xs font-semibold text-blue-600">
+                  Comercial: {selectedTraineeFilter}
                 </span>
               )}
             </div>
             
-            <div className="h-44 flex items-end justify-between gap-2 sm:gap-4 pt-4 border-b border-[#1E293B] px-3 bg-[#080C14] rounded-xl border">
+            <div className="h-40 flex items-end justify-between gap-2 sm:gap-4 pt-4 border-b border-slate-200 px-3">
               {chartItems.map((item, idx) => (
                 <div 
                   key={item.id} 
                   className="flex-1 flex flex-col items-center group h-full justify-end cursor-pointer" 
                   onClick={() => setSelectedItem(item)}
                 >
-                  <span className="text-[10px] font-mono font-bold text-cyan-300 opacity-0 group-hover:opacity-100 transition-opacity mb-1">
+                  <span className="text-xs font-mono font-bold text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity mb-1">
                     {item.score}
                   </span>
                   <div 
-                    className="w-full rounded-t transition-all duration-200 hover:brightness-125"
+                    className="w-full max-w-[44px] rounded-t-lg transition-all duration-200 hover:opacity-85"
                     style={{ 
-                      height: `${Math.max(item.score, 6)}%`,
-                      backgroundColor: item.score >= 80 ? '#10B981' : item.score >= 60 ? '#F59E0B' : '#EF4444',
-                      boxShadow: item.score >= 80 ? '0 0 10px rgba(16,185,129,0.3)' : item.score >= 60 ? '0 0 10px rgba(245,158,11,0.3)' : '0 0 10px rgba(239,68,68,0.3)'
+                      height: `${Math.max(item.score, 8)}%`,
+                      backgroundColor: item.score >= 80 ? '#059669' : item.score >= 60 ? '#D97706' : '#DC2626'
                     }}
                   />
-                  <span className="text-[9px] font-mono text-slate-400 mt-2 truncate w-full text-center">
+                  <span className="text-[11px] font-mono text-slate-400 mt-2 truncate w-full text-center">
                     #{idx + 1}
                   </span>
                 </div>
               ))}
             </div>
-            <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono px-2 uppercase tracking-wide">
-              <span>← LLAMADAS ANTERIORES</span>
-              <span>MÁS RECIENTES →</span>
-            </div>
           </div>
 
-          {/* List of Audits */}
-          <div className="bg-[#0A0F17] rounded-2xl border border-[#1E293B] shadow-2xl overflow-hidden">
-            <div className="p-4 sm:p-5 border-b border-[#1E293B] flex items-center justify-between">
-              <h3 className="font-mono font-bold text-slate-200 text-xs uppercase tracking-wider">
-                Bitácora Detallada de Auditorías
+          {/* Sessions List */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="font-display font-bold text-slate-900 text-sm">
+                Sesiones registradas
               </h3>
-              <span className="text-xs text-slate-400 font-mono">
-                {filteredHistory.length} registros cargados
+              <span className="text-xs text-slate-500">
+                Haz clic en una sesión para ver su evaluación y escuchar la llamada
               </span>
             </div>
 
-            <div className="divide-y divide-[#1E293B]">
+            <div className="divide-y divide-slate-100">
               {[...filteredHistory].map((item) => (
                 <div 
                   key={item.id} 
                   onClick={() => setSelectedItem(item)}
-                  className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#0E1522] cursor-pointer transition-colors group"
+                  className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 cursor-pointer transition-colors group"
                 >
                   <div className="flex items-center gap-3.5">
-                    <div className={`p-2.5 rounded-xl shrink-0 border ${
+                    <div className={`p-2.5 rounded-xl shrink-0 ${
                       item.type === 'Live Call' 
-                        ? 'bg-blue-950/60 text-blue-400 border-blue-700/60' 
-                        : 'bg-amber-950/60 text-amber-400 border-amber-700/60'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200/70' 
+                        : 'bg-blue-50 text-blue-700 border border-blue-200/70'
                     }`}>
-                      {item.type === 'Live Call' ? <Play className="w-4 h-4 fill-current" /> : <Upload className="w-4 h-4" />}
+                      {item.type === 'Live Call' ? <PhoneCall className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono font-bold text-slate-100 text-xs sm:text-sm truncate group-hover:text-cyan-300 transition-colors">
+                        <span className="font-display font-bold text-slate-900 text-sm truncate group-hover:text-blue-600 transition-colors">
                           {item.companyName}
                         </span>
 
                         {item.userName && (
-                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
                             {item.userName}
                           </span>
                         )}
 
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#080C14] text-slate-400 border border-[#1E293B] uppercase">
-                          {item.type}
+                        <span className="text-xs text-slate-500">
+                          · {item.type === 'Live Call' ? 'Práctica por voz' : 'Grabación subida'}
                         </span>
 
                         {(item.hasAudio ?? true) && (
-                          <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                            <Headphones className="w-2.5 h-2.5" /> AUDIO
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <Headphones className="w-3 h-3" /> Audio disponible
                           </span>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-[11px] text-slate-400 font-mono">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-slate-500">
                         <span className="flex items-center gap-1">
-                          <User className="w-3 h-3 text-slate-400" />
-                          {item.contactName}
+                          <User className="w-3.5 h-3.5 text-slate-400" />
+                          Cliente: {item.contactName}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-slate-400" />
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
                           {item.date}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 border-[#1E293B] pt-2 sm:pt-0">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0">
                     <span 
-                      className="text-xs font-mono font-extrabold px-3 py-1 rounded-lg border"
-                      style={{
-                        backgroundColor: item.score >= 80 ? 'rgba(6, 78, 59, 0.4)' : item.score >= 60 ? 'rgba(120, 53, 15, 0.4)' : 'rgba(127, 29, 29, 0.4)',
-                        borderColor: item.score >= 80 ? '#059669' : item.score >= 60 ? '#D97706' : '#DC2626',
-                        color: item.score >= 80 ? '#34D399' : item.score >= 60 ? '#FBBF24' : '#F87171'
-                      }}
+                      className={`text-xs font-mono font-bold px-3 py-1 rounded-full ${
+                        item.score >= 80 
+                          ? 'bg-emerald-100 text-emerald-800' 
+                          : item.score >= 60 
+                            ? 'bg-amber-100 text-amber-800' 
+                            : 'bg-red-100 text-red-800'
+                      }`}
                     >
-                      {item.score} PTS
+                      {item.score} / 100
                     </span>
 
                     {isAdmin && onDeleteHistoryItem && (
                       <button
                         onClick={(e) => handleDeleteItem(e, item.id)}
-                        className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-950/40 rounded transition-colors cursor-pointer"
-                        title="Eliminar registro"
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                        title="Eliminar sesión"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     )}
 
-                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all hidden sm:block" />
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all hidden sm:block" />
                   </div>
                 </div>
               ))}
@@ -474,7 +453,6 @@ export default function HistoryDashboard({
         </div>
       )}
 
-      {/* User & Password Management Modal for Admin */}
       {showManageUsers && (
         <AdminUserManager onClose={() => setShowManageUsers(false)} />
       )}

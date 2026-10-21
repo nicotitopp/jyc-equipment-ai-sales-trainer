@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Award, ChevronUp, ChevronDown, Check, X, 
-  AlertTriangle, ThumbsUp, ThumbsDown, RotateCcw, FileText, Printer, ShieldCheck,
-  CheckCircle2, XCircle, FileCheck, Sparkles, Terminal
+  AlertTriangle, ThumbsUp, ThumbsDown, RotateCcw, FileText, Printer, ShieldCheck
 } from 'lucide-react';
 import AudioPlayer from './AudioPlayer';
 
@@ -31,6 +30,7 @@ interface ScorecardProps {
   audioBlob?: Blob | null;
   audioUrl?: string;
   conversationId?: string;
+  scenarioTitle?: string;
 }
 
 export default function Scorecard({ 
@@ -40,7 +40,8 @@ export default function Scorecard({
   audioId,
   audioBlob,
   audioUrl,
-  conversationId 
+  conversationId,
+  scenarioTitle
 }: ScorecardProps) {
   const [showTranscript, setShowTranscript] = useState(false);
 
@@ -53,57 +54,53 @@ export default function Scorecard({
   const isPassing = evaluation.score >= 70;
 
   return (
-    <div id="scorecard-print-area" className="w-full max-w-5xl mx-auto p-4 sm:p-6 space-y-5 text-left text-slate-100">
+    <div id="scorecard-print-area" className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-left text-slate-900">
       
-      {/* Top Header Card - Industrial Quality Inspection Certificate */}
-      <div className="bg-[#0A0F17] rounded-2xl p-5 sm:p-6 border border-[#1E293B] shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
-        
-        {/* Glow ambient */}
-        <div className={`absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 ${
-          isPassing ? 'bg-emerald-500/10' : 'bg-amber-500/10'
-        }`}></div>
-
-        <div className="flex items-center gap-3.5 relative z-10">
-          <div className={`p-3.5 rounded-xl shrink-0 border ${
+      {/* Top Header Card */}
+      <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-4">
+          <div className={`p-3.5 rounded-2xl shrink-0 border ${
             isPassing 
-              ? 'bg-emerald-950/60 text-emerald-400 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]' 
-              : 'bg-amber-950/60 text-amber-400 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+              : 'bg-amber-50 text-amber-700 border-amber-200'
           }`}>
             <Award className="w-7 h-7" />
           </div>
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-lg sm:text-xl font-mono font-bold text-slate-100 tracking-tight uppercase">
-                Certificado Técnico de Calidad de Llamada
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-xl font-display font-bold text-slate-900 tracking-tight">
+                Evaluación de la práctica
               </h2>
-              <span className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider border ${
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                 isPassing 
-                  ? 'bg-emerald-950 text-emerald-300 border-emerald-700/60' 
-                  : 'bg-amber-950 text-amber-300 border-amber-700/60'
+                  ? 'bg-emerald-100 text-emerald-800' 
+                  : 'bg-amber-100 text-amber-800'
               }`}>
-                {isPassing ? '● APROBADA (≥70 PTS)' : '○ REQUIERE REPASO (<70 PTS)'}
+                {isPassing ? 'Objetivo cumplido' : 'Oportunidad de mejora'}
               </span>
             </div>
-            <p className="text-slate-400 text-xs font-mono mt-0.5">
-              Inspección técnica automatizada bajo los parámetros oficiales de prospección de maquinaria pesada JYC Equipment
+            <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
+              {scenarioTitle 
+                ? `Escenario practicado: ${scenarioTitle}` 
+                : 'Análisis de tu conversación comercial, calificación de maquinaria y manejo de objeciones'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 no-print shrink-0 w-full sm:w-auto relative z-10">
+        <div className="flex items-center gap-2.5 no-print shrink-0 w-full sm:w-auto">
           <button
             onClick={() => window.print()}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0E1522] hover:bg-[#162032] text-slate-200 rounded-xl text-xs font-mono font-semibold border border-[#1E293B] hover:border-slate-600 transition-colors cursor-pointer"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition-colors cursor-pointer"
           >
-            <Printer className="w-3.5 h-3.5 text-cyan-400" />
+            <Printer className="w-4 h-4 text-slate-500" />
             <span>Descargar PDF</span>
           </button>
           <button
             onClick={onReset}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl text-xs font-mono font-bold shadow-[0_0_15px_rgba(37,99,235,0.3)] transition-all cursor-pointer"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-display font-bold shadow-xs transition-colors cursor-pointer"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Nueva Simulación</span>
+            <RotateCcw className="w-4 h-4" />
+            <span>Practicar de nuevo</span>
           </button>
         </div>
       </div>
@@ -115,33 +112,32 @@ export default function Scorecard({
             audioId={audioId}
             audioBlob={audioBlob}
             audioUrl={effectiveAudioUrl}
-            title="Grabación de la Llamada / Audio Auditado"
-            subtitle="Reproduce la conversación con control de velocidad y scrubber táctil"
+            title="Grabación de la llamada"
+            subtitle="Escucha la conversación para repasar tu tono y tus respuestas"
           />
         </div>
       )}
 
-      {/* Main Grid: Score Column & Detailed Critique */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* Main Grid: Score & Stages (Left) + Detailed Coaching Feedback (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left Column: Overall Score & Checklist */}
-        <div className="lg:col-span-1 space-y-5">
+        {/* Left Column (4 cols): Score, Summary & Question Quality Checklist */}
+        <div className="lg:col-span-4 space-y-6">
           
-          {/* Score Indicator */}
-          <div className="bg-[#0A0F17] rounded-2xl p-5 border border-[#1E293B] shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-3">
-              Índice de Rendimiento Comercial
+          {/* Score & Conversation Summary */}
+          <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs flex flex-col items-center text-center">
+            <span className="text-xs font-semibold text-slate-500 mb-3">
+              Puntuación general
             </span>
             
-            {/* SVG Ring Progress with Dark Telemetry styling */}
-            <div className="relative w-36 h-36 flex items-center justify-center my-1">
+            <div className="relative w-36 h-36 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90">
                 <circle
                   cx="72"
                   cy="72"
                   r="58"
-                  className="text-[#0E1522]"
-                  strokeWidth="9"
+                  className="text-slate-100"
+                  strokeWidth="10"
                   stroke="currentColor"
                   fill="transparent"
                 />
@@ -149,82 +145,76 @@ export default function Scorecard({
                   cx="72"
                   cy="72"
                   r="58"
-                  strokeWidth="9"
+                  strokeWidth="10"
                   strokeDasharray={364}
                   strokeDashoffset={364 - (364 * Math.min(Math.max(evaluation.score, 0), 100)) / 100}
                   strokeLinecap="round"
                   stroke={
                     evaluation.score >= 80 
-                      ? "#10B981" 
+                      ? "#059669" 
                       : evaluation.score >= 60 
-                        ? "#F59E0B" 
-                        : "#EF4444"
+                        ? "#D97706" 
+                        : "#DC2626"
                   }
                   fill="transparent"
                 />
               </svg>
               <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-4xl font-extrabold text-slate-100 font-mono tracking-tight">
+                <span className="text-4xl font-display font-bold text-slate-900 font-mono">
                   {evaluation.score}
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">/ 100 PTS</span>
+                <span className="text-xs text-slate-400 font-medium">de 100</span>
               </div>
             </div>
 
-            <div 
-              className={`mt-2 px-3 py-1 rounded-lg text-xs font-bold uppercase font-mono tracking-wide border ${
-                evaluation.score >= 80 
-                  ? 'bg-emerald-950/60 text-emerald-300 border-emerald-700/60' 
-                  : evaluation.score >= 60 
-                    ? 'bg-amber-950/60 text-amber-300 border-amber-700/60' 
-                    : 'bg-red-950/60 text-red-300 border-red-700/60'
-              }`}
-            >
-              {evaluation.score >= 80 ? 'Excelente Desempeño' : evaluation.score >= 60 ? 'Nivel Aceptable' : 'Requiere Refuerzo'}
+            <div className="w-full border-t border-slate-100 pt-4 mt-4 text-left space-y-1.5">
+              <div className="text-xs font-semibold text-slate-800">Resumen de la conversación</div>
+              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                {evaluation.summary}
+              </p>
             </div>
-
-            <p className="text-slate-300 text-xs leading-relaxed border-t border-[#1E293B] pt-3.5 mt-3.5 text-left w-full font-sans">
-              {evaluation.summary}
-            </p>
           </div>
 
-          {/* Checklist */}
-          <div className="bg-[#0A0F17] rounded-2xl p-5 border border-[#1E293B] shadow-2xl space-y-3">
-            <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
-              <h3 className="font-mono font-bold text-slate-200 text-xs uppercase tracking-wider flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                Matriz de Cumplimiento Técnico
-              </h3>
+          {/* Quality of Questions & Call Stages */}
+          <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="font-display font-bold text-slate-900 text-sm">
+                  Etapas y preguntas realizadas
+                </h3>
+                <p className="text-xs text-slate-500">Estructura clave de la llamada</p>
+              </div>
+              <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
             </div>
             
             <div className="space-y-2">
               {[
-                { key: 'gatekeeperBypass', label: 'Bypass de Operadora (Gatekeeper)' },
-                { key: 'kpOpening', label: 'Apertura con Key Person (Gancho)' },
-                { key: 'equipmentQualification', label: 'Calificación (Año, Marca, Capacidad)' },
-                { key: 'futureReference', label: 'Preguntas de Referencia (Si no vende)' },
-                { key: 'priceAndAssets', label: 'Expectativa de Precio & Fotos Placa' },
-                { key: 'objectionHandling', label: 'Manejo Táctico de Objeciones' },
-                { key: 'nextStepsSecure', label: 'Siguiente Paso & Datos Directos' }
+                { key: 'gatekeeperBypass', label: 'Superar recepción (filtro inicial)' },
+                { key: 'kpOpening', label: 'Presentación y motivo con el responsable' },
+                { key: 'equipmentQualification', label: 'Preguntas de calificación (marca, modelo, año)' },
+                { key: 'futureReference', label: 'Preguntas de referencia (si hoy no vende)' },
+                { key: 'priceAndAssets', label: 'Solicitud de precio estimado y fotografías' },
+                { key: 'objectionHandling', label: 'Respuesta clara a las objeciones' },
+                { key: 'nextStepsSecure', label: 'Acuerdo del siguiente paso o contacto directo' }
               ].map((item) => {
                 const checked = (evaluation.checklist as any)?.[item.key] === true;
                 return (
-                  <div key={item.key} className="flex items-center justify-between py-2 px-2.5 rounded-lg bg-[#080C14] border border-[#1E293B] text-xs">
-                    <span className="text-slate-300 font-sans pr-2 leading-tight">{item.label}</span>
-                    <span className={`p-1 rounded shrink-0 font-mono text-[10px] font-bold flex items-center gap-1 ${
+                  <div key={item.key} className="flex items-center justify-between py-2 px-3 rounded-xl bg-slate-50/80 border border-slate-100 text-xs">
+                    <span className="text-slate-700 font-medium pr-2 leading-snug">{item.label}</span>
+                    <span className={`px-2 py-0.5 rounded-md font-semibold flex items-center gap-1 shrink-0 ${
                       checked 
-                        ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' 
-                        : 'bg-red-950/80 text-red-300 border border-red-700/60'
+                        ? 'bg-emerald-100 text-emerald-800' 
+                        : 'bg-slate-200/70 text-slate-600'
                     }`}>
                       {checked ? (
                         <>
-                          <Check className="w-3 h-3 stroke-[3]" />
-                          <span>PASS</span>
+                          <Check className="w-3 h-3 stroke-[2.5]" />
+                          <span>Sí</span>
                         </>
                       ) : (
                         <>
-                          <X className="w-3 h-3 stroke-[3]" />
-                          <span>MISS</span>
+                          <X className="w-3 h-3 stroke-[2.5]" />
+                          <span>Faltó</span>
                         </>
                       )}
                     </span>
@@ -236,137 +226,142 @@ export default function Scorecard({
 
         </div>
 
-        {/* Right Column: Strengths, Weaknesses, Objections & Transcript */}
-        <div className="lg:col-span-2 space-y-5">
+        {/* Right Column (8 cols): Strengths, Improvements, Objections, Recommendations, Transcript */}
+        <div className="lg:col-span-8 space-y-6">
           
-          {/* Strengths & Weaknesses 2-Column Grid */}
+          {/* Strengths & Areas for Improvement */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
-            {/* Strengths */}
-            <div className="bg-[#0A0F17] border border-emerald-900/60 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xl">
-              <div className="flex items-center gap-2 text-emerald-400 font-mono font-bold text-xs uppercase tracking-wider border-b border-[#1E293B] pb-2">
-                <ThumbsUp className="w-4 h-4 text-emerald-400" />
-                <span>Fortalezas Observadas</span>
+            {/* Aciertos */}
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-3 shadow-xs">
+              <div className="flex items-center gap-2 text-emerald-800 font-display font-bold text-sm border-b border-slate-100 pb-2.5">
+                <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
+                  <ThumbsUp className="w-4 h-4" />
+                </div>
+                <span>Aciertos en la llamada</span>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {evaluation.strengths?.map((str: string, idx: number) => (
-                  <li key={idx} className="text-slate-200 text-xs flex items-start gap-2 leading-relaxed font-sans">
-                    <span className="text-emerald-400 font-bold select-none">•</span>
+                  <li key={idx} className="text-slate-700 text-xs sm:text-sm flex items-start gap-2.5 leading-relaxed">
+                    <span className="text-emerald-600 font-bold mt-0.5 select-none">•</span>
                     <span>{str}</span>
                   </li>
                 ))}
                 {(!evaluation.strengths || evaluation.strengths.length === 0) && (
-                  <li className="text-slate-500 text-xs italic font-mono">No se registraron fortalezas específicas.</li>
+                  <li className="text-slate-400 text-xs italic">No se registraron aciertos específicos en esta sesión.</li>
                 )}
               </ul>
             </div>
 
-            {/* Weaknesses */}
-            <div className="bg-[#0A0F17] border border-rose-900/60 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xl">
-              <div className="flex items-center gap-2 text-rose-400 font-mono font-bold text-xs uppercase tracking-wider border-b border-[#1E293B] pb-2">
-                <ThumbsDown className="w-4 h-4 text-rose-400" />
-                <span>Áreas Críticas de Oportunidad</span>
+            {/* Aspectos por mejorar */}
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-3 shadow-xs">
+              <div className="flex items-center gap-2 text-amber-800 font-display font-bold text-sm border-b border-slate-100 pb-2.5">
+                <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600">
+                  <ThumbsDown className="w-4 h-4" />
+                </div>
+                <span>Aspectos por mejorar</span>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {evaluation.weaknesses?.map((weak: string, idx: number) => (
-                  <li key={idx} className="text-slate-200 text-xs flex items-start gap-2 leading-relaxed font-sans">
-                    <span className="text-rose-400 font-bold select-none">•</span>
+                  <li key={idx} className="text-slate-700 text-xs sm:text-sm flex items-start gap-2.5 leading-relaxed">
+                    <span className="text-amber-600 font-bold mt-0.5 select-none">•</span>
                     <span>{weak}</span>
                   </li>
                 ))}
                 {(!evaluation.weaknesses || evaluation.weaknesses.length === 0) && (
-                  <li className="text-slate-500 text-xs italic font-mono">No se registraron fallas relevantes.</li>
+                  <li className="text-slate-400 text-xs italic">No se detectaron puntos débiles críticos.</li>
                 )}
               </ul>
             </div>
 
           </div>
 
-          {/* Objections Handled */}
+          {/* Manejo de Objeciones */}
           {evaluation.objectionsHandled && evaluation.objectionsHandled.length > 0 && (
-            <div className="bg-[#0A0F17] rounded-2xl p-5 border border-[#1E293B] shadow-2xl space-y-3">
-              <h3 className="font-mono font-bold text-slate-200 text-xs uppercase tracking-wider border-b border-[#1E293B] pb-2 flex items-center justify-between">
-                <span>Auditoría de Objeciones Presentadas</span>
-                <span className="text-[10px] text-cyan-400">{evaluation.objectionsHandled.length} analizadas</span>
-              </h3>
+            <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="font-display font-bold text-slate-900 text-sm">
+                  Manejo de objeciones
+                </h3>
+                <p className="text-xs text-slate-500">Cómo respondiste a las dudas o resistencias del cliente</p>
+              </div>
               <div className="space-y-3">
                 {evaluation.objectionsHandled.map((obj: any, idx: number) => (
-                  <div key={idx} className="p-3.5 rounded-xl bg-[#080C14] border border-[#1E293B] space-y-2">
+                  <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
                     <div className="flex items-center justify-between flex-wrap gap-2">
-                      <span className="font-mono font-bold text-slate-100 text-xs">{obj.objection}</span>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
+                      <span className="font-semibold text-slate-900 text-xs sm:text-sm">{obj.objection}</span>
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                         obj.handledWell 
-                          ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60' 
-                          : 'bg-amber-950/80 text-amber-300 border-amber-700/60'
+                          ? 'bg-emerald-100 text-emerald-800' 
+                          : 'bg-amber-100 text-amber-800'
                       }`}>
                         {obj.handledWell ? <ThumbsUp className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-                        {obj.handledWell ? 'BIEN RESUELTA' : 'REQUIERE REFUERZO'}
+                        {obj.handledWell ? 'Bien resuelta' : 'Por reforzar'}
                       </span>
                     </div>
-                    <p className="text-slate-300 text-xs leading-relaxed font-sans">{obj.feedback}</p>
+                    <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">{obj.feedback}</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Recommendations */}
+          {/* Recomendaciones para la siguiente llamada */}
           {evaluation.recommendations && evaluation.recommendations.length > 0 && (
-            <div className="bg-[#0A0F17] rounded-2xl p-5 border border-[#1E293B] shadow-2xl space-y-3">
-              <h3 className="font-mono font-bold text-slate-200 text-xs uppercase tracking-wider border-b border-[#1E293B] pb-2">
-                Recomendaciones Tácticas & Flujo Correcto de Guion
-              </h3>
+            <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="font-display font-bold text-slate-900 text-sm">
+                  Recomendaciones para tu siguiente llamada
+                </h3>
+                <p className="text-xs text-slate-500">Consejos prácticos para aplicar en el próximo intento</p>
+              </div>
               <div className="space-y-2.5">
                 {evaluation.recommendations.map((rec: string, idx: number) => (
-                  <div key={idx} className="flex items-start gap-2.5 text-xs p-2.5 rounded-lg bg-[#080C14] border border-[#1E293B]">
-                    <div className="shrink-0 w-5 h-5 rounded bg-cyan-950 border border-cyan-700/60 text-cyan-300 flex items-center justify-center font-mono font-bold text-[10px] mt-0.5">
+                  <div key={idx} className="flex items-start gap-3 text-xs sm:text-sm p-3.5 rounded-xl bg-blue-50/50 border border-blue-100">
+                    <div className="shrink-0 w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-mono font-bold text-xs mt-0.5">
                       {idx + 1}
                     </div>
-                    <p className="text-slate-300 leading-relaxed font-sans">{rec}</p>
+                    <p className="text-slate-700 leading-relaxed">{rec}</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Transcript Section */}
+          {/* Transcripción completa */}
           {transcriptLines.length > 0 && (
-            <div className="bg-[#0A0F17] rounded-2xl p-5 border border-[#1E293B] shadow-2xl space-y-3">
-              <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
-                <span className="flex items-center gap-2 font-mono font-bold text-slate-200 text-xs uppercase tracking-wider">
-                  <Terminal className="w-4 h-4 text-cyan-400" />
-                  Transcripción Forense del Diálogo ({transcriptLines.length} turnos)
+            <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <span className="flex items-center gap-2 font-display font-bold text-slate-900 text-sm">
+                  <FileText className="w-4 h-4 text-slate-500" />
+                  Transcripción de la conversación ({transcriptLines.length} intervenciones)
                 </span>
                 <button
                   onClick={() => setShowTranscript(!showTranscript)}
-                  className="no-print text-xs font-mono font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
+                  className="no-print text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                 >
-                  {showTranscript ? 'Ocultar' : 'Expandir Diálogo'}
-                  {showTranscript ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  {showTranscript ? 'Ocultar transcripción' : 'Ver transcripción'}
+                  {showTranscript ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </button>
               </div>
 
-              <div className={`space-y-2.5 pt-1 max-h-[420px] overflow-y-auto custom-scrollbar print-always-visible ${showTranscript ? 'block' : 'hidden'}`}>
+              <div className={`space-y-3 pt-1 max-h-[420px] overflow-y-auto print-always-visible ${showTranscript ? 'block' : 'hidden'}`}>
                 {transcriptLines.map((msg: any, idx: number) => {
                   const isUser = msg.role === 'user' || msg.role === 'Trainee' || msg.role === 'Trainee (Sales Rep)' || msg.role === 'agent';
-                  const roleLabel = isUser ? 'VENDEDOR' : 'PROSPECTO';
+                  const roleLabel = isUser ? 'Tú (Comercial)' : 'Cliente';
                   return (
-                    <div key={idx} className={`flex gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}>
-                      <span className={`shrink-0 px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase h-5 flex items-center border ${
+                    <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm leading-relaxed ${
                         isUser 
-                          ? 'bg-blue-950/80 text-blue-300 border-blue-700/60' 
-                          : 'bg-amber-950/80 text-amber-300 border-amber-700/60'
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-slate-100 text-slate-800'
                       }`}>
-                        {roleLabel}
-                      </span>
-                      <div className={`flex-1 ${isUser ? 'text-right' : 'text-left'}`}>
-                        <div className={`inline-block max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs text-left leading-relaxed ${
-                          isUser 
-                            ? 'bg-blue-600/20 border border-blue-500/40 text-blue-100 font-sans' 
-                            : 'bg-[#0E1522] border border-[#1E293B] text-slate-200 font-sans'
+                        <div className={`text-[11px] font-semibold mb-0.5 ${
+                          isUser ? 'text-blue-100' : 'text-slate-500'
                         }`}>
-                          {msg.text}
+                          {roleLabel}
                         </div>
+                        <div>{msg.text}</div>
                       </div>
                     </div>
                   );

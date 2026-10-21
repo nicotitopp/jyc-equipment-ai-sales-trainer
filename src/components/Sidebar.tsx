@@ -1,8 +1,8 @@
 import React from 'react';
 import { Mode, User as UserType } from '../types';
 import { 
-  GraduationCap, PhoneCall, UploadCloud, BarChart3, 
-  RefreshCw, X, Shield, User, LogOut, Radio, Terminal, Cpu
+  PhoneCall, BookOpen, UploadCloud, BarChart3, 
+  RefreshCw, X, Shield, User, LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -15,55 +15,47 @@ interface SidebarProps {
   onResetCoach: () => void;
 }
 
-export const MODES_LIST: { 
-  id: Mode; 
-  channel: string;
-  label: string; 
-  badge: string;
-  icon: React.ComponentType<{ className?: string }>; 
+export interface NavItemConfig {
+  id: Mode;
+  label: string;
+  shortTitle: string;
   description: string;
-  accentClass: string;
-  activeBorder: string;
-}[] = [
-  { 
-    id: 'Coach', 
-    channel: 'CH-01',
-    label: 'Coach & Playbook', 
-    badge: 'AI GUIDANCE',
-    icon: GraduationCap, 
-    description: 'Guión por industria, objeciones y catálogo de maquinaria',
-    accentClass: 'text-sky-400 bg-sky-950/40 border-sky-500/40',
-    activeBorder: 'border-l-sky-500 bg-[#0E1521]'
-  },
+  group: 'primary' | 'secondary';
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+export const MODES_LIST: NavItemConfig[] = [
   { 
     id: 'Live Call Simulation', 
-    channel: 'CH-02',
-    label: 'Simulación Telefónica', 
-    badge: 'LIVE VOX',
-    icon: PhoneCall, 
-    description: 'Llamada de voz en tiempo real con comprador prospecto',
-    accentClass: 'text-amber-400 bg-amber-950/40 border-amber-500/40',
-    activeBorder: 'border-l-amber-500 bg-[#171410]'
+    label: 'Práctica de llamada', 
+    shortTitle: 'Práctica de llamada por voz',
+    description: 'Entrena conversaciones telefónicas reales con clientes simulados por IA',
+    group: 'primary',
+    icon: PhoneCall,
+  },
+  { 
+    id: 'Coach', 
+    label: 'Asesor y guiones', 
+    shortTitle: 'Asesor comercial y guiones',
+    description: 'Prepara respuestas a objeciones y consulta el guion por sector industrial',
+    group: 'primary',
+    icon: BookOpen,
   },
   { 
     id: 'Real Call Audit', 
-    channel: 'CH-03',
-    label: 'Auditoría Forense', 
-    badge: 'GEMINI 2.5',
-    icon: UploadCloud, 
-    description: 'Sube audio real y recibe dictamen de cumplimiento de guión',
-    accentClass: 'text-emerald-400 bg-emerald-950/40 border-emerald-500/40',
-    activeBorder: 'border-l-emerald-500 bg-[#0D1815]'
+    label: 'Evaluar grabación', 
+    shortTitle: 'Evaluación de llamada grabada',
+    description: 'Sube el audio de una llamada real para analizar aciertos y oportunidades',
+    group: 'secondary',
+    icon: UploadCloud,
   },
   { 
     id: 'History', 
-    channel: 'CH-04',
-    label: 'Métricas & Operaciones', 
-    badge: 'NEON DB',
-    icon: BarChart3, 
-    description: 'Tablero de desempeño comercial, grabaciones y KPIs',
-    accentClass: 'text-indigo-400 bg-indigo-950/40 border-indigo-500/40',
-    activeBorder: 'border-l-indigo-500 bg-[#121422]'
+    label: 'Historial y progreso', 
+    shortTitle: 'Historial de prácticas y progreso',
+    description: 'Revisa tus llamadas anteriores, calificaciones y grabaciones',
+    group: 'secondary',
+    icon: BarChart3,
   },
 ];
 
@@ -77,61 +69,72 @@ export default function Sidebar({
   onResetCoach,
 }: SidebarProps) {
   const isAdmin = currentUser?.role === 'admin';
+  const primaryModes = MODES_LIST.filter(m => m.group === 'primary');
+  const secondaryModes = MODES_LIST.filter(m => m.group === 'secondary');
 
   return (
     <>
       {/* Mobile Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-[#040608]/80 backdrop-blur-xs z-40 md:hidden transition-opacity"
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 md:hidden transition-opacity"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
-      {/* Sidebar Rail */}
+      {/* Navigation Sidebar */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#070A0F] text-slate-100 flex flex-col border-r border-[#151D29] transform transition-transform duration-200 ease-out md:relative md:translate-x-0 select-none ${
+        className={`fixed inset-y-0 left-0 z-50 w-68 bg-[#0F172A] text-slate-100 flex flex-col border-r border-slate-800 transform transition-transform duration-200 ease-out md:relative md:translate-x-0 select-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Brand Terminal Header */}
-        <div className="p-4 border-b border-[#151D29] flex items-center justify-between bg-[#090D14]">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded bg-gradient-to-br from-blue-700 to-indigo-900 border border-blue-400/40 flex items-center justify-center font-display font-black text-white text-base tracking-wider shadow-inner">
+        {/* Brand Identity */}
+        <div className="px-5 py-5 border-b border-slate-800/80 flex items-center justify-between">
+          <div 
+            onClick={() => {
+              onSelectMode('Live Call Simulation');
+              onClose();
+            }}
+            className="flex items-center gap-3 cursor-pointer group"
+          >
+            <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-display font-bold text-base tracking-tight shadow-xs group-hover:bg-amber-400 transition-colors">
               JYC
             </div>
             <div>
-              <div className="font-extrabold text-xs font-display tracking-wider text-white uppercase flex items-center gap-1.5">
-                JYC EQUIPMENT
+              <div className="font-display font-bold text-sm text-white tracking-tight">
+                JYC Equipment
               </div>
-              <div className="text-[10px] font-mono text-slate-400 tracking-wider flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                ACQUISITIONS TERMINAL
+              <div className="text-xs text-slate-400">
+                Entrenamiento comercial
               </div>
             </div>
           </div>
+
           <button 
-            className="md:hidden text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800"
+            className="md:hidden text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800"
             onClick={onClose}
-            aria-label="Cerrar panel"
+            aria-label="Cerrar menú"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Industrial Channel Matrix */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-5">
+        {/* Navigation Sections */}
+        <div className="flex-1 overflow-y-auto px-3 py-5 space-y-6">
+          
+          {/* Primary Section: Practice & Preparation */}
           <div>
-            <div className="text-[9px] font-mono uppercase tracking-widest text-slate-400 font-bold px-2 mb-2 flex items-center justify-between">
-              <span>CANALES OPERATIVOS</span>
-              <Terminal className="w-3 h-3 text-slate-500" />
+            <div className="px-3 mb-2 text-xs font-medium text-slate-400">
+              Entrenamiento
             </div>
 
-            <nav className="space-y-1.5" aria-label="Canales principales">
-              {MODES_LIST.map((item) => {
+            <nav className="space-y-1" aria-label="Entrenamiento">
+              {primaryModes.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentMode === item.id;
+                const isCallItem = item.id === 'Live Call Simulation';
+
                 return (
                   <button
                     key={item.id}
@@ -139,92 +142,133 @@ export default function Sidebar({
                       onSelectMode(item.id);
                       onClose();
                     }}
-                    className={`w-full text-left p-2.5 rounded transition-all cursor-pointer border ${
+                    className={`w-full text-left px-3 py-2.5 rounded-xl transition-all cursor-pointer flex items-start gap-3 ${
                       isActive
-                        ? `${item.activeBorder} border-r-[#1C2634] border-y-[#1C2634] border-l-4 text-white shadow-md`
-                        : 'border-[#121924] bg-[#0A0E15]/60 hover:bg-[#0F1520] hover:border-[#1E293B] text-slate-300'
+                        ? isCallItem
+                          ? 'bg-amber-500 text-slate-950 font-semibold shadow-sm'
+                          : 'bg-slate-800 text-white font-semibold'
+                        : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[9px] font-mono font-bold text-slate-400 tracking-wider">
-                        {item.channel}
-                      </span>
-                      <span className={`text-[8px] font-mono font-bold px-1 py-0.2 rounded border ${
-                        isActive ? item.accentClass : 'border-[#1C2634] text-slate-400 bg-[#0D121B]'
-                      }`}>
-                        {item.badge}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2.5">
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                      <span className="text-xs font-bold tracking-tight text-white font-display">
+                    <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${
+                      isActive 
+                        ? isCallItem ? 'text-slate-950' : 'text-amber-400' 
+                        : 'text-slate-400'
+                    }`} />
+                    <div className="min-w-0">
+                      <div className="text-sm leading-tight">
                         {item.label}
-                      </span>
+                      </div>
+                      <p className={`text-xs leading-snug mt-0.5 line-clamp-2 ${
+                        isActive 
+                          ? isCallItem ? 'text-slate-900/80 font-normal' : 'text-slate-300 font-normal' 
+                          : 'text-slate-400 font-normal'
+                      }`}>
+                        {item.description}
+                      </p>
                     </div>
-
-                    <p className={`text-[11px] leading-tight mt-1 line-clamp-1 ${
-                      isActive ? 'text-slate-300' : 'text-slate-400'
-                    }`}>
-                      {item.description}
-                    </p>
                   </button>
                 );
               })}
             </nav>
           </div>
 
-          {/* Quick Action: Reset Conversation */}
-          <div className="pt-2 border-t border-[#151D29]">
-            <button
-              onClick={onResetCoach}
-              disabled={currentMode !== 'Coach'}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#1C2634] bg-[#0A0E15] hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-mono transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Reinicia la conversación del entrenador"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>REINICIAR DIÁLOGO</span>
-            </button>
+          {/* Secondary Section: Evaluation & Progress */}
+          <div>
+            <div className="px-3 mb-2 text-xs font-medium text-slate-400">
+              Análisis y seguimiento
+            </div>
+
+            <nav className="space-y-1" aria-label="Análisis y seguimiento">
+              {secondaryModes.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentMode === item.id;
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onSelectMode(item.id);
+                      onClose();
+                    }}
+                    className={`w-full text-left px-3 py-2.5 rounded-xl transition-all cursor-pointer flex items-start gap-3 ${
+                      isActive
+                        ? 'bg-slate-800 text-white font-semibold'
+                        : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${
+                      isActive ? 'text-amber-400' : 'text-slate-400'
+                    }`} />
+                    <div className="min-w-0">
+                      <div className="text-sm leading-tight">
+                        {item.label}
+                      </div>
+                      <p className={`text-xs leading-snug mt-0.5 line-clamp-2 font-normal ${
+                        isActive ? 'text-slate-300' : 'text-slate-400'
+                      }`}>
+                        {item.description}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
+
+          {/* Contextual Reset when inside Coach */}
+          {currentMode === 'Coach' && (
+            <div className="pt-2 border-t border-slate-800/80 px-1">
+              <button
+                onClick={onResetCoach}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-slate-700/80 bg-slate-800/40 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Nueva consulta al asesor</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Operator Profile Dossier & Console Info */}
-        <div className="p-3 border-t border-[#151D29] bg-[#090D14]">
+        {/* User Profile Footer */}
+        <div className="p-3.5 border-t border-slate-800/80 bg-slate-900/60">
           {currentUser && (
-            <div className="bg-[#0B1017] border border-[#1A2332] rounded p-2.5 text-left">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[9px] font-mono uppercase font-bold text-slate-400 flex items-center gap-1">
-                  <Cpu className="w-3 h-3 text-slate-500" /> OPERADOR
-                </span>
-                <span
-                  className={`text-[8px] font-mono font-bold px-1 py-0.2 rounded uppercase tracking-wider ${
-                    isAdmin
-                      ? 'bg-indigo-950 text-indigo-300 border border-indigo-700/60'
-                      : 'bg-blue-950 text-blue-300 border border-blue-700/60'
-                  }`}
-                >
-                  {isAdmin ? 'ADMIN' : 'VENDEDOR'}
-                </span>
-              </div>
-              <div className="font-bold text-white text-xs truncate">
-                {currentUser.name}
-              </div>
-              <div className="text-[10px] text-slate-400 font-mono truncate">
-                ID: @{currentUser.username}
+            <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                  isAdmin ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-800 text-slate-200 border border-slate-700'
+                }`}>
+                  {currentUser.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold text-white truncate">
+                    {currentUser.name}
+                  </div>
+                  <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                    {isAdmin ? (
+                      <>
+                        <Shield className="w-3 h-3 text-indigo-400" />
+                        <span>Supervisor</span>
+                      </>
+                    ) : (
+                      <>
+                        <User className="w-3 h-3 text-slate-400" />
+                        <span>Comercial</span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <button
                 onClick={onLogout}
-                className="mt-2 w-full flex items-center justify-center gap-1.5 py-1 text-[11px] font-mono text-slate-300 hover:text-white bg-[#121924] hover:bg-slate-800 rounded border border-[#1E293B] transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shrink-0"
+                title="Cerrar sesión"
               >
-                <LogOut className="w-3 h-3" />
-                CAMBIAR OPERADOR
+                <LogOut className="w-4 h-4" />
               </button>
             </div>
           )}
-          <div className="mt-2 text-[9px] text-slate-400 text-center font-mono tracking-wider">
-            JYC TERMINAL v2.5 • HEAVY ACQUISITIONS
-          </div>
         </div>
       </aside>
     </>
