@@ -1,415 +1,490 @@
 import React, { useState } from 'react';
-import { BookOpen, UserCheck, ShieldAlert, FileText, ClipboardList, Briefcase, Zap, Anchor, HeartPulse } from 'lucide-react';
+import { 
+  BookOpen, UserCheck, ShieldAlert, FileText, ClipboardList, 
+  Briefcase, Zap, Anchor, HeartPulse, ChevronRight, AlertTriangle, 
+  CheckCircle2, Sparkles, PhoneForwarded, Target
+} from 'lucide-react';
 
 export default function Playbook() {
   const [activeTab, setActiveTab] = useState<'bypass' | 'qualify' | 'plastics' | 'ports' | 'medical' | 'reference' | 'objections' | 'catalog'>('bypass');
 
+  const tabs = [
+    { id: 'bypass', label: 'Bypass & Apertura', tag: 'STAGE-01', icon: <UserCheck className="w-3.5 h-3.5" /> },
+    { id: 'qualify', label: '7 Preguntas Calificación', tag: 'STAGE-02', icon: <ClipboardList className="w-3.5 h-3.5" /> },
+    { id: 'plastics', label: 'Plásticos & Inyección', tag: 'SECTOR-01', icon: <Zap className="w-3.5 h-3.5 text-emerald-400" /> },
+    { id: 'ports', label: 'Puertos & Reach Stackers', tag: 'SECTOR-02', icon: <Anchor className="w-3.5 h-3.5 text-cyan-400" /> },
+    { id: 'medical', label: 'Imagen Médica & MRI', tag: 'SECTOR-03', icon: <HeartPulse className="w-3.5 h-3.5 text-rose-400" /> },
+    { id: 'reference', label: 'Sin Equipo (Prospección)', tag: 'STAGE-03', icon: <FileText className="w-3.5 h-3.5" /> },
+    { id: 'objections', label: 'Matriz de Objeciones', tag: 'DEFENSE', icon: <ShieldAlert className="w-3.5 h-3.5 text-amber-400" /> },
+    { id: 'catalog', label: 'Catálogo & Límites', tag: 'EQUIP-DB', icon: <Briefcase className="w-3.5 h-3.5" /> },
+  ];
+
   return (
-    <div className="bg-white rounded-xl p-4 sm:p-5 shadow-xs border border-slate-200 h-full flex flex-col min-h-[400px] max-h-full overflow-hidden text-left">
+    <div className="bg-[#0A0F17] rounded-2xl p-4 sm:p-5 border border-[#1E293B] shadow-2xl h-full flex flex-col min-h-[420px] max-h-full overflow-hidden text-left relative">
       
       {/* Playbook Header */}
-      <div className="flex items-center gap-2 pb-3 border-b border-slate-100 shrink-0">
-        <BookOpen className="w-5 h-5 text-blue-600" />
-        <h3 className="font-bold text-slate-800 text-sm">JYC Sales Playbook & Multi-Industry Script</h3>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#1E293B] shrink-0 gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-cyan-950/60 border border-cyan-500/40 text-cyan-400 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(6,182,212,0.15)]">
+            <BookOpen className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-mono font-bold text-slate-100 text-xs sm:text-sm tracking-wide uppercase">
+                JYC Sales Playbook & Multi-Industry Protocol
+              </h3>
+              <span className="hidden sm:inline-block text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
+                REV 2026.4
+              </span>
+            </div>
+            <p className="text-[10px] font-mono text-slate-400">
+              Guiones oficiales de bypass telefónico, gancho, calificación de maquinaria pesada y cierre
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400 self-end sm:self-auto">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>ESTÁNDAR CERTIFICADO</span>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-100 mt-2 gap-1 overflow-x-auto shrink-0 no-scrollbar">
-        {[
-          { id: 'bypass', label: 'Bypass & Opening', icon: <UserCheck className="w-3.5 h-3.5" /> },
-          { id: 'qualify', label: 'Qualification', icon: <ClipboardList className="w-3.5 h-3.5" /> },
-          { id: 'plastics', label: '🧪 Plastics Script', icon: <Zap className="w-3.5 h-3.5 text-emerald-600" /> },
-          { id: 'ports', label: '🚢 Ports Script', icon: <Anchor className="w-3.5 h-3.5 text-blue-600" /> },
-          { id: 'medical', label: '🏥 Medical Script', icon: <HeartPulse className="w-3.5 h-3.5 text-rose-600" /> },
-          { id: 'reference', label: 'Future Reference', icon: <FileText className="w-3.5 h-3.5" /> },
-          { id: 'objections', label: 'Objections', icon: <ShieldAlert className="w-3.5 h-3.5" /> },
-          { id: 'catalog', label: 'Industries & Catalog', icon: <Briefcase className="w-3.5 h-3.5" /> },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer ${
-              activeTab === tab.id
-                ? 'border-blue-600 text-blue-600 bg-blue-50/30 font-bold'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+      <div className="flex border-b border-[#1E293B] mt-2.5 gap-1.5 overflow-x-auto shrink-0 pb-1.5 no-scrollbar">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-3 py-2 text-xs font-mono rounded-lg transition-all border whitespace-nowrap cursor-pointer shrink-0 ${
+                isActive
+                  ? 'border-cyan-500/60 bg-gradient-to-r from-cyan-950/60 to-slate-900 text-cyan-300 font-bold shadow-[0_0_12px_rgba(6,182,212,0.15)]'
+                  : 'border-[#1E293B] bg-[#0E1520] text-slate-400 hover:text-slate-200 hover:border-slate-700'
+              }`}
+            >
+              <span className="opacity-80">{tab.icon}</span>
+              <span>{tab.label}</span>
+              <span className={`text-[8px] px-1 py-0.2 rounded font-mono ${isActive ? 'bg-cyan-500/20 text-cyan-200' : 'bg-slate-800 text-slate-500'}`}>
+                {tab.tag}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto pt-4 text-left space-y-4 text-xs leading-relaxed text-slate-600 font-sans">
+      <div className="flex-1 overflow-y-auto pt-4 text-left space-y-4 text-xs leading-relaxed text-slate-300 font-sans custom-scrollbar">
         
+        {/* TAB: BYPASS & APERTURA */}
         {activeTab === 'bypass' && (
           <div className="space-y-4">
             
             {/* Operator Script */}
-            <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 font-bold text-[10px] text-slate-700 uppercase">1. With the Operator (Gatekeeper Bypass)</span>
-              <p className="font-semibold text-slate-800 italic">"Good morning, could you please transfer me to the person in charge of plant operations or the used machinery, like your injection molding machines, forklifts, or loaders?"</p>
-              <p className="text-[11px] text-slate-500 italic">En español: "Buenos días, ¿me podría comunicar con el encargado de planta, operaciones o la maquinaria usada como sus inyectoras de plástico, montacargas o cargadores?"</p>
-              
-              <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1.5">
-                <p className="font-bold text-slate-700">If they ask "What is this in regards to?":</p>
-                <p className="italic text-slate-600">"This is [Name] with JYC Equipment. We are nationwide buyers of used heavy machinery and equipment. I wanted to check with the plant manager if you might have any surplus machines for sale or coming up for renewal this year. Is he available?"</p>
-                <p className="text-[11px] text-slate-500 italic">En español: "Habla [Nombre] de JYC Equipment. Compramos maquinaria pesada usada a nivel nacional y quería consultar con el jefe de planta si tienen algún equipo sobrante o por renovar este año."</p>
+            <div className="bg-[#0E1522] border border-[#1E293B] rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-800/80 font-mono font-bold text-[10px] text-cyan-300 uppercase border border-slate-700">
+                  <PhoneForwarded className="w-3 h-3" />
+                  01. Filtro con la Operadora / Conmutador (Gatekeeper Bypass)
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">OBJETIVO: EVITAR DEPARTAMENTO DE VENTAS</span>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200/60 rounded-xl p-2.5 text-[11px] text-amber-800">
-                <strong>⚠️ Regla de Oro:</strong> El prospecto <strong>NO es comerciante de maquinaria</strong>; es una empresa industrial (plásticos, cantera, aserradero, planta). Preguntar por el <em>Jefe de Operaciones / Planta / Flota</em> evita que la operadora te transfiera por error a su propio departamento de ventas.
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-mono uppercase text-slate-400">Pitch en Inglés (USA / Canada):</p>
+                <div className="p-3 bg-[#080C14] rounded-lg border border-[#1E293B] font-mono text-xs text-amber-200 font-medium">
+                  "Good morning, could you please transfer me to the person in charge of plant operations or the used machinery, like your injection molding machines, forklifts, or loaders?"
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-mono uppercase text-slate-400">Traducción Oficial al Español:</p>
+                <div className="p-2.5 bg-[#080C14]/60 rounded-lg border border-[#1E293B]/60 text-slate-300 text-[11px] italic">
+                  "Buenos días, ¿me podría comunicar con el encargado de planta, operaciones o la maquinaria usada como sus inyectoras de plástico, montacargas o cargadores?"
+                </div>
+              </div>
+              
+              <div className="bg-[#121B2A] border border-cyan-900/40 rounded-lg p-3 space-y-1.5">
+                <p className="font-mono font-bold text-cyan-300 text-[11px] flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  Si la operadora pregunta: "¿De parte de quién y para qué asunto?" ("What is this in regards to?"):
+                </p>
+                <p className="text-slate-200 font-mono text-[11px]">
+                  "This is [Name] with JYC Equipment. We are nationwide buyers of used heavy machinery and equipment. I wanted to check with the plant manager if you might have any surplus machines for sale or coming up for renewal this year. Is he available?"
+                </p>
+                <p className="text-[10px] text-slate-400 italic">
+                  En español: "Habla [Nombre] de JYC Equipment. Compramos maquinaria pesada usada a nivel nacional y quería consultar con el jefe de planta si tienen algún equipo sobrante o por renovar este año."
+                </p>
+              </div>
+
+              <div className="bg-amber-950/30 border border-amber-500/40 rounded-lg p-3 text-[11px] text-amber-200 flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="font-mono text-amber-300 uppercase">Regla de Oro Táctica:</strong> El prospecto <strong>NO es revendedor de maquinaria</strong>; es una planta industrial (plásticos, cantera, aserradero, terminal). Preguntar explícitamente por el <em>Jefe de Operaciones / Planta / Mantenimiento de Flota</em> evita que la telefonista te derive a su propio equipo de ventas comerciales.
+                </div>
               </div>
             </div>
 
             {/* KP Script */}
-            <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-blue-50 font-bold text-[10px] text-blue-700 uppercase">2. Opening with the Key Person (KP)</span>
-              <p className="font-semibold text-slate-800 italic">"Hi [KP Name], this is [Name] with JYC Equipment. Did I catch you at a bad time?"</p>
-              <p className="text-[11px] text-slate-500 italic">En español: "Hola [Nombre], habla [Mi Nombre] de JYC Equipment. ¿Lo tomo en un mal momento?"</p>
-              <p className="text-slate-500 mt-1">Wait for response. If they cooperate, present the hook:</p>
-              <p className="font-semibold text-slate-800 italic">"I'm calling because we are nationwide buyers of used industrial machinery such as injection molding machines, forklifts, and loaders. I wanted to check with you if you might have anything for sale right now or maybe coming up this year?"</p>
-              <p className="text-[11px] text-slate-500 italic">En español: "Le llamo porque somos compradores a nivel nacional de maquinaria industrial y pesada como inyectoras de plástico, montacargas y cargadores. Quería consultar si tienen algún equipo disponible ahora o para renovar este año."</p>
+            <div className="bg-[#0E1522] border border-[#1E293B] rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-cyan-950/80 font-mono font-bold text-[10px] text-cyan-300 uppercase border border-cyan-800">
+                  <Target className="w-3 h-3" />
+                  02. Apertura Directa con el Key Person (KP)
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">OBJETIVO: GANCHO & DISPONIBILIDAD</span>
+              </div>
+
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-mono uppercase text-slate-400">Paso 1: Permiso de Conversación (Elimina Resistencia):</p>
+                <div className="p-3 bg-[#080C14] rounded-lg border border-[#1E293B] font-mono text-xs text-amber-200">
+                  "Hi [KP Name], this is [Name] with JYC Equipment. Did I catch you at a bad time?"
+                </div>
+                <p className="text-[10px] text-slate-400 italic">"Hola [Nombre], habla [Mi Nombre] de JYC Equipment. ¿Lo tomo en un mal momento?"</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-mono uppercase text-slate-400">Paso 2: Gancho Comercial Inmediato (Propuesta de Valor):</p>
+                <div className="p-3 bg-[#080C14] rounded-lg border border-[#1E293B] font-mono text-xs text-cyan-200">
+                  "I'm calling because we are nationwide buyers of used industrial machinery such as injection molding machines, forklifts, and loaders. I wanted to check with you if you might have anything for sale right now or maybe coming up this year?"
+                </div>
+                <p className="text-[10px] text-slate-400 italic">"Le llamo porque somos compradores a nivel nacional de maquinaria industrial y pesada como inyectoras de plástico, montacargas y cargadores. Quería consultar si tienen algún equipo disponible ahora o para renovar este año."</p>
+              </div>
             </div>
 
           </div>
         )}
 
+        {/* TAB: QUALIFY */}
         {activeTab === 'qualify' && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-emerald-50 font-bold text-[10px] text-emerald-700 uppercase">7 Qualification Questions (In Exact Order)</span>
-              <p className="text-slate-500">If the prospect confirms they have a machine unit available for sale, qualify the machine by asking the following questions in order:</p>
+            <div className="bg-[#0E1522] border border-[#1E293B] rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-950/80 font-mono font-bold text-[10px] text-emerald-300 uppercase border border-emerald-800">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Secuencia Rigurosa de Calificación (7 Preguntas en Orden)
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">PROTOCOLO DE ADQUISICIÓN</span>
+              </div>
               
-              <ul className="space-y-2 bg-emerald-50/20 border border-emerald-50 p-3 rounded-xl">
-                <li className="flex gap-2">
-                  <span className="text-emerald-500 font-bold">1.</span>
-                  <span><strong>Equipment Type:</strong> And what type of equipment is it? Is it an injection molding machine, blow molder, extruder, or forklift?</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-emerald-500 font-bold">2.</span>
-                  <span><strong>Model:</strong> What's the model?</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-emerald-500 font-bold">3.</span>
-                  <span><strong>Make:</strong> What's the make? (Cincinnati Milacron, Krauss Maffei, Engel, Komatsu, Taylor, Toyota...)</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-emerald-500 font-bold">4.</span>
-                  <span><strong>Tonnage / Capacity:</strong> What is the tonnage or capacity? (e.g. 500 Ton, 1000 Ton, 2000 Ton, or 30k lbs)</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-emerald-500 font-bold">5.</span>
-                  <span><strong>Year:</strong> Do you know what year it is?</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-emerald-500 font-bold">6.</span>
-                  <span><strong>Condition & Repairs:</strong> Is it running or does it need any major repairs?</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-emerald-500 font-bold">7.</span>
-                  <span><strong>Price & Photos:</strong> Do you have a price in mind for it? / Could you please send me some pictures including the data plate, shot size/tonnage plate, and control panel?</span>
-                </li>
-              </ul>
+              <p className="text-slate-300 text-xs">
+                Cuando el prospecto confirme que tiene una o más máquinas para venta o renovación, formula <strong>estas 7 preguntas en estricto orden secuencial</strong> para determinar la viabilidad del activo:
+              </p>
+              
+              <div className="space-y-2">
+                {[
+                  { n: '01', title: 'Tipo de Equipo (Equipment Type)', desc: 'And what type of equipment is it? Is it an injection molding machine, blow molder, extruder, reach stacker, or forklift?' },
+                  { n: '02', title: 'Modelo Específico (Model)', desc: "What's the exact model designation on the machine nameplate?" },
+                  { n: '03', title: 'Marca / Fabricante (Make)', desc: "What's the make? (Cincinnati Milacron, Krauss Maffei, Engel, Kalmar, Taylor, Komatsu, CAT, GE...)" },
+                  { n: '04', title: 'Tonelaje o Capacidad (Tonnage / Rating)', desc: 'What is the tonnage or capacity? (e.g. 500 Ton, 1000 Ton, 2000 Ton, 45-Ton spreader, or 30k-80k lbs)' },
+                  { n: '05', title: 'Año de Fabricación (Year)', desc: 'Do you know what year the unit was manufactured and approximate operating hours?' },
+                  { n: '06', title: 'Condición Operativa & Averías (Condition)', desc: 'Is it currently powered and running, or does it need any major repairs / hydraulic overhaul?' },
+                  { n: '07', title: 'Expectativa de Precio & Fotografías (Price & Assets)', desc: 'Do you have a target price in mind for it? / Could you send me pictures including the serial data plate, tonnage plate, and hours meter?' }
+                ].map((q) => (
+                  <div key={q.n} className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg flex items-start gap-3 hover:border-emerald-500/40 transition-colors">
+                    <span className="w-7 h-7 rounded bg-emerald-950/60 border border-emerald-700/60 text-emerald-400 font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                      {q.n}
+                    </span>
+                    <div className="space-y-1">
+                      <p className="font-mono font-bold text-slate-200 text-xs">{q.title}</p>
+                      <p className="font-mono text-amber-200/90 text-[11px]">{q.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
+        {/* TAB: PLASTICS */}
         {activeTab === 'plastics' && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] uppercase">Official Plastic Machinery Sales Script</span>
-              <p className="text-slate-600 text-xs">JYC buys complete running and non-running plastic machinery nationwide and takes care of all heavy <strong>Rigging (dismantling) and Freight</strong>.</p>
-            </div>
+            <div className="bg-[#0E1522] border border-[#1E293B] rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-950/80 font-mono font-bold text-[10px] text-emerald-300 uppercase border border-emerald-800">
+                  <Zap className="w-3 h-3" />
+                  Protocolo Oficial: Maquinaria de Plásticos & Inyección
+                </span>
+                <span className="text-[10px] font-mono text-emerald-400">JYC CORE SPECIALTY</span>
+              </div>
+              <p className="text-slate-300 text-xs">
+                JYC compra maquinaria plástica completa, operativa o fuera de servicio a nivel nacional, asumiendo el 100% de los costos de <strong>Desmontaje Industrial Pesado (Rigging), Grúas de Izaje y Flete Especializado</strong>.
+              </p>
 
-            {/* Core Target Machinery in Plastics */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2.5 bg-emerald-50/40 border border-emerald-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-emerald-900">🔹 Injection Molding Machines</p>
-                <p className="text-[10px] text-slate-600">500 Ton, 1000 Ton, 2000 Ton units (Cincinnati Milacron, Krauss Maffei, Engel, Husky, Sumitomo, Nissei, Toshiba, Arburg, Battenfeld).</p>
+              {/* Machinery cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-emerald-400 text-xs">01 // Inyectoras de Plástico (500-2000+ Toneladas)</p>
+                  <p className="text-[11px] text-slate-300">Cincinnati Milacron, Krauss Maffei, Engel, Husky, Sumitomo, Nissei, Toshiba, Arburg, Battenfeld, UBE.</p>
+                </div>
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-emerald-400 text-xs">02 // Sopladoras & Extrusoras</p>
+                  <p className="text-[11px] text-slate-300">Blow molders continúas y con acumulador, extrusoras mono y doble husillo para perfilería y tubería.</p>
+                </div>
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-emerald-400 text-xs">03 // Equipo Auxiliar de Planta</p>
+                  <p className="text-[11px] text-slate-300">Chillers industriales, secadores de resina (dryers), molinos/trituradores de gran capacidad, termorreguladores (thermolators).</p>
+                </div>
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-emerald-400 text-xs">04 // Montacargas de Molde</p>
+                  <p className="text-[11px] text-slate-300">Toyota 5k-15k lbs gas LP, Crown C-5, Hyster, Yale, Doosan para maniobra de moldes pesados.</p>
+                </div>
               </div>
-              <div className="p-2.5 bg-emerald-50/40 border border-emerald-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-emerald-900">🔹 Blow Molders & Extruders</p>
-                <p className="text-[10px] text-slate-600">Continuous and accumulator head blow molders, single/twin screw plastic extruders.</p>
-              </div>
-              <div className="p-2.5 bg-emerald-50/40 border border-emerald-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-emerald-900">🔹 Auxiliary Equipment</p>
-                <p className="text-[10px] text-slate-600">Dryers, Chillers, Granulators/Grinders, Mold Temperature Controllers (Thermolators), Hopper loaders.</p>
-              </div>
-              <div className="p-2.5 bg-emerald-50/40 border border-emerald-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-emerald-900">🔹 Mold-Handling Forklifts</p>
-                <p className="text-[10px] text-slate-600">Toyota 5k-6k lbs propane, Crown C-5, Yale, Doosan counterbalance forklifts.</p>
-              </div>
-            </div>
 
-            {/* Plastics Script Highlights */}
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-              <p className="font-bold text-slate-800 text-[11px]">Plastics Operator Pitch:</p>
-              <p className="italic text-slate-700 text-[11px]">"Good morning, could you please transfer me to the person in charge of the used plastic injection molding machines and equipment?"</p>
-              <p className="font-bold text-slate-800 text-[11px] mt-2">Plastics KP Pitch:</p>
-              <p className="italic text-slate-700 text-[11px]">"Hi [Name], this is [My Name] with JYC Equipment. Did I catch you at a bad time? ... We are nationwide buyers of used plastic injection molding machines and equipment. I wanted to check if you might have any surplus machines for sale or coming up this year?"</p>
-            </div>
-
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-900 space-y-1">
-              <p className="font-bold">⭐ JYC's Biggest Value Proposition in Plastics:</p>
-              <p>Rigging and extracting large 500-2000 Ton injection machines from a factory is extremely expensive and complex. <strong>JYC covers 100% of rigging (heavy dismantling/crane loading) and freight logistics</strong> and pays in full in 24 hours.</p>
+              <div className="p-3.5 bg-cyan-950/30 border border-cyan-800/60 rounded-xl space-y-2">
+                <p className="font-mono font-bold text-cyan-300 text-xs flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  Propuesta de Valor Irresistible en Plásticos:
+                </p>
+                <p className="text-[11px] text-slate-200 leading-relaxed">
+                  Desmontar y extraer una inyectora de 1,000 Toneladas cuesta típicamente entre \$15,000 y \$40,000 USD y conlleva alto riesgo de daño a techos o fosas. <strong>JYC absorbe el 100% de la maniobra de rigging certificado, grúa móvil y transporte en camas bajas (lowboy / RGN)</strong> y liquida la compra en 24 horas vía transferencia bancaria por adelantado.
+                </p>
+              </div>
             </div>
           </div>
         )}
 
+        {/* TAB: PORTS */}
         {activeTab === 'ports' && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold text-[10px] uppercase">Official Ports & Terminals Sales Script</span>
-              <p className="text-slate-600 text-xs">JYC is a leading nationwide buyer and global exporter of heavy maritime port equipment, intermodal machinery, and terminal fleets. We handle 100% of <strong>heavy rigging, boom dismantling, and multi-axle freight logistics</strong>.</p>
-            </div>
-
-            {/* Target Machinery in Ports */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2.5 bg-blue-50/40 border border-blue-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-blue-900">🚢 Reach Stackers (45-Ton)</p>
-                <p className="text-[10px] text-slate-600">Kalmar Gloria DRG450, Konecranes SMV 4531/4532, Hyster RS45, Taylor TER-975, Sany, CVS Ferrari. (⚠️ NEVER mention Caterpillar for reach stackers).</p>
+            <div className="bg-[#0E1522] border border-[#1E293B] rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-950/80 font-mono font-bold text-[10px] text-cyan-300 uppercase border border-cyan-800">
+                  <Anchor className="w-3 h-3" />
+                  Protocolo Oficial: Maquinaria Portuaria & Terminales Intermodales
+                </span>
+                <span className="text-[10px] font-mono text-cyan-400">HEAVY MARITIME ASSETS</span>
               </div>
-              <div className="p-2.5 bg-blue-50/40 border border-blue-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-blue-900">📦 Container Handlers</p>
-                <p className="text-[10px] text-slate-600">Loaded & Empty container handlers: Taylor TEC-950L, Taylor TXLC, Kalmar DCF100/DRF, Hyster H550HD, Konecranes.</p>
-              </div>
-              <div className="p-2.5 bg-blue-50/40 border border-blue-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-blue-900">🚜 Port Forklifts (30k-90k+ lbs)</p>
-                <p className="text-[10px] text-slate-600">Taylor (TX-300, TX-550), Hyster (H360HD, H650HD), Kalmar, Konecranes, Svetruck heavy-duty forklifts.</p>
-              </div>
-              <div className="p-2.5 bg-blue-50/40 border border-blue-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-blue-900">🚛 Terminal Tractors & Spotters</p>
-                <p className="text-[10px] text-slate-600">Ottawa (T2 4x2 / 6x4), Terberg (YT182, YT222, RT223), Capacity (TJ5000, TJ9000), TICO Pro-Spotter.</p>
-              </div>
-            </div>
+              <p className="text-slate-300 text-xs">
+                JYC es comprador nacional y exportador global de equipo portuario pesado, patios de maniobras y terminales intermodales.
+              </p>
 
-            {/* Ports Script Highlights */}
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-              <p className="font-bold text-slate-800 text-[11px]">Ports Operator Pitch (Gatekeeper Bypass):</p>
-              <p className="italic text-slate-700 text-[11px]">"Good morning, could you please transfer me to the person in charge of terminal operations, fleet maintenance, or the heavy equipment like your reach stackers, container handlers, or yard trucks?"</p>
-              <p className="text-[10px] text-slate-500 italic">En español: "Buenos días, ¿me podría comunicar con el encargado de operaciones de terminal, mantenimiento de flota o la maquinaria pesada como sus reach stackers, manipuladores de contenedores o tractocamiones de patio?"</p>
-              
-              <p className="font-bold text-slate-800 text-[11px] mt-2">Ports KP Opening & Pitch:</p>
-              <p className="italic text-slate-700 text-[11px]">"Hi [KP Name], this is [My Name] with JYC Equipment. Did I catch you at a bad time?... I'm calling because we are nationwide buyers and global exporters of used port and terminal equipment—such as 45-ton reach stackers, container handlers, heavy forklifts, and yard tractors. I wanted to check if you might have any surplus units for sale or coming up for renewal in your fleet?"</p>
-              <p className="text-[10px] text-slate-500 italic">En español: "Hola [Nombre], habla [Mi Nombre] de JYC Equipment. ¿Lo tomo en un mal momento?... Le llamo porque compramos a nivel nacional y exportamos equipo portuario usado—como reach stackers de 45T, manipuladores de contenedores, montacargas pesados y tractores de patio. ¿Tienen algún equipo disponible o por renovar este año?"</p>
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-cyan-400 text-xs">01 // Reach Stackers (45 Toneladas)</p>
+                  <p className="text-[11px] text-slate-300">Kalmar Gloria DRG450, Konecranes SMV 4531, Hyster RS45, Taylor TER-975, Sany, CVS Ferrari. (⚠️ NUNCA menciones Caterpillar para reach stackers).</p>
+                </div>
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-cyan-400 text-xs">02 // Manipuladores de Contenedores</p>
+                  <p className="text-[11px] text-slate-300">Contenedores vacíos y llenos (Empty/Loaded Handlers): Taylor TEC-950L, Kalmar DCF100, Hyster H550HD, Konecranes.</p>
+                </div>
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-cyan-400 text-xs">03 // Montacargas Portuarios (30k-90k+ lbs)</p>
+                  <p className="text-[11px] text-slate-300">Taylor TX-300, TX-550, Hyster H360HD, H650HD, Kalmar, Svetruck para manejo de rollos y carga pesada.</p>
+                </div>
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-cyan-400 text-xs">04 // Tractocamiones de Patio (Terminal Tractors)</p>
+                  <p className="text-[11px] text-slate-300">Ottawa T2 (4x2 / 6x4), Terberg YT182/YT222, Capacity TJ5000/TJ9000, TICO Pro-Spotter.</p>
+                </div>
+              </div>
 
-            {/* Ports Qualification Checklist */}
-            <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-xl space-y-1.5">
-              <p className="font-bold text-blue-900 text-[11px]">📋 Ports Qualification Checklist (Ask in order):</p>
-              <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-700">
-                <li><strong>Equipment Type:</strong> Reach Stacker 45T, Empty/Loaded Handler, Heavy Port Forklift (30k-80k lbs), or Terminal Tractor?</li>
-                <li><strong>Make & Model:</strong> Kalmar Gloria DRG450, Konecranes SMV 4531, Taylor TEC-950L, Hyster RS45, Ottawa T2?</li>
-                <li><strong>Capacity & Spreader:</strong> 45-Ton rating? Spreader 20'-40' telescopic? 5-high or 6-high stacking?</li>
-                <li><strong>Year & Operating Hours:</strong> What year is the unit and approximate engine / mast hours?</li>
-                <li><strong>Condition:</strong> Is it currently active in terminal ops? Any hydraulic leaks, boom issues, or transmission repairs needed?</li>
-                <li><strong>Price & Data Plates:</strong> Do you have an asking price in mind? / Can you share photos of the unit, hour meter, and data plate?</li>
-              </ol>
-            </div>
-
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-900 space-y-1">
-              <p className="font-bold">⭐ JYC's Value Proposition for Ports & Terminals:</p>
-              <p>Moving a 45-Ton reach stacker requires boom disassembly, multi-axle RGN transport, and strict port TWIC/safety clearances. <strong>JYC coordinates 100% of rigging, logistics, and port permits, wire transferring payment in full in 24 hours.</strong></p>
+              <div className="p-3 bg-[#111A29] border border-cyan-800/40 rounded-lg space-y-2 font-mono text-xs">
+                <p className="font-bold text-cyan-300">Apertura con KP Portuario (Director de Operaciones / Flota):</p>
+                <div className="p-2.5 bg-[#080C14] rounded border border-[#1E293B] text-amber-200">
+                  "Hi [KP Name], this is [Name] with JYC Equipment. Did I catch you at a bad time?... We are nationwide buyers and global exporters of used port and terminal equipment—such as 45-ton reach stackers, container handlers, and yard tractors. Do you have any surplus units available or coming up for replacement in your fleet?"
+                </div>
+              </div>
             </div>
           </div>
         )}
 
+        {/* TAB: MEDICAL */}
         {activeTab === 'medical' && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 font-bold text-[10px] uppercase">Official JYC Medical Diagnostic Imaging Script</span>
-              <p className="text-slate-600 text-xs">JYC Medical purchases pre-owned MRIs, CT Scanners, PET/CTs, and digital X-ray systems from hospital networks and imaging centers nationwide, providing <strong>turnkey de-installation, ramping down, and rigging</strong>.</p>
-            </div>
-
-            {/* Target Systems in Medical */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2.5 bg-rose-50/40 border border-rose-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-rose-900">🧲 MRIs (1.5 Tesla & 3.0 Tesla)</p>
-                <p className="text-[10px] text-slate-600">GE (Optima MR450w, Signa Explorer), Siemens (Magnetom Avanto, Aera, Skyra, Vida), Philips (Ingenia, Achieva).</p>
+            <div className="bg-[#0E1522] border border-[#1E293B] rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-rose-950/80 font-mono font-bold text-[10px] text-rose-300 uppercase border border-rose-800">
+                  <HeartPulse className="w-3 h-3" />
+                  Protocolo Oficial: Diagnóstico por Imagen Médica (JYC Medical)
+                </span>
+                <span className="text-[10px] font-mono text-rose-400">CLINICAL ASSET DISPOSITION</span>
               </div>
-              <div className="p-2.5 bg-rose-50/40 border border-rose-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-rose-900">☢️ CT Scanners (64/128/256-Slice)</p>
-                <p className="text-[10px] text-slate-600">GE (Revolution, Optima CT660), Siemens (Somatom Definition, Force, go.Top), Toshiba/Canon (Aquilion ONE/PRIME), Philips.</p>
-              </div>
-              <div className="p-2.5 bg-rose-50/40 border border-rose-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-rose-900">🔬 PET & PET-CT Systems</p>
-                <p className="text-[10px] text-slate-600">GE Discovery MI/IQ, Siemens Biograph Horizon/Vision, Philips Vereos molecular imaging systems.</p>
-              </div>
-              <div className="p-2.5 bg-rose-50/40 border border-rose-100 rounded-xl space-y-1">
-                <p className="font-bold text-slate-800 text-[11px] text-rose-900">🩺 Digital X-Rays & C-Arms / Cath Labs</p>
-                <p className="text-[10px] text-slate-600">GE Innova, Siemens Artis zee / Cios, Philips Allura / Azurion cath labs, Ziehm mobile C-arms.</p>
-              </div>
-            </div>
+              <p className="text-slate-300 text-xs">
+                JYC Medical adquiere sistemas de imagen diagnóstica usados de redes hospitalarias y centros radiológicos, ejecutando el <strong>descenso criogénico (ramp-down), extracción mecánica y rigging especializado</strong>.
+              </p>
 
-            {/* Medical Script Highlights */}
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-              <p className="font-bold text-slate-800 text-[11px]">Medical Operator Pitch (Hospital / Imaging Center):</p>
-              <p className="italic text-slate-700 text-[11px]">"Good morning, could you please transfer me to the Director of Imaging, Radiology, or the person in charge of surplus and retired diagnostic imaging equipment like your MRIs, CT scanners, or PET/CTs?"</p>
-              <p className="text-[10px] text-slate-500 italic">En español: "Buenos días, ¿me podría comunicar con el Director de Imagenología, Radiología o el encargado del equipo de diagnóstico médico usado como sus resonancias magnéticas, tomógrafos CT o PET/CT?"</p>
-              
-              <p className="font-bold text-slate-800 text-[11px] mt-2">Medical KP Opening & Pitch:</p>
-              <p className="italic text-slate-700 text-[11px]">"Hi [KP Name], this is [My Name] with JYC Medical. Did I catch you at a bad time?... I'm calling because we purchase diagnostic imaging systems nationwide—including MRIs (1.5T and 3.0T), CT scanners, and PET/CTs from GE, Siemens, Toshiba/Canon, and Philips. I wanted to see if your facility has any imaging systems scheduled for de-installation, replacement, or asset disposition this year?"</p>
-              <p className="text-[10px] text-slate-500 italic">En español: "Hola [Nombre], habla [Mi Nombre] de JYC Medical. ¿Lo tomo en un mal momento?... Le llamo porque compramos sistemas de imagenología médica a nivel nacional (resonancias 1.5T/3.0T, tomógrafos CT, PET/CTs de GE, Siemens, Toshiba/Canon, Philips). ¿Tienen algún equipo programado para desinstalación o renovación este año?"</p>
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-rose-400 text-xs">01 // Resonancias Magnéticas (MRI 1.5T & 3.0T)</p>
+                  <p className="text-[11px] text-slate-300">GE (Optima MR450w, Signa Explorer), Siemens (Magnetom Avanto, Aera, Skyra, Vida), Philips (Ingenia, Achieva).</p>
+                </div>
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-rose-400 text-xs">02 // Tomógrafos CT (64/128/256 Cortes)</p>
+                  <p className="text-[11px] text-slate-300">GE Revolution / Optima, Siemens Somatom Definition / Force, Canon/Toshiba Aquilion ONE, Philips.</p>
+                </div>
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-rose-400 text-xs">03 // Sistemas PET & PET-CT</p>
+                  <p className="text-[11px] text-slate-300">GE Discovery MI/IQ, Siemens Biograph Horizon/Vision, Philips Vereos de medicina nuclear.</p>
+                </div>
+                <div className="p-3 bg-[#080C14] border border-[#1E293B] rounded-lg space-y-1">
+                  <p className="font-mono font-bold text-rose-400 text-xs">04 // Rayos X Digitales & Salas de Hemodinamia (Cath Labs)</p>
+                  <p className="text-[11px] text-slate-300">GE Innova, Siemens Artis zee, Philips Allura / Azurion, arcos en C móviles Ziehm.</p>
+                </div>
+              </div>
 
-            {/* Medical Qualification Workflow (From Script) */}
-            <div className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl space-y-1.5">
-              <p className="font-bold text-rose-900 text-[11px]">📋 Official Medical Qualification Sequence (Step-by-Step):</p>
-              <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-700">
-                <li><strong>System Type:</strong> MRI (1.5T / 3.0T), PET, PET-CT, CT Scanner (64/128 slice), Cath Lab, or Digital X-Ray?</li>
-                <li><strong>Make / Brand:</strong> GE Healthcare, Siemens Healthineers, Toshiba / Canon Medical Systems, or Philips Healthcare?</li>
-                <li><strong>Quantity:</strong> How many units are available (1 unit, 5 units, 10-20 units across network)?</li>
-                <li><strong>Model & Year:</strong> What is the specific model and manufacture year (e.g. 2017 Siemens Magnetom Aera 1.5T)?</li>
-                <li><strong>Operational Status & Maintenance:</strong> Is it currently operational under OEM service contract? Helium level &gt;70% (for MRIs)? Tube mAs / exposure count (for CTs)?</li>
-                <li><strong>Price, Coil Packages & Removal Window:</strong> What is your target price? What coils/software packages are included? What is the scheduled de-installation date?</li>
-              </ol>
-            </div>
-
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-[11px] text-rose-900 space-y-1">
-              <p className="font-bold">⭐ JYC Medical's Turnkey Value Proposition:</p>
-              <p>De-installing medical imaging equipment requires cryogenic ramping down, hospital wall/window rigging, and strict health safety compliance. <strong>JYC Medical handles 100% of cryogenic ramp-down, professional mechanical de-installation, crane rigging, and nationwide logistics, paying in full before de-installation begins.</strong></p>
+              <div className="p-3.5 bg-rose-950/30 border border-rose-800/60 rounded-xl space-y-2">
+                <p className="font-mono font-bold text-rose-300 text-xs">Puntos Críticos de Calificación Médica:</p>
+                <ol className="list-decimal list-inside space-y-1 font-mono text-[11px] text-slate-200">
+                  <li><strong>Nivel de Helio en MRIs:</strong> Debe superar el 70% para evitar costes de re-presurización criogénica.</li>
+                  <li><strong>Contrato OEM Activo:</strong> Si el equipo tiene póliza de servicio vigente con GE, Siemens o Philips, su valor de reventa es significativamente superior.</li>
+                  <li><strong>Ventana de Desinstalación:</strong> Coordinar la fecha límite antes de la llegada del equipo de reemplazo al hospital.</li>
+                </ol>
+              </div>
             </div>
           </div>
         )}
 
+        {/* TAB: REFERENCE */}
         {activeTab === 'reference' && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-violet-50 font-bold text-[10px] text-violet-700 uppercase">6 Questions When NO Equipment is Available</span>
-              <p className="text-slate-500">If the prospect states they have no surplus machinery for sale today, ask these 6 reference questions to profile the account:</p>
-              
-              <ul className="space-y-2 bg-violet-50/20 border border-violet-50 p-3 rounded-xl">
-                <li className="flex gap-2">
-                  <span className="text-violet-500 font-bold">1.</span>
-                  <span><strong>Surplus Process:</strong> How does the process look like when you do have surplus equipment for sale?</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-violet-500 font-bold">2.</span>
-                  <span><strong>Used vs New:</strong> Do you buy used equipment as well? Or do you only go for brand new units?</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-violet-500 font-bold">3.</span>
-                  <span><strong>Authority:</strong> Are you involved on both the sales and purchases of the equipment?</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-violet-500 font-bold">4.</span>
-                  <span><strong>Future Purchases:</strong> Are you planning to buy any used injection molding machines, loaders, or forklifts anytime soon?</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-violet-500 font-bold">5.</span>
-                  <span><strong>Multi-Location:</strong> Do you take care of the equipment sales at several locations or branches, or only your plant?</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-violet-500 font-bold">6.</span>
-                  <span><strong>Follow-up Window:</strong> When would be the best time to follow up with you—in 3, 6, or 12 months?</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        )}
+            <div className="bg-[#0E1522] border border-[#1E293B] rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-violet-950/80 font-mono font-bold text-[10px] text-violet-300 uppercase border border-violet-800">
+                  <FileText className="w-3 h-3" />
+                  Protocolo de Futura Referencia (Cuando el Prospecto NO Vende Hoy)
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">PERFILAMIENTO DE CUENTA</span>
+              </div>
+              <p className="text-slate-300 text-xs">
+                Si el prospecto declara que no tiene equipo en venta en este momento, no cuelgues. Realiza las siguientes <strong>6 preguntas de perfilamiento</strong> para asegurar negocios futuros:
+              </p>
 
-        {activeTab === 'objections' && (
-          <div className="space-y-3">
-            <span className="inline-block px-2 py-0.5 rounded-md bg-rose-50 font-bold text-[10px] text-rose-700 uppercase">Objection Handling Guidelines</span>
-            
-            {/* Price First */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <p className="font-bold text-slate-800">"Give me a price first / Make me an offer first..."</p>
-              <p className="text-slate-600"><strong className="text-blue-600">Rebuttal:</strong> "I can definitely send someone over to take pictures and inspect the unit, no problem. But before we do that, I don't want to waste your time... or ours if it's not something we would buy. Could you tell me a bit more first—what make, model, tonnage, and year is it? Is it running, or does it need any repairs?"</p>
-            </div>
-
-            {/* Auction */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <p className="font-bold text-slate-800">"We always send our surplus machines to auction..."</p>
-              <p className="text-slate-600"><strong className="text-blue-600">Rebuttal:</strong> Ask if they already signed the contract. Explain auction houses charge heavy seller commissions (10-15%) and the seller pays transport. JYC pays in 24 hours, charges 0% commission, and handles all rigging and freight.</p>
-            </div>
-
-            {/* Trade-in */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <p className="font-bold text-slate-800">"We just trade them in with the dealer..."</p>
-              <p className="text-slate-600"><strong className="text-blue-600">Rebuttal:</strong> Dealers offer low trade-in values to protect their margins. JYC pays higher net cash because we export units globally, giving you immediate cash and more leverage to negotiate a discount on the new purchase.</p>
-            </div>
-
-            {/* Leasing */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-              <p className="font-bold text-slate-800">"Our equipment is on lease with the bank..."</p>
-              <p className="text-slate-600"><strong className="text-blue-600">Rebuttal:</strong> JYC buys end-of-lease units directly from the bank as-is, saving you from bank wear-and-tear inspection penalties, expensive repair requests, and return rigging/shipping.</p>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'catalog' && (
-          <div className="space-y-4">
-            
-            {/* Target Industries */}
-            <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-indigo-50 font-bold text-[10px] text-indigo-700 uppercase">1. Target Industries</span>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-                  <p className="font-bold text-slate-800 text-[10px]">🧪 Plastics & Injection</p>
-                  <p className="text-slate-500 text-[9px] mt-0.5">Injection molders (500-2000T), extruders, blow molders, chillers, dryers.</p>
-                </div>
-                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-                  <p className="font-bold text-slate-800 text-[10px]">🏗️ Concrete & Precast</p>
-                  <p className="text-slate-500 text-[9px] mt-0.5">Ready-mix, aggregates, quarries, concrete block plants.</p>
-                </div>
-                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-                  <p className="font-bold text-slate-800 text-[10px]">🪵 Lumber & Sawmills</p>
-                  <p className="text-slate-500 text-[9px] mt-0.5">Sawmills, lumber yards, plywood & wood processing plants.</p>
-                </div>
-                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-                  <p className="font-bold text-slate-800 text-[10px]">⚙️ Steel & Metal</p>
-                  <p className="text-slate-500 text-[9px] mt-0.5">Steel mills, steel pipe plants, tube & coil manufacturing.</p>
-                </div>
-                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-                  <p className="font-bold text-slate-800 text-[10px]">🚢 Ports & Terminals</p>
-                  <p className="text-slate-500 text-[9px] mt-0.5">Container terminals, shipping ports, cargo handling, logistics hubs.</p>
-                </div>
-                <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl">
-                  <p className="font-bold text-slate-800 text-[10px]">🏥 Medical & Healthcare</p>
-                  <p className="text-slate-500 text-[9px] mt-0.5">Hospital networks, diagnostic imaging centers, radiology clinics (MRI, CT, PET).</p>
-                </div>
+              <div className="space-y-2">
+                {[
+                  { n: '1', title: 'Proceso de Venta de Excedentes', desc: 'How does the process look like when you do have surplus equipment for sale?' },
+                  { n: '2', title: 'Compras de Usado vs Nuevo', desc: 'Do you buy used machinery as well, or do you only purchase brand new units from dealers?' },
+                  { n: '3', title: 'Poder de Decisión', desc: 'Are you involved on both the sales and purchases of heavy equipment for the company?' },
+                  { n: '4', title: 'Planes de Expansión / Compras', desc: 'Are you planning to buy any used injection molders, loaders, or forklifts anytime soon?' },
+                  { n: '5', title: 'Multi-Ubicación / Otras Sucursales', desc: 'Do you manage equipment at multiple facilities/branches or only this specific plant?' },
+                  { n: '6', title: 'Ventana de Seguimiento (Follow-up)', desc: 'When would be the best time to follow up with you—in 3, 6, or 12 months?' },
+                ].map((item) => (
+                  <div key={item.n} className="p-2.5 bg-[#080C14] border border-[#1E293B] rounded-lg flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded bg-violet-950/60 border border-violet-800 text-violet-300 font-mono font-bold text-[10px] flex items-center justify-center shrink-0">
+                      {item.n}
+                    </span>
+                    <div>
+                      <p className="font-mono font-bold text-slate-200 text-xs">{item.title}</p>
+                      <p className="font-mono text-amber-200/90 text-[11px]">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+          </div>
+        )}
 
-            {/* What JYC Buys */}
-            <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-emerald-50 font-bold text-[10px] text-emerald-700 uppercase">2. Equipment We Buy</span>
-              <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5 p-3 bg-emerald-50/20 border border-emerald-50 rounded-xl">
-                <li className="flex gap-1.5 items-start">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Plastics:</strong> Cincinnati Milacron, Krauss Maffei, Engel, Husky (500-2000T), extruders, chillers, dryers.</span>
-                </li>
-                <li className="flex gap-1.5 items-start">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Ports & Terminals:</strong> 45-Ton Reach Stackers (Kalmar, Konecranes, Hyster, Taylor), Container Handlers, Yard Tractors (Ottawa, Terberg).</span>
-                </li>
-                <li className="flex gap-1.5 items-start">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Medical Systems:</strong> MRIs 1.5T & 3.0T, CT Scanners (64/128-slice), PET/CTs (GE, Siemens, Toshiba/Canon, Philips).</span>
-                </li>
-                <li className="flex gap-1.5 items-start">
-                  <span className="text-emerald-600 font-bold">✓</span>
-                  <span><strong>Heavy Forklifts & Loaders:</strong> CAT Wheel Loaders (988, 966), Taylor & Hyster 30k-90k lbs forklifts, Volvo, Komatsu.</span>
-                </li>
-              </ul>
+        {/* TAB: OBJECTIONS */}
+        {activeTab === 'objections' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-950/80 font-mono font-bold text-[10px] text-amber-300 uppercase border border-amber-800">
+                <ShieldAlert className="w-3 h-3" />
+                Matriz Táctica de Manejo de Objeciones
+              </span>
+              <span className="text-[10px] font-mono text-slate-400">CONTRAMEDIDAS OFICIALES</span>
             </div>
 
-            {/* What JYC Rejects */}
-            <div className="space-y-2">
-              <span className="inline-block px-2 py-0.5 rounded-md bg-red-50 font-bold text-[10px] text-red-700 uppercase">3. We DO NOT Buy (Declines/Pivots)</span>
-              <div className="p-3 bg-red-50/10 border border-red-50 rounded-xl space-y-2">
-                <p className="text-slate-500 text-[10px]">Politely decline if offered any of these, then pivot back to injection molders, forklifts, or loaders:</p>
-                <div className="flex flex-wrap gap-2">
-                  {['Concrete Pumps', 'Mixer Trucks', 'Sweepers', 'Rollers', 'Concrete Molds', 'Truck Cranes', 'Mixers'].map((item) => (
-                    <span key={item} className="px-2 py-1 rounded bg-red-50 text-red-700 font-semibold text-[10px]">{item}</span>
+            <div className="space-y-2.5">
+              <div className="p-3.5 bg-[#0E1522] border border-[#1E293B] rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-amber-300 text-xs">Objeción 01: "Dame un precio primero / Hazme una oferta tú..."</span>
+                  <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800">PRESIÓN DE PRECIO</span>
+                </div>
+                <div className="p-3 bg-[#080C14] rounded-lg border border-[#1E293B] text-slate-200 font-mono text-xs">
+                  "I can definitely send someone over to take pictures and inspect the unit, no problem. But before we do that, I don't want to waste your time... or ours if it's not something we buy. Could you tell me what make, model, tonnage, and year it is? Is it running or does it need repairs?"
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-[#0E1522] border border-[#1E293B] rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-amber-300 text-xs">Objeción 02: "Siempre enviamos las máquinas a subasta (Ritchie Bros, etc.)..."</span>
+                  <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800">CANAL SUBASTA</span>
+                </div>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                  Pregunta si ya firmaron contrato de exclusividad. Recuerda que las casas de subasta cobran entre el 10% y el 15% de comisión al vendedor, el transporte corre a cargo de la planta y el pago tarda hasta 45 días. <strong>JYC paga neto de inmediato en 24 horas, sin comisión y con rigging incluido</strong>.
+                </p>
+              </div>
+
+              <div className="p-3.5 bg-[#0E1522] border border-[#1E293B] rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-amber-300 text-xs">Objeción 03: "Se las entregamos al distribuidor como parte de pago (Trade-in)..."</span>
+                  <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800">DEALER TRADE-IN</span>
+                </div>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                  Los distribuidores castigan el valor de retoma para blindar su margen. JYC ofrece mayor efectivo neto porque exportamos globalmente. Tener el dinero en mano le da al cliente mayor poder de negociación para exigir descuentos en su compra de maquinaria nueva.
+                </p>
+              </div>
+
+              <div className="p-3.5 bg-[#0E1522] border border-[#1E293B] rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-amber-300 text-xs">Objeción 04: "La maquinaria está bajo arrendamiento financiero (Lease)..."</span>
+                  <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800">LEASING BANCARIO</span>
+                </div>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                  JYC compra activos al vencimiento del leasing directamente con la institución financiera en condición 'as-is', librando a la empresa de cargos por desgaste, inspecciones penalizadoras y costes de retorno.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: CATALOG */}
+        {activeTab === 'catalog' && (
+          <div className="space-y-4">
+            <div className="bg-[#0E1522] border border-[#1E293B] rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-indigo-950/80 font-mono font-bold text-[10px] text-indigo-300 uppercase border border-indigo-800">
+                  <Briefcase className="w-3 h-3" />
+                  Catálogo de Activos Autorizados & Filtros de Exclusión
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">JYC ACQUISITION SCOPE</span>
+              </div>
+
+              {/* What JYC Buys */}
+              <div className="space-y-2">
+                <span className="font-mono font-bold text-emerald-400 text-xs flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  Equipos que JYC SÍ Compra (Prioridad A1):
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="p-2.5 bg-[#080C14] border border-emerald-900/50 rounded-lg">
+                    <p className="font-mono font-bold text-slate-200">Plásticos & Moldeo</p>
+                    <p className="text-[11px] text-slate-400">Inyectoras 500-2000T, extrusoras, blow molders, molinos, chillers, secadores.</p>
+                  </div>
+                  <div className="p-2.5 bg-[#080C14] border border-emerald-900/50 rounded-lg">
+                    <p className="font-mono font-bold text-slate-200">Terminales Portuarias</p>
+                    <p className="text-[11px] text-slate-400">Reach Stackers 45T, manipulación de contenedores, tractores Ottawa/Terberg.</p>
+                  </div>
+                  <div className="p-2.5 bg-[#080C14] border border-emerald-900/50 rounded-lg">
+                    <p className="font-mono font-bold text-slate-200">Sistemas Médicos</p>
+                    <p className="text-[11px] text-slate-400">Resonancias magnéticas 1.5T/3.0T, tomógrafos CT, PET/CT de GE, Siemens, Philips.</p>
+                  </div>
+                  <div className="p-2.5 bg-[#080C14] border border-emerald-900/50 rounded-lg">
+                    <p className="font-mono font-bold text-slate-200">Montacargas Pesados & Cargadores</p>
+                    <p className="text-[11px] text-slate-400">Taylor / Hyster 30k-90k lbs, cargadores frontales CAT 988, 966, 950.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* What JYC Rejects */}
+              <div className="p-3.5 bg-red-950/20 border border-red-500/40 rounded-xl space-y-2">
+                <span className="font-mono font-bold text-red-400 text-xs flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-red-400" />
+                  Equipos Excluidos — NO COMPRAMOS (Rechazo Cortés & Pivote):
+                </span>
+                <p className="text-slate-400 text-[11px]">
+                  Si el prospecto ofrece cualquiera de estos rubros, declina amablemente y pivota hacia inyectoras, montacargas o cargadores:
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {['Bombas de Concreto', 'Camiones Mezcladores (Ollas)', 'Barredoras Viales', 'Rodillos Compactadores', 'Moldes de Concreto', 'Grúas Montadas sobre Camión', 'Mezcladoras Continuas'].map((item) => (
+                    <span key={item} className="px-2 py-0.5 rounded bg-red-950/60 border border-red-800 text-red-300 font-mono text-[10px]">
+                      ✕ {item}
+                    </span>
                   ))}
                 </div>
               </div>
-            </div>
 
+            </div>
           </div>
         )}
 

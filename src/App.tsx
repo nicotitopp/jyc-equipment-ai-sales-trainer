@@ -195,7 +195,7 @@ export default function App() {
   const modeDescription = currentModeInfo?.description || 'Plataforma de Adquisición de Maquinaria';
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#06090E] text-slate-100 font-sans overflow-hidden">
       
       {/* Sidebar Navigation */}
       <Sidebar
@@ -237,9 +237,9 @@ export default function App() {
 
           {mode === 'Live Call Simulation' && (
             <Suspense fallback={
-              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-slate-50">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                <span className="text-xs font-semibold text-slate-500">Cargando simulador de voz ElevenLabs...</span>
+              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#06090E]">
+                <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+                <span className="text-xs font-mono font-bold text-cyan-300">CARGANDO COCKPIT TELEFÓNICO ELEVENLABS...</span>
               </div>
             }>
               <LiveCall 
@@ -252,9 +252,9 @@ export default function App() {
 
           {mode === 'Real Call Audit' && (
             <Suspense fallback={
-              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-slate-50">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                <span className="text-xs font-semibold text-slate-500">Cargando módulo de auditoría...</span>
+              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#06090E]">
+                <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+                <span className="text-xs font-mono font-bold text-cyan-300">CARGANDO LABORATORIO FORENSE DE AUDIO...</span>
               </div>
             }>
               <RealCallAudit 
@@ -267,9 +267,9 @@ export default function App() {
 
           {mode === 'History' && (
             <Suspense fallback={
-              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-slate-50">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                <span className="text-xs font-semibold text-slate-500">Cargando historial y métricas...</span>
+              <div className="flex-1 flex flex-col items-center justify-center space-y-3 bg-[#06090E]">
+                <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+                <span className="text-xs font-mono font-bold text-cyan-300">CARGANDO CONSOLA DE TELEMETRÍA E HISTORIAL...</span>
               </div>
             }>
               <HistoryDashboard 

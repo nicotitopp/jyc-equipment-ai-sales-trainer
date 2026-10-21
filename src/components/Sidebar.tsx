@@ -2,7 +2,7 @@ import React from 'react';
 import { Mode, User as UserType } from '../types';
 import { 
   GraduationCap, PhoneCall, UploadCloud, BarChart3, 
-  RefreshCw, X, Shield, User, LogOut, Radio
+  RefreshCw, X, Shield, User, LogOut, Radio, Terminal, Cpu
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -15,30 +15,55 @@ interface SidebarProps {
   onResetCoach: () => void;
 }
 
-export const MODES_LIST: { id: Mode; label: string; icon: React.ComponentType<{ className?: string }>; description: string }[] = [
+export const MODES_LIST: { 
+  id: Mode; 
+  channel: string;
+  label: string; 
+  badge: string;
+  icon: React.ComponentType<{ className?: string }>; 
+  description: string;
+  accentClass: string;
+  activeBorder: string;
+}[] = [
   { 
     id: 'Coach', 
+    channel: 'CH-01',
     label: 'Coach & Playbook', 
+    badge: 'AI GUIDANCE',
     icon: GraduationCap, 
-    description: 'Guía de argumentos, objeciones y catálogo interactivo' 
+    description: 'Guión por industria, objeciones y catálogo de maquinaria',
+    accentClass: 'text-sky-400 bg-sky-950/40 border-sky-500/40',
+    activeBorder: 'border-l-sky-500 bg-[#0E1521]'
   },
   { 
     id: 'Live Call Simulation', 
-    label: 'Simulación en Vivo', 
+    channel: 'CH-02',
+    label: 'Simulación Telefónica', 
+    badge: 'LIVE VOX',
     icon: PhoneCall, 
-    description: 'Llamada por voz en tiempo real con comprador prospecto' 
+    description: 'Llamada de voz en tiempo real con comprador prospecto',
+    accentClass: 'text-amber-400 bg-amber-950/40 border-amber-500/40',
+    activeBorder: 'border-l-amber-500 bg-[#171410]'
   },
   { 
     id: 'Real Call Audit', 
-    label: 'Auditar Grabación', 
+    channel: 'CH-03',
+    label: 'Auditoría Forense', 
+    badge: 'GEMINI 2.5',
     icon: UploadCloud, 
-    description: 'Sube un audio real y recibe evaluación de Gemini' 
+    description: 'Sube audio real y recibe dictamen de cumplimiento de guión',
+    accentClass: 'text-emerald-400 bg-emerald-950/40 border-emerald-500/40',
+    activeBorder: 'border-l-emerald-500 bg-[#0D1815]'
   },
   { 
     id: 'History', 
-    label: 'Métricas & Historial', 
+    channel: 'CH-04',
+    label: 'Métricas & Operaciones', 
+    badge: 'NEON DB',
     icon: BarChart3, 
-    description: 'Supervisión de llamadas, KPIs y grabaciones guardadas' 
+    description: 'Tablero de desempeño comercial, grabaciones y KPIs',
+    accentClass: 'text-indigo-400 bg-indigo-950/40 border-indigo-500/40',
+    activeBorder: 'border-l-indigo-500 bg-[#121422]'
   },
 ];
 
@@ -58,7 +83,7 @@ export default function Sidebar({
       {/* Mobile Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-40 md:hidden transition-opacity"
+          className="fixed inset-0 bg-[#040608]/80 backdrop-blur-xs z-40 md:hidden transition-opacity"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -66,42 +91,44 @@ export default function Sidebar({
 
       {/* Sidebar Rail */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-950 text-slate-100 flex flex-col border-r border-slate-800 transform transition-transform duration-200 ease-out md:relative md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#070A0F] text-slate-100 flex flex-col border-r border-[#151D29] transform transition-transform duration-200 ease-out md:relative md:translate-x-0 select-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Brand Header */}
-        <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
+        {/* Brand Terminal Header */}
+        <div className="p-4 border-b border-[#151D29] flex items-center justify-between bg-[#090D14]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-base tracking-wider shadow-inner shadow-blue-400/30">
+            <div className="w-9 h-9 rounded bg-gradient-to-br from-blue-700 to-indigo-900 border border-blue-400/40 flex items-center justify-center font-display font-black text-white text-base tracking-wider shadow-inner">
               JYC
             </div>
             <div>
-              <div className="font-extrabold text-sm tracking-tight text-white leading-tight">
+              <div className="font-extrabold text-xs font-display tracking-wider text-white uppercase flex items-center gap-1.5">
                 JYC EQUIPMENT
               </div>
-              <div className="text-[10px] font-mono font-medium text-slate-400 tracking-wider uppercase flex items-center gap-1.5 mt-0.5">
+              <div className="text-[10px] font-mono text-slate-400 tracking-wider flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Sales Simulator
+                ACQUISITIONS TERMINAL
               </div>
             </div>
           </div>
           <button 
-            className="md:hidden text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800"
+            className="md:hidden text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800"
             onClick={onClose}
-            aria-label="Cerrar menú"
+            aria-label="Cerrar panel"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation List */}
-        <div className="flex-1 overflow-y-auto p-3.5 space-y-6 dark-scrollbar">
+        {/* Industrial Channel Matrix */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-5">
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold px-2 mb-2">
-              Módulos de Entrenamiento
+            <div className="text-[9px] font-mono uppercase tracking-widest text-slate-400 font-bold px-2 mb-2 flex items-center justify-between">
+              <span>CANALES OPERATIVOS</span>
+              <Terminal className="w-3 h-3 text-slate-500" />
             </div>
-            <nav className="space-y-1" aria-label="Navegación principal">
+
+            <nav className="space-y-1.5" aria-label="Canales principales">
               {MODES_LIST.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentMode === item.id;
@@ -112,57 +139,65 @@ export default function Sidebar({
                       onSelectMode(item.id);
                       onClose();
                     }}
-                    className={`w-full text-left p-2.5 rounded-lg flex items-start gap-3 transition-all cursor-pointer ${
+                    className={`w-full text-left p-2.5 rounded transition-all cursor-pointer border ${
                       isActive
-                        ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                        : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                        ? `${item.activeBorder} border-r-[#1C2634] border-y-[#1C2634] border-l-4 text-white shadow-md`
+                        : 'border-[#121924] bg-[#0A0E15]/60 hover:bg-[#0F1520] hover:border-[#1E293B] text-slate-300'
                     }`}
                   >
-                    <div className={`mt-0.5 p-1.5 rounded-md ${
-                      isActive ? 'bg-blue-700 text-white' : 'bg-slate-800/70 text-slate-400'
-                    }`}>
-                      <Icon className="w-4 h-4 shrink-0" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs leading-tight font-medium">
-                        {item.label}
-                      </div>
-                      <div className={`text-[11px] leading-snug mt-0.5 line-clamp-2 ${
-                        isActive ? 'text-blue-100' : 'text-slate-400'
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[9px] font-mono font-bold text-slate-400 tracking-wider">
+                        {item.channel}
+                      </span>
+                      <span className={`text-[8px] font-mono font-bold px-1 py-0.2 rounded border ${
+                        isActive ? item.accentClass : 'border-[#1C2634] text-slate-400 bg-[#0D121B]'
                       }`}>
-                        {item.description}
-                      </div>
+                        {item.badge}
+                      </span>
                     </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                      <span className="text-xs font-bold tracking-tight text-white font-display">
+                        {item.label}
+                      </span>
+                    </div>
+
+                    <p className={`text-[11px] leading-tight mt-1 line-clamp-1 ${
+                      isActive ? 'text-slate-300' : 'text-slate-400'
+                    }`}>
+                      {item.description}
+                    </p>
                   </button>
                 );
               })}
             </nav>
           </div>
 
-          {/* Quick Actions */}
-          <div className="pt-2 border-t border-slate-800/60">
+          {/* Quick Action: Reset Conversation */}
+          <div className="pt-2 border-t border-[#151D29]">
             <button
               onClick={onResetCoach}
               disabled={currentMode !== 'Coach'}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded border border-[#1C2634] bg-[#0A0E15] hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-mono transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
               title="Reinicia la conversación del entrenador"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              Reiniciar Conversación
+              <span>REINICIAR DIÁLOGO</span>
             </button>
           </div>
         </div>
 
-        {/* User Card & Supervision Status */}
-        <div className="p-3.5 border-t border-slate-800/80 bg-slate-900/40">
+        {/* Operator Profile Dossier & Console Info */}
+        <div className="p-3 border-t border-[#151D29] bg-[#090D14]">
           {currentUser && (
-            <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 text-left">
+            <div className="bg-[#0B1017] border border-[#1A2332] rounded p-2.5 text-left">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-mono uppercase font-bold text-slate-400">
-                  Sesión Activa
+                <span className="text-[9px] font-mono uppercase font-bold text-slate-400 flex items-center gap-1">
+                  <Cpu className="w-3 h-3 text-slate-500" /> OPERADOR
                 </span>
                 <span
-                  className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                  className={`text-[8px] font-mono font-bold px-1 py-0.2 rounded uppercase tracking-wider ${
                     isAdmin
                       ? 'bg-indigo-950 text-indigo-300 border border-indigo-700/60'
                       : 'bg-blue-950 text-blue-300 border border-blue-700/60'
@@ -171,24 +206,24 @@ export default function Sidebar({
                   {isAdmin ? 'ADMIN' : 'VENDEDOR'}
                 </span>
               </div>
-              <div className="font-semibold text-white text-xs truncate">
+              <div className="font-bold text-white text-xs truncate">
                 {currentUser.name}
               </div>
-              <div className="text-[11px] text-slate-400 font-mono truncate">
-                @{currentUser.username}
+              <div className="text-[10px] text-slate-400 font-mono truncate">
+                ID: @{currentUser.username}
               </div>
 
               <button
                 onClick={onLogout}
-                className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-md transition-colors cursor-pointer"
+                className="mt-2 w-full flex items-center justify-center gap-1.5 py-1 text-[11px] font-mono text-slate-300 hover:text-white bg-[#121924] hover:bg-slate-800 rounded border border-[#1E293B] transition-colors cursor-pointer"
               >
-                <LogOut className="w-3.5 h-3.5" />
-                Cambiar de Usuario
+                <LogOut className="w-3 h-3" />
+                CAMBIAR OPERADOR
               </button>
             </div>
           )}
-          <div className="mt-2 text-[10px] text-slate-400 text-center font-mono">
-            Portal Corporativo • Adquisiciones
+          <div className="mt-2 text-[9px] text-slate-400 text-center font-mono tracking-wider">
+            JYC TERMINAL v2.5 • HEAVY ACQUISITIONS
           </div>
         </div>
       </aside>

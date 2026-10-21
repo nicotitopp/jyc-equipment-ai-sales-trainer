@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ConversationProvider, useConversation } from '@elevenlabs/react';
 import { 
-  PhoneCall, Phone, Mic, MicOff, Loader2, Bot, User, ShieldCheck
+  PhoneCall, Phone, Mic, MicOff, Loader2, Bot, User, ShieldCheck, 
+  Radio, Activity, Cpu, Sparkles, CheckCircle2, AlertTriangle, Layers
 } from 'lucide-react';
 import Scorecard from './Scorecard';
 import { saveAudio } from './audioDb';
@@ -65,7 +66,6 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
     }
   };
 
-  // Automatically update defaults when industry or language is switched
   useEffect(() => {
     const defaults = INDUSTRY_DEFAULTS[industry]?.[language] || INDUSTRY_DEFAULTS.concrete[language];
     setCompanyName(defaults.company);
@@ -77,7 +77,6 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
   const [evaluating, setEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<any>(null);
   const [showEvaluation, setShowEvaluation] = useState(false);
-  const [showTranscript, setShowTranscript] = useState(false);
 
   // Call timer state
   const [callDuration, setCallDuration] = useState(0);
@@ -97,7 +96,7 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
     onMessage: (msg) => {
       setTranscripts(prev => [...prev, {
         id: Date.now() + Math.random(),
-        role: msg.role || msg.source, // Handle both role and deprecated source
+        role: msg.role || msg.source,
         text: msg.message
       }]);
     }
@@ -142,170 +141,130 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
   const handleStartCall = async () => {
     try {
       setTranscripts([]);
-      setEvaluation(null);
-      setShowEvaluation(false);
       const callId = Date.now().toString() + Math.random().toString().substring(2, 6);
       setCurrentCallId(callId);
       audioChunksRef.current = [];
 
-      const audioConstraints: any = {
-        echoCancellation: true,
-        noiseSuppression: noiseSuppressionEnabled,
-        autoGainControl: true,
-        channelCount: 1,
-        googEchoCancellation: true,
-        googAutoGainControl: true,
-        googNoiseSuppression: noiseSuppressionEnabled,
-        googHighpassFilter: true,
-        googNoiseReduction: noiseSuppressionEnabled
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+      // Setup microphone stream
       try {
-        const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : MediaRecorder.isTypeSupported('audio/webm')
-          ? 'audio/webm'
-          : '';
-        const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            noiseSuppression: noiseSuppressionEnabled,
+            echoCancellation: true,
+            autoGainControl: true
+          }
+        });
+        const recorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = recorder;
+
         recorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) {
+          if (e.data.size > 0) {
             audioChunksRef.current.push(e.data);
           }
         };
-        recorder.start(250);
-        mediaRecorderRef.current = recorder;
-      } catch (recErr) {
-        console.warn("Could not start local MediaRecorder:", recErr);
-      }
-      
-      // Determine the first message greeting in the correct language
-      const greeting = language === 'English'
-        ? `Good morning, thank you for calling ${companyName}. How can I help you?`
-        : `Buenos días, gracias por llamar a ${companyName}. ¿En qué le puedo ayudar?`;
 
-      const dynamicVariables = {
-        difficulty: difficulty,
-        language: language,
-        first_message: greeting,
-        contact_name: contactName || "Carlos",
-        company_name: companyName || "Canteras del Norte",
-        industry: industry
-      };
-
-      const langCode = language === 'Spanish' ? 'es' : 'en';
-
-      const overrides = {
-        agent: {
-          language: langCode,
-          first_message: greeting
-        }
-      };
-
-      // Try fetching a signed URL from the backend (uses ELEVENLABS_API_KEY)
-      let sessionConfig: any = {
-        agentId: "agent_2501kw2zhyq8ewg9ntqm1613vhek",
-        dynamicVariables,
-        overrides
-      };
-
-      try {
-        const res = await fetch("/api/elevenlabs/signed-url");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.signedUrl) {
-            sessionConfig = {
-              signedUrl: data.signedUrl,
-              dynamicVariables,
-              overrides
-            };
+        recorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          try {
+            await saveAudio(callId, audioBlob);
+          } catch (saveErr) {
+            console.warn("Could not cache call audio to IDB:", saveErr);
           }
-        }
-      } catch (err) {
-        console.warn("Could not fetch signed URL, falling back to direct agentId:", err);
+          stream.getTracks().forEach(t => t.stop());
+        };
+
+        recorder.start(1000);
+      } catch (micErr) {
+        console.warn("MediaRecorder mic access error:", micErr);
       }
 
-      await conversation.startSession(sessionConfig);
-    } catch (error) {
-      console.error("Failed to start conversation:", error);
-      alert("Failed to start conversation. Please ensure microphone permissions are granted.");
+      // Get signed URL from backend
+      const res = await fetch('/api/elevenlabs/signed-url');
+      if (!res.ok) {
+        throw new Error("No se pudo obtener URL de conexión de ElevenLabs");
+      }
+      const data = await res.json();
+      const signedUrl = data.signedUrl;
+
+      // Start session with dynamic variables
+      await conversation.startSession({
+        signedUrl,
+        dynamicVariables: {
+          difficulty,
+          language,
+          industry,
+          companyName,
+          contactName
+        }
+      });
+    } catch (err: any) {
+      console.error("Start call error:", err);
+      alert(`Error iniciando llamada: ${err.message || 'Verifica tu conexión y permisos de micrófono.'}`);
     }
   };
 
   const handleEndCall = async () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try {
+    try {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
-      } catch (recErr) {
-        console.warn("Could not stop MediaRecorder:", recErr);
       }
+      await conversation.endSession();
+    } catch (err) {
+      console.error("End call error:", err);
     }
-    await conversation.endSession();
   };
 
   const handleResetCall = () => {
-    setTranscripts([]);
-    setEvaluation(null);
     setShowEvaluation(false);
-    setWasConnected(false);
+    setEvaluation(null);
+    setTranscripts([]);
     setCurrentCallId(null);
     setCurrentConversationId(null);
-    audioChunksRef.current = [];
   };
 
   const triggerEvaluation = async () => {
-    if (transcripts.length === 0) return;
-
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try {
-        mediaRecorderRef.current.requestData();
-        mediaRecorderRef.current.stop();
-      } catch (recErr) {
-        console.warn("Could not stop MediaRecorder on evaluate:", recErr);
-      }
-    }
-
-    await new Promise(r => setTimeout(r, 200));
-
-    if (currentCallId && audioChunksRef.current.length > 0) {
-      try {
-        const mime = mediaRecorderRef.current?.mimeType || 'audio/webm';
-        const localBlob = new Blob(audioChunksRef.current, { type: mime });
-        await saveAudio(currentCallId, localBlob);
-      } catch (saveErr) {
-        console.warn("Could not save local recording:", saveErr);
-      }
-    }
-
-    if (currentCallId && currentConversationId) {
-      fetch(`/api/elevenlabs/conversation-audio/${currentConversationId}`)
-        .then(res => res.ok ? res.blob() : null)
-        .then(blob => {
-          if (blob && blob.size > 0 && currentCallId) {
-            saveAudio(currentCallId, blob).catch(console.warn);
-          }
-        })
-        .catch(err => console.warn("Could not fetch remote conversation audio:", err));
-    }
-
-    setEvaluating(true);
     setShowEvaluation(true);
+    setEvaluating(true);
 
     try {
-      const transcriptText = transcripts
-        .map(t => `${t.role === 'user' ? 'Trainee (Sales Rep)' : 'Prospect'}: ${t.text}`)
-        .join('\n');
+      const dialogueText = transcripts.map(t => `${t.role === 'user' ? 'Trainee' : 'Prospect'}: ${t.text}`).join('\n');
 
-      const industryLabels: Record<string, string> = {
-        concrete: 'Concrete & Precast Industry',
-        sand_gravel: 'Sand & Gravel / Quarries Industry',
-        lumber: 'Lumber Industry & Sawmills',
-        metal: 'Metal / Steel Pipe Industry',
-        ports: 'Ports & Terminals',
-        plastic: 'Plastic Industry',
-        medical: 'Medical / Pharmaceutical Industry'
-      };
-      const selectedIndustryLabel = industryLabels[industry] || 'Heavy Machinery';
+      const prompt = `You are an expert sales performance auditor specializing in heavy industrial machinery acquisitions for JYC Equipment.
+Audit the following live sales call between our trainee and a prospect.
+Evaluate if the trainee adhered strictly to the JYC equipment buying playbook.
+
+Language spoken in call: ${language}
+Target Company: ${companyName}
+Target Contact (Key Person): ${contactName}
+Difficulty setting: ${difficulty}
+
+Dialogue Transcript:
+${dialogueText}
+
+Please write all output critique fields (summary, strengths, weaknesses, objections feedback, recommendations) in Spanish.
+
+Output strictly valid JSON with this exact schema:
+{
+  "score": number, // 0 to 100
+  "contactName": "${contactName}",
+  "companyName": "${companyName}",
+  "summary": "Resumen ejecutivo en español...",
+  "strengths": ["Fortaleza 1", "Fortaleza 2"],
+  "weaknesses": ["Área a mejorar 1", "Área a mejorar 2"],
+  "checklist": {
+    "gatekeeperBypass": boolean,
+    "kpOpening": boolean,
+    "equipmentQualification": boolean,
+    "futureReference": boolean,
+    "priceAndAssets": boolean,
+    "objectionHandling": boolean,
+    "nextStepsSecure": boolean
+  },
+  "objectionsHandled": [
+    { "objection": "Nombre de la objeción", "handledWell": boolean, "feedback": "Retroalimentación" }
+  ],
+  "recommendations": ["Recomendación 1", "Recomendación 2"]
+}`;
 
       let response;
       let retries = 3;
@@ -317,93 +276,35 @@ const ElevenLabsCallView = ({ onEvaluationComplete }: { onEvaluationComplete?: (
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              messages: [
-                {
-                  role: 'user',
-                  content: `Please evaluate this sales/purchasing cold call transcript. The representative is a buyer from JYC Equipment contacting a prospect named "${contactName}" representing "${companyName}" (operating in the ${selectedIndustryLabel} sector) regarding used heavy machinery.
-The representative's primary goal is to BUY used heavy equipment (such as forklifts, wheel loaders, reach stackers, empty container handlers, standard or electric forklifts, etc.) from the company.
-
-The entire call was conducted in ${language} at difficulty level "${difficulty}". You must write all critique details (strengths, weaknesses, objectionsHandled feedback, recommendations) in the user's primary language: Spanish. Factor the difficulty level into your grading of their objection handling, gatekeeper bypass, and confidence.
-
-Review the following transcript of the call:
-${transcriptText}
-
-Verify the following items and build the checklist of what details the trainee gathered/asked:
-- gatekeeperBypass: Did they introduce themselves to the operator and successfully reach/bypass to the Key Person (KP) named "${contactName}"?
-- kpOpening: Did they use the correct script opening with the KP (asked if it was a bad time, introduced JYC Equipment, and checked if they have any equipment for sale right now or coming up this year)?
-- equipmentQualification: IF the prospect has equipment for sale: did they ask the qualification questions (Make, Model, Year, Condition/Repairs) for the machine mentioned by the prospect? (If no equipment was available, mark as true if they confirmed this).
-- futureReference: IF the prospect does NOT have equipment for sale: did they ask the reference questions to gather company information (process for surplus, if they buy used, branches, loaders/forklifts used)? (If equipment was available, mark as true).
-- priceAndAssets: Did they ask for a target price and request pictures of the machine, the data plate, and the hour meter?
-- objectionHandling: Did they address and try to overcome the prospect's objections (e.g., they prefer auctions, want to trade-in, have bank leases, already sold, or want a price first)?
-- nextStepsSecure: Did they successfully get the prospect's personal contact details (WhatsApp or email) and establish clear next steps for a follow-up or callback?
-
-You must return ONLY a JSON object with this exact structure:
-{
-  "score": number, // 0 to 100
-  "summary": "Brief summary of the call performance in Spanish.",
-  "strengths": ["Strength 1 in Spanish", "Strength 2 in Spanish", ...],
-  "weaknesses": ["Weakness 1 in Spanish", "Weakness 2 in Spanish", ...],
-  "checklist": {
-    "gatekeeperBypass": boolean,
-    "kpOpening": boolean,
-    "equipmentQualification": boolean,
-    "futureReference": boolean,
-    "priceAndAssets": boolean,
-    "objectionHandling": boolean,
-    "nextStepsSecure": boolean
-  },
-  "objectionsHandled": [
-    { "objection": "Name of objection (e.g. Auction, Lease, Trade-in) in Spanish", "handledWell": boolean, "feedback": "Brief feedback in Spanish" }
-  ],
-  "recommendations": ["Recommendation 1 in Spanish", "Recommendation 2 in Spanish", ...]
-}`
-                }
-              ],
-              systemInstruction: "You are a strict machinery sales auditor. Analyze the transcript and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
+              messages: [{ role: 'user', content: prompt }],
+              systemInstruction: "You are a strict, professional heavy machinery sales auditor. Return ONLY a valid JSON object matching the requested schema. No markdown backticks, just raw JSON."
             })
           });
-
           if (response.ok) break;
-
-          // If server status is waking up (502/503/504) retry
-          if ([502, 503, 504, 429].includes(response.status) && retries > 1) {
-            retries--;
-            await new Promise(r => setTimeout(r, 2500));
-            continue;
-          }
-          break;
-        } catch (fetchErr: any) {
+          retries--;
+          await new Promise(r => setTimeout(r, 2000));
+        } catch (fetchErr) {
           lastErr = fetchErr;
           retries--;
-          if (retries > 0) {
-            await new Promise(r => setTimeout(r, 3000));
-            continue;
-          }
-          throw fetchErr;
+          await new Promise(r => setTimeout(r, 2000));
         }
       }
 
-      if (!response) {
-        throw lastErr || new Error("Failed to connect to server after retries.");
-      }
-
+      if (!response) throw lastErr || new Error("Fallo de comunicación con Gemini");
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch evaluation');
-      }
-
       const text = data.text;
+
       let parsedData;
       try {
         const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
         parsedData = JSON.parse(cleanText);
-      } catch (err) {
+      } catch {
         const start = text.indexOf('{');
         const end = text.lastIndexOf('}');
         if (start !== -1 && end !== -1) {
           parsedData = JSON.parse(text.substring(start, end + 1));
         } else {
-          throw new Error("Invalid JSON response from AI: " + text);
+          throw new Error("Respuesta inválida del evaluador IA");
         }
       }
 
@@ -419,10 +320,10 @@ You must return ONLY a JSON object with this exact structure:
 
       setEvaluation(fullEvaluation);
       onEvaluationComplete?.(
-        fullEvaluation.score, 
-        fullEvaluation, 
-        contactName || "Carlos", 
-        companyName || "Canteras del Norte",
+        fullEvaluation.score,
+        fullEvaluation,
+        contactName,
+        companyName,
         {
           id: currentCallId || undefined,
           hasAudio: true,
@@ -430,13 +331,13 @@ You must return ONLY a JSON object with this exact structure:
           audioUrl: currentConversationId ? `/api/elevenlabs/conversation-audio/${currentConversationId}` : undefined
         }
       );
-    } catch (error: any) {
-      console.error("Evaluation error:", error);
+    } catch (err: any) {
+      console.error("Evaluation error:", err);
       setEvaluation({
         score: 0,
-        summary: "Failed to generate AI evaluation due to an error.",
-        strengths: ["Evaluation failed to run"],
-        weaknesses: ["Error connecting to Gemini API: " + error.message],
+        summary: "No fue posible generar la evaluación automatizada: " + err.message,
+        strengths: [],
+        weaknesses: [err.message],
         checklist: {
           gatekeeperBypass: false,
           kpOpening: false,
@@ -447,7 +348,7 @@ You must return ONLY a JSON object with this exact structure:
           nextStepsSecure: false
         },
         objectionsHandled: [],
-        recommendations: ["Ensure your internet is working and try again."]
+        recommendations: ["Comprueba tu conexión e intenta de nuevo."]
       });
     } finally {
       setEvaluating(false);
@@ -457,18 +358,20 @@ You must return ONLY a JSON object with this exact structure:
   if (showEvaluation) {
     if (evaluating) {
       return (
-        <div className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 bg-slate-50 overflow-y-auto space-y-6 flex items-center justify-center">
-          <div className="bg-white rounded-3xl p-16 shadow-sm border border-slate-200 flex flex-col items-center justify-center space-y-6 w-full max-w-2xl">
+        <div className="flex-1 w-full max-w-5xl mx-auto p-4 sm:p-6 bg-[#080B10] flex items-center justify-center">
+          <div className="bg-[#0E141D] rounded-xl p-12 border border-[#1E293B] shadow-2xl flex flex-col items-center justify-center space-y-5 max-w-lg text-center">
             <div className="relative flex items-center justify-center">
-              <Loader2 className="w-16 h-16 animate-spin text-blue-600" />
-              <div className="absolute w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-blue-600" />
+              <Loader2 className="w-14 h-14 animate-spin text-amber-500" />
+              <div className="absolute w-9 h-9 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/30">
+                <Radio className="w-5 h-5 text-amber-400 animate-pulse" />
               </div>
             </div>
-            <div className="text-center space-y-2 max-w-md">
-              <h3 className="text-xl font-bold text-slate-800 animate-pulse">Auditing Call Transcript...</h3>
-              <p className="text-slate-500 text-sm">
-                Gemini is checking your call flow against JYC sales script guidelines and cold calling checklists.
+            <div className="space-y-2">
+              <h3 className="text-base font-bold font-display uppercase tracking-wider text-white">
+                AUDITORÍA DE LLAMADA EN PROCESO
+              </h3>
+              <p className="text-slate-400 text-xs font-mono leading-relaxed">
+                Gemini está analizando la transcripción contra los 7 criterios oficiales del Playbook JYC: Bypass, Apertura KP, Calificación, Objeciones y Cierre.
               </p>
             </div>
           </div>
@@ -487,264 +390,340 @@ You must return ONLY a JSON object with this exact structure:
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start p-4 sm:p-6 bg-slate-50 overflow-hidden">
-      <div className="max-w-5xl w-full flex flex-col md:flex-row h-full gap-5">
+    <div className="flex-1 flex flex-col items-center justify-start p-3 sm:p-5 bg-[#080B10] bg-industrial-grid overflow-hidden">
+      <div className="max-w-6xl w-full flex flex-col md:flex-row h-full gap-4">
         
-        {/* Call Controls */}
-        <div className="md:w-[360px] bg-white rounded-xl shadow-xs border border-slate-200 p-5 text-center space-y-5 shrink-0 flex flex-col justify-start overflow-y-auto max-h-full text-left">
-          <div className="space-y-1">
-            <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-2 border border-blue-100">
-              <PhoneCall className="w-5 h-5" />
-            </div>
-            <h2 className="text-base font-bold text-slate-900 tracking-tight">Simulación Telefónica por Voz</h2>
-            <p className="text-slate-500 text-xs">
-              Conversación bidireccional en tiempo real con el comprador prospecto mediante ElevenLabs ConvAI.
-            </p>
-          </div>
-
-          {/* Configuration Form (only when not active) */}
-          {!isConnected && !isConnecting && (
-            <div className="text-left space-y-3 w-full bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Sim Config</h4>
-              
-              {/* Idioma */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Language / Idioma</label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setLanguage('English')}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all ${
-                      language === 'English'
-                        ? 'bg-blue-50 border-blue-300 text-blue-700'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    English
-                  </button>
-                  <button
-                    onClick={() => setLanguage('Spanish')}
-                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all ${
-                      language === 'Spanish'
-                        ? 'bg-amber-50 border-amber-300 text-amber-700'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    Español
-                  </button>
+        {/* Left Column: Flight / Call Director Panel */}
+        <div className="md:w-[350px] bg-[#0C1118] rounded-xl border border-[#1C2634] p-4 text-left space-y-4 shrink-0 flex flex-col justify-between overflow-y-auto max-h-full shadow-xl">
+          
+          <div className="space-y-4">
+            {/* Header Deck */}
+            <div className="border-b border-[#1A2332] pb-3 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  <h2 className="text-sm font-bold font-display uppercase tracking-wider text-white">
+                    CENTRO DE TELEFONÍA
+                  </h2>
                 </div>
-              </div>
-
-              {/* Dificultad */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Difficulty / Dificultad</label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  <button
-                    onClick={() => setDifficulty('friendly')}
-                    className={`py-1.5 px-1.5 rounded-lg text-[11px] font-semibold border transition-all text-center ${
-                      difficulty === 'friendly'
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700 shadow-xs'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    🌱 Friendly
-                  </button>
-                  <button
-                    onClick={() => setDifficulty('challenging')}
-                    className={`py-1.5 px-1.5 rounded-lg text-[11px] font-semibold border transition-all text-center ${
-                      difficulty === 'challenging'
-                        ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-xs'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    ⚡ Challenging
-                  </button>
-                  <button
-                    onClick={() => setDifficulty('hardcore')}
-                    className={`py-1.5 px-1.5 rounded-lg text-[11px] font-semibold border transition-all text-center ${
-                      difficulty === 'hardcore'
-                        ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-xs'
-                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    🔥 Hardcore
-                  </button>
-                </div>
-                <p className="text-[10px] text-slate-400 italic">
-                  {difficulty === 'friendly' && '• Cooperative gatekeeper & receptive manager with 1 objection.'}
-                  {difficulty === 'challenging' && '• Strict gatekeeper, busy manager pushing for price first.'}
-                  {difficulty === 'hardcore' && '• Hostile gatekeeper, suspicious manager & heavy objections.'}
+                <p className="text-[10px] font-mono text-slate-400 mt-0.5">
+                  SIMULADOR CONTEXTUAL DE PROSPECCIÓN
                 </p>
               </div>
-
-              {/* Target Industry */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">Target Industry</label>
-                <select
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold text-slate-700"
-                >
-                  <option value="plastic">🧪 Plastics & Injection Molding</option>
-                  <option value="concrete">🏗️ Concrete & Precast</option>
-                  <option value="sand_gravel">⛰️ Sand & Gravel</option>
-                  <option value="lumber">🪵 Lumber & Sawmills</option>
-                  <option value="metal">⚙️ Steel & Metal Pipe</option>
-                  <option value="ports">🚢 Ports & Container Terminals</option>
-                  <option value="medical">🏥 Medical & Pharma Logistics</option>
-                </select>
-              </div>
-
-              {/* Detalles adicionales */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Contact Name</label>
-                  <input
-                    type="text"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Company Name</label>
-                  <input
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full text-xs bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              {/* Noise Cancellation Toggle */}
-              <div className="flex items-center justify-between pt-2 border-t border-slate-200/80">
-                <div className="flex items-center gap-2">
-                  <div className={`p-1 rounded-md ${noiseSuppressionEnabled ? 'bg-blue-100 text-blue-600' : 'bg-slate-200 text-slate-500'}`}>
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-bold text-slate-700 block leading-tight">Noise Suppression</span>
-                    <span className="text-[9px] text-slate-400 block leading-tight">Filters fan, keyboard & room noise</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setNoiseSuppressionEnabled(!noiseSuppressionEnabled)}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    noiseSuppressionEnabled ? 'bg-blue-600' : 'bg-slate-300'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      noiseSuppressionEnabled ? 'translate-x-4' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
+              <div className="px-2 py-0.5 rounded bg-[#131B26] border border-[#232F42] text-[9px] font-mono font-bold text-amber-300">
+                ELEVENLABS VOX
               </div>
             </div>
-          )}
 
-          <div className="min-h-[72px] flex items-center justify-center">
-            {isConnecting && (
-              <div className="flex flex-col items-center gap-2 text-slate-500">
-                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                <p className="text-xs font-semibold animate-pulse">Estableciendo conexión por voz...</p>
-              </div>
-            )}
-            {isConnected && (
-              <div className="flex flex-col items-center gap-2 w-full">
-                 <div className="flex items-center gap-2">
-                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                   <span className="text-xs font-mono font-bold text-slate-800 bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
-                     {formatDuration(callDuration)}
-                   </span>
-                 </div>
-
-                 {conversation.isSpeaking ? (
-                   <div className="flex items-center gap-1.5 h-8">
-                     <span className="w-1 bg-blue-600 rounded-full animate-waveform-1" />
-                     <span className="w-1 bg-blue-600 rounded-full animate-waveform-2" />
-                     <span className="w-1 bg-blue-600 rounded-full animate-waveform-3" />
-                     <span className="w-1 bg-blue-600 rounded-full animate-waveform-4" />
-                     <span className="w-1 bg-blue-600 rounded-full animate-waveform-5" />
-                     <span className="text-xs text-blue-700 font-semibold ml-2">El prospecto está hablando...</span>
-                   </div>
-                 ) : (
-                   <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
-                     <Mic className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
-                     <span>Tu turno de hablar al micrófono</span>
-                   </div>
-                 )}
-                 <p className="text-[10px] text-slate-400 font-mono">
-                   {companyName} • {contactName}
-                 </p>
-              </div>
-            )}
+            {/* Config Form (Only accessible before call) */}
             {!isConnected && !isConnecting && (
-               <div className="flex flex-col items-center text-slate-400 text-xs">
-                 <p className="font-medium">Listo para iniciar simulación</p>
-                 <span className="text-[10px] text-slate-400">Verifica tu micrófono antes de llamar</span>
-               </div>
+              <div className="space-y-3.5">
+                
+                {/* Sector Industrial */}
+                <div>
+                  <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1.5 flex items-center justify-between">
+                    <span>SECTOR INDUSTRIAL TARGET</span>
+                    <span className="text-sky-400 font-semibold">{industry.toUpperCase()}</span>
+                  </label>
+                  <select
+                    value={industry}
+                    onChange={(e) => setIndustry(e.target.value)}
+                    className="w-full text-xs font-semibold bg-[#111822] border border-[#222E40] text-slate-200 rounded p-2 focus:border-amber-500 focus:outline-none cursor-pointer"
+                  >
+                    <option value="concrete">🏗️ Concreto & Prefabricados (Canteras)</option>
+                    <option value="sand_gravel">⛰️ Áridos, Arena & Grava</option>
+                    <option value="metal">⚙️ Siderúrgica, Acero & Tuberías</option>
+                    <option value="ports">🚢 Puertos & Terminales de Contenedores</option>
+                    <option value="plastic">🧪 Plásticos & Inyección de Moldes</option>
+                    <option value="lumber">🪵 Aserraderos & Madereras</option>
+                    <option value="medical">🏥 Logística Médica & Farmacéutica</option>
+                  </select>
+                </div>
+
+                {/* Target Company & KP Dossier */}
+                <div className="p-2.5 rounded bg-[#0F1621] border border-[#1E293B] space-y-2">
+                  <div className="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 flex items-center justify-between">
+                    <span>DOSSIER DE LA EMPRESA</span>
+                    <span className="text-emerald-400 text-[8px] border border-emerald-500/30 px-1 rounded">VERIFICADO</span>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-mono text-slate-400 uppercase block">Empresa a Prospeccionar</label>
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      className="w-full text-xs font-mono font-semibold bg-[#0A0E15] border border-[#222E40] text-white rounded px-2.5 py-1.5 mt-0.5 focus:border-amber-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-mono text-slate-400 uppercase block">Key Person (Jefe de Planta / Operaciones)</label>
+                    <input
+                      type="text"
+                      value={contactName}
+                      onChange={(e) => setContactName(e.target.value)}
+                      className="w-full text-xs font-mono font-semibold bg-[#0A0E15] border border-[#222E40] text-white rounded px-2.5 py-1.5 mt-0.5 focus:border-amber-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Idioma & Dificultad */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[9px] font-mono font-bold text-slate-400 uppercase block mb-1">Idioma</label>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setLanguage('English')}
+                        className={`flex-1 py-1 rounded text-[11px] font-mono font-bold border transition-colors cursor-pointer ${
+                          language === 'English'
+                            ? 'bg-blue-900/40 border-blue-500 text-blue-300'
+                            : 'bg-[#111822] border-[#222E40] text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        EN
+                      </button>
+                      <button
+                        onClick={() => setLanguage('Spanish')}
+                        className={`flex-1 py-1 rounded text-[11px] font-mono font-bold border transition-colors cursor-pointer ${
+                          language === 'Spanish'
+                            ? 'bg-amber-900/40 border-amber-500 text-amber-300'
+                            : 'bg-[#111822] border-[#222E40] text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        ES
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-mono font-bold text-slate-400 uppercase block mb-1">Dificultad</label>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setDifficulty('friendly')}
+                        className={`flex-1 py-1 rounded text-[10px] font-mono font-bold border transition-colors cursor-pointer ${
+                          difficulty === 'friendly'
+                            ? 'bg-emerald-950 border-emerald-500 text-emerald-300'
+                            : 'bg-[#111822] border-[#222E40] text-slate-400'
+                        }`}
+                        title="Amable: receptivo y con 1 objeción sencilla"
+                      >
+                        BAJA
+                      </button>
+                      <button
+                        onClick={() => setDifficulty('challenging')}
+                        className={`flex-1 py-1 rounded text-[10px] font-mono font-bold border transition-colors cursor-pointer ${
+                          difficulty === 'challenging'
+                            ? 'bg-amber-950 border-amber-500 text-amber-300'
+                            : 'bg-[#111822] border-[#222E40] text-slate-400'
+                        }`}
+                        title="Media: operador ocupado pidiendo precio inicial"
+                      >
+                        MEDIA
+                      </button>
+                      <button
+                        onClick={() => setDifficulty('hardcore')}
+                        className={`flex-1 py-1 rounded text-[10px] font-mono font-bold border transition-colors cursor-pointer ${
+                          difficulty === 'hardcore'
+                            ? 'bg-rose-950 border-rose-500 text-rose-300'
+                            : 'bg-[#111822] border-[#222E40] text-slate-400'
+                        }`}
+                        title="Alta: hostil, objeciones múltiples y desconfianza"
+                      >
+                        ALTA
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DSP Noise Cancellation */}
+                <div className="flex items-center justify-between p-2 rounded bg-[#0A0F17] border border-[#1A2332]">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className={`w-4 h-4 ${noiseSuppressionEnabled ? 'text-sky-400' : 'text-slate-600'}`} />
+                    <div>
+                      <span className="text-[10px] font-mono font-bold text-slate-200 block">Filtro DSP Antirruido</span>
+                      <span className="text-[9px] font-mono text-slate-500 block">Cancela teclado y eco ambiental</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setNoiseSuppressionEnabled(!noiseSuppressionEnabled)}
+                    className={`relative inline-flex h-4 w-8 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out ${
+                      noiseSuppressionEnabled ? 'bg-sky-500' : 'bg-slate-700'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
+                        noiseSuppressionEnabled ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+              </div>
+            )}
+
+            {/* In-Call Telemetry Status */}
+            {isConnected && (
+              <div className="p-3 rounded-lg bg-[#0E1521] border border-sky-500/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase tracking-wider">
+                      FRECUENCIA ACTIVA
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-white bg-black/40 px-2 py-0.5 rounded border border-white/10">
+                    {formatDuration(callDuration)}
+                  </span>
+                </div>
+
+                <div className="text-center py-2">
+                  {conversation.isSpeaking ? (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-center gap-1.5 h-6">
+                        <span className="w-1 bg-amber-400 rounded-full animate-waveform-1" />
+                        <span className="w-1 bg-amber-400 rounded-full animate-waveform-2" />
+                        <span className="w-1 bg-amber-400 rounded-full animate-waveform-3" />
+                        <span className="w-1 bg-amber-400 rounded-full animate-waveform-4" />
+                        <span className="w-1 bg-amber-400 rounded-full animate-waveform-5" />
+                      </div>
+                      <p className="text-[11px] font-mono font-bold text-amber-300">EL PROSPECTO ESTÁ HABLANDO</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-center gap-1.5 text-sky-400">
+                        <Mic className="w-4 h-4 animate-pulse" />
+                        <span className="text-[11px] font-mono font-bold">TU TURNO AL MICRÓFONO</span>
+                      </div>
+                      <p className="text-[9px] font-mono text-slate-400">Escuchando transmisión del vendedor...</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-[10px] font-mono text-slate-400 border-t border-sky-900/40 pt-2 flex items-center justify-between">
+                  <span>OBJETIVO:</span>
+                  <span className="text-white font-bold">{companyName}</span>
+                </div>
+              </div>
             )}
           </div>
 
-          <div className="pt-3 border-t border-slate-100 flex justify-center gap-3 shrink-0">
+          {/* Trigger Button Area */}
+          <div className="pt-3 border-t border-[#1A2332]">
             {!isConnected && !isConnecting && (
               <button
                 onClick={handleStartCall}
-                className="px-6 py-2.5 w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white rounded-lg font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer text-xs"
+                className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-display font-black text-xs uppercase tracking-wider rounded transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
               >
-                <Phone className="w-4 h-4" />
-                Iniciar Llamada de Simulación
+                <Phone className="w-4 h-4 fill-current" />
+                <span>INICIAR SIMULACIÓN TELEFÓNICA</span>
               </button>
             )}
 
-            {(isConnected || isConnecting) && (
+            {isConnecting && (
+              <div className="w-full py-3 bg-[#131B26] border border-[#232F42] text-amber-400 font-mono text-xs flex items-center justify-center gap-2 rounded animate-pulse">
+                <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+                <span>ESTABLECIENDO CONEXIÓN WEBRTC...</span>
+              </div>
+            )}
+
+            {isConnected && (
               <button
                 onClick={handleEndCall}
-                className="px-6 py-2.5 w-full bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white rounded-lg font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer text-xs"
+                className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-display font-black text-xs uppercase tracking-wider rounded transition-all shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
               >
                 <Phone className="w-4 h-4 fill-current rotate-[135deg]" />
-                Finalizar Llamada y Auditar
+                <span>FINALIZAR LLAMADA Y AUDITAR</span>
               </button>
             )}
           </div>
+
         </div>
 
-        {/* Transcript Area */}
-        <div className="md:flex-1 bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden flex flex-col min-h-0 text-left">
-          <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 shrink-0 flex items-center justify-between">
-            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wide">Transcripción en Tiempo Real</h3>
-            <span className="text-[10px] font-mono text-slate-400">Audio Bidireccional</span>
+        {/* Right Column: Audio Transcript & Live Operator HUD */}
+        <div className="md:flex-1 bg-[#0A0E15] rounded-xl border border-[#1C2634] overflow-hidden flex flex-col min-h-0 text-left shadow-xl">
+          
+          {/* Top HUD Telemetry Strip */}
+          <div className="px-4 py-2.5 border-b border-[#1A2332] bg-[#0E131C] shrink-0 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold font-display uppercase tracking-wider text-white flex items-center gap-2">
+                <Radio className="w-3.5 h-3.5 text-amber-400" />
+                REGISTRO DE TRANSMISIÓN DE VOZ
+              </span>
+              <span className="text-[10px] font-mono text-slate-400 hidden sm:inline">
+                {transcripts.length} {transcripts.length === 1 ? 'línea' : 'líneas'}
+              </span>
+            </div>
+
+            {/* Live Playbook Quick Reference Indicators */}
+            <div className="hidden lg:flex items-center gap-1.5 text-[9px] font-mono">
+              <span className="text-slate-500">QUALIFY CHECK:</span>
+              <span className="px-1.5 py-0.5 rounded bg-[#121924] border border-[#1F2B3D] text-slate-300">TIPO</span>
+              <span className="px-1.5 py-0.5 rounded bg-[#121924] border border-[#1F2B3D] text-slate-300">MODELO</span>
+              <span className="px-1.5 py-0.5 rounded bg-[#121924] border border-[#1F2B3D] text-slate-300">MARCA</span>
+              <span className="px-1.5 py-0.5 rounded bg-[#121924] border border-[#1F2B3D] text-slate-300">AÑO</span>
+              <span className="px-1.5 py-0.5 rounded bg-[#121924] border border-[#1F2B3D] text-amber-300">PRECIO</span>
+            </div>
           </div>
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-3.5">
+
+          {/* Transcript Dialogue Scrollable Stream */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 dark-scrollbar">
             {transcripts.length === 0 ? (
-               <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs text-center space-y-2 p-6">
-                 <div className="p-3 bg-slate-100 text-slate-400 rounded-lg">
-                   <PhoneCall className="w-5 h-5" />
+               <div className="h-full flex flex-col items-center justify-center text-slate-500 text-xs text-center space-y-3 p-8">
+                 <div className="w-12 h-12 rounded bg-[#0F1622] border border-[#1E293B] flex items-center justify-center text-slate-400">
+                   <PhoneCall className="w-6 h-6 text-amber-400" />
                  </div>
-                 <p className="font-medium text-slate-600">Inicia la llamada para comenzar el diálogo con el prospecto.</p>
-                 <span className="text-[11px] text-slate-400">Las líneas habladas aparecerán aquí transcritas en vivo.</span>
+                 <div className="space-y-1 max-w-sm">
+                   <h3 className="font-display font-bold text-slate-300 text-sm uppercase tracking-wide">
+                     Canal de Audio en Espera
+                   </h3>
+                   <p className="text-[11px] font-mono text-slate-400 leading-relaxed">
+                     Configura el sector industrial y presiona "Iniciar Simulación Telefónica" para enlazar la llamada con el agente de IA.
+                   </p>
+                 </div>
                </div>
             ) : (
-               transcripts.map((msg) => (
-                 <div key={msg.id} className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <span className={`shrink-0 px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase h-5 flex items-center ${
-                      msg.role === 'user' ? 'bg-slate-900 text-white' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {msg.role === 'user' ? 'VENDEDOR' : 'PROSPECTO'}
-                    </span>
-                    <div className={`flex-1 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                       <div className={`inline-block max-w-[85%] rounded-lg px-3 py-2 text-xs text-left leading-relaxed ${
-                         msg.role === 'user' ? 'bg-blue-600 text-white font-medium' : 'bg-slate-100 text-slate-800'
-                       }`}>
-                         {msg.text}
-                       </div>
-                    </div>
-                 </div>
-               ))
+               transcripts.map((msg) => {
+                 const isTrainee = msg.role === 'user';
+                 return (
+                   <div key={msg.id} className={`flex gap-3 ${isTrainee ? 'flex-row-reverse' : ''}`}>
+                      <div className="shrink-0 flex flex-col items-center">
+                        <span className={`px-2 py-0.5 rounded text-[8px] font-mono font-black uppercase tracking-wider ${
+                          isTrainee 
+                            ? 'bg-blue-950 text-blue-300 border border-blue-700/50' 
+                            : 'bg-amber-950 text-amber-300 border border-amber-700/50'
+                        }`}>
+                          {isTrainee ? 'VENDEDOR' : 'PROSPECTO'}
+                        </span>
+                      </div>
+
+                      <div className={`flex-1 ${isTrainee ? 'text-right' : 'text-left'}`}>
+                         <div className={`inline-block max-w-[85%] rounded px-3.5 py-2.5 text-xs text-left leading-relaxed font-sans shadow-md ${
+                           isTrainee 
+                             ? 'bg-[#152238] border border-blue-500/40 text-slate-100 font-medium' 
+                             : 'bg-[#121721] border border-[#232F42] text-slate-200'
+                         }`}>
+                           {msg.text}
+                         </div>
+                      </div>
+                   </div>
+                 );
+               })
             )}
           </div>
+
+          {/* Bottom Telemetry Status Strip */}
+          <div className="px-4 py-2 border-t border-[#1A2332] bg-[#090D14] flex items-center justify-between text-[10px] font-mono text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              ESTACIÓN DE GRABACIÓN AUTOMÁTICA ACTIVA
+            </span>
+            <span className="hidden sm:inline">
+              JYC CALL INTELLIGENCE ENGINE
+            </span>
+          </div>
+
         </div>
 
       </div>
