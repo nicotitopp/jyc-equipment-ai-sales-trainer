@@ -53,9 +53,31 @@ const DEFAULT_USERS: UserAccount[] = [
 // PostgreSQL Client Pool
 let pgPool: Pool | null = null;
 
+function resolveDatabaseUrl(): string | null {
+  // Check common environment variable names
+  const direct = process.env.DATABASE_URL || 
+                 process.env.POSTGRES_URL || 
+                 process.env.DATABASE_URI || 
+                 process.env.NEON_DATABASE_URL;
+
+  if (direct && direct.trim()) {
+    return direct.trim().replace(/^["']|["']$/g, '');
+  }
+
+  // Check case-insensitive or trimmed key variations
+  for (const [key, val] of Object.entries(process.env)) {
+    const upper = key.trim().toUpperCase();
+    if ((upper === 'DATABASE_URL' || upper === 'DATABASEURL' || upper === 'POSTGRES_URL') && val && val.trim()) {
+      return val.trim().replace(/^["']|["']$/g, '');
+    }
+  }
+
+  return null;
+}
+
 export function getPgPool(): Pool | null {
   if (pgPool) return pgPool;
-  const databaseUrl = process.env.DATABASE_URL;
+  const databaseUrl = resolveDatabaseUrl();
   if (!databaseUrl) return null;
 
   try {
@@ -96,6 +118,14 @@ export async function initDatabase() {
 
   if (!pool) {
     console.log('[DB] No DATABASE_URL provided. Operating in local JSON mode (data/database.json).');
+    const matchedKeys = Object.keys(process.env).filter(k => 
+      k.toUpperCase().includes('DATA') || 
+      k.toUpperCase().includes('POST') || 
+      k.toUpperCase().includes('DB')
+    );
+    if (matchedKeys.length > 0) {
+      console.log('[DB] Related env keys detected in container:', matchedKeys.join(', '));
+    }
     return;
   }
 
