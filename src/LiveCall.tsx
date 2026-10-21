@@ -244,62 +244,86 @@ const ElevenLabsCallView = ({
       setTranscripts([]);
       const callId = Date.now().toString() + Math.random().toString().substring(2, 6);
       setCurrentCallId(callId);
+      setCurrentConversationId(null);
       audioChunksRef.current = [];
 
-      // Setup microphone stream
+      const audioConstraints = {
+        echoCancellation: true,
+        noiseSuppression: noiseSuppressionEnabled,
+        autoGainControl: true,
+      };
+
+      // Request microphone access & setup local recording
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            noiseSuppression: noiseSuppressionEnabled,
-            echoCancellation: true,
-            autoGainControl: true
-          }
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
         mediaStreamRef.current = stream;
-        const recorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = recorder;
 
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
-            audioChunksRef.current.push(e.data);
+        let options: MediaRecorderOptions = { mimeType: 'audio/webm' };
+        if (!MediaRecorder.isTypeSupported('audio/webm')) {
+          if (MediaRecorder.isTypeSupported('audio/mp4')) {
+            options = { mimeType: 'audio/mp4' };
+          } else {
+            options = {};
+          }
+        }
+        const mediaRecorder = new MediaRecorder(stream, options);
+        mediaRecorderRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
           }
         };
 
-        recorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          try {
-            await saveAudio(callId, audioBlob);
-          } catch (saveErr) {
-            console.warn("Could not cache call audio to IDB:", saveErr);
-          }
-          stream.getTracks().forEach(t => t.stop());
-          mediaStreamRef.current = null;
-        };
-
-        recorder.start(1000);
+        mediaRecorder.start(250);
       } catch (micErr) {
         console.warn("MediaRecorder mic access error:", micErr);
       }
 
-      // Get signed URL from backend
-      const res = await fetch('/api/elevenlabs/signed-url');
-      if (!res.ok) {
-        throw new Error("No se pudo establecer conexión con el servicio de voz. Intenta de nuevo en unos segundos.");
-      }
-      const data = await res.json();
-      const signedUrl = data.signedUrl;
+      const greeting = language === 'English'
+        ? `Good morning, thank you for calling ${companyName}. How can I help you?`
+        : `Buenos días, gracias por llamar a ${companyName}. ¿En qué le puedo ayudar?`;
 
-      // Start session with dynamic variables
-      await conversation.startSession({
-        signedUrl,
-        dynamicVariables: {
-          difficulty,
-          language,
-          industry,
-          companyName,
-          contactName
+      const dynamicVariables = {
+        difficulty: difficulty,
+        language: language,
+        first_message: greeting,
+        contact_name: contactName || "Carlos",
+        company_name: companyName || "Canteras del Norte",
+        industry: industry
+      };
+
+      const langCode = language === 'Spanish' ? 'es' : 'en';
+      const overrides = {
+        agent: {
+          language: langCode,
+          first_message: greeting
         }
-      });
+      };
+
+      let sessionConfig: any = {
+        agentId: "agent_2501kw2zhyq8ewg9ntqm1613vhek",
+        dynamicVariables,
+        overrides
+      };
+
+      try {
+        const res = await fetch("/api/elevenlabs/signed-url");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.signedUrl) {
+            sessionConfig = {
+              signedUrl: data.signedUrl,
+              dynamicVariables,
+              overrides
+            };
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch signed URL, falling back to direct agentId:", err);
+      }
+
+      await conversation.startSession(sessionConfig);
     } catch (err: any) {
       console.error("Start call error:", err);
       setConnectionError(err.message || 'Verifica tu conexión a internet y los permisos de tu micrófono.');
@@ -310,6 +334,9 @@ const ElevenLabsCallView = ({
     try {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
+      }
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
       }
       await conversation.endSession();
     } catch (err) {
@@ -328,6 +355,55 @@ const ElevenLabsCallView = ({
   const triggerEvaluation = async () => {
     setShowEvaluation(true);
     setEvaluating(true);
+
+    // Flush and stop recording if still running
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.requestData();
+      } catch (e) {}
+      mediaRecorderRef.current.stop();
+    }
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+    }
+
+    // Wait briefly for final audio chunks to flush
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    let hasSavedAudio = false;
+    if (currentCallId) {
+      if (audioChunksRef.current.length > 0) {
+        try {
+          const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
+          const localBlob = new Blob(audioChunksRef.current, { type: mimeType });
+          await saveAudio(currentCallId, localBlob);
+          hasSavedAudio = true;
+        } catch (err) {
+          console.error("Failed to save local audio:", err);
+        }
+      }
+
+      if (currentConversationId) {
+        hasSavedAudio = true;
+        (async () => {
+          for (let attempt = 0; attempt < 5; attempt++) {
+            await new Promise(r => setTimeout(r, 3000));
+            try {
+              const res = await fetch(`/api/elevenlabs/conversation-audio/${currentConversationId}`);
+              if (res.ok) {
+                const fullBlob = await res.blob();
+                if (fullBlob.size > 1000) {
+                  await saveAudio(currentCallId, fullBlob);
+                  break;
+                }
+              }
+            } catch (e) {
+              console.warn("Attempt to fetch full ElevenLabs audio failed:", e);
+            }
+          }
+        })();
+      }
+    }
 
     try {
       const dialogueText = transcripts.map(t => `${t.role === 'user' ? 'Trainee' : 'Prospect'}: ${t.text}`).join('\n');
@@ -429,7 +505,7 @@ Output strictly valid JSON with this exact schema:
         companyName,
         {
           id: currentCallId || undefined,
-          hasAudio: true,
+          hasAudio: hasSavedAudio,
           conversationId: currentConversationId || undefined,
           audioUrl: currentConversationId ? `/api/elevenlabs/conversation-audio/${currentConversationId}` : undefined
         }
