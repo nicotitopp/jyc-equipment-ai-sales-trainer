@@ -494,8 +494,10 @@ You must return ONLY a JSON object with this exact structure:
         return res.status(404).json({ error: "Audio file not found" });
       }
 
-      res.setHeader("Content-Type", audio.mimeType);
+      const ext = audio.mimeType?.includes("wav") ? "wav" : audio.mimeType?.includes("webm") ? "webm" : "mp3";
+      res.setHeader("Content-Type", audio.mimeType || "audio/mpeg");
       res.setHeader("Content-Length", audio.buffer.length);
+      res.setHeader("Content-Disposition", `attachment; filename="call_recording_${id}.${ext}"`);
       res.send(audio.buffer);
     } catch (error: any) {
       console.error("Error retrieving audio file:", error);

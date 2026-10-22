@@ -125,34 +125,99 @@ body {
 
 /* Print styling for Scorecard PDF export */
 @media print {
-  body {
+  @page {
+    margin: 10mm 12mm;
+    size: A4 portrait;
+  }
+
+  html, body {
     background-color: white !important;
-    color: black !important;
+    color: #0F172A !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  body * {
-    visibility: hidden;
+
+  /* Reset all ancestor containers that clip overflow */
+  #root,
+  #root > div,
+  main,
+  div[class*="overflow-"],
+  div[class*="h-full"],
+  div[class*="h-screen"],
+  .flex-1 {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
   }
-  #scorecard-print-area, #scorecard-print-area * {
-    visibility: visible;
+
+  /* Hide chrome/navigation UI */
+  aside,
+  header,
+  nav,
+  .no-print,
+  [data-no-print="true"],
+  button.no-print {
+    display: none !important;
   }
+
+  /* Multi-page Scorecard Container */
   #scorecard-print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
+    position: static !important;
+    display: block !important;
     width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
     box-shadow: none !important;
     border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    color: black !important;
+    overflow: visible !important;
   }
-  .no-print {
-    display: none !important;
+
+  /* Layout flow for print */
+  #scorecard-print-area .grid {
+    display: block !important;
   }
+
+  #scorecard-print-area .grid > * {
+    margin-bottom: 1.25rem !important;
+  }
+
+  /* Prevent card splitting across pages */
+  .print-avoid-break,
+  #scorecard-print-area .bg-white {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Start transcript on a clean new page */
+  .print-break-before {
+    break-before: page !important;
+    page-break-before: always !important;
+    margin-top: 1.5rem !important;
+  }
+
+  /* Guarantee transcript is fully unrolled and visible */
+  .scorecard-transcript-body,
   .print-always-visible {
     display: block !important;
     max-height: none !important;
+    height: auto !important;
     overflow: visible !important;
+  }
+
+  /* Individual dialogue turn styling for print */
+  .print-dialogue-turn {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 0.65rem !important;
   }
 }

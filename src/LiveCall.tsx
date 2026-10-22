@@ -378,6 +378,24 @@ const ElevenLabsCallView = ({
           const localBlob = new Blob(audioChunksRef.current, { type: mimeType });
           await saveAudio(currentCallId, localBlob);
           hasSavedAudio = true;
+
+          // Also sync with server storage so /api/audios/:id works permanently for PDF link
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const base64data = (reader.result as string)?.split(',')[1];
+            if (base64data) {
+              fetch('/api/audios/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  id: currentCallId,
+                  audioBase64: base64data,
+                  mimeType: localBlob.type || 'audio/webm'
+                })
+              }).catch(() => {});
+            }
+          };
+          reader.readAsDataURL(localBlob);
         } catch (err) {
           console.error("Failed to save local audio:", err);
         }

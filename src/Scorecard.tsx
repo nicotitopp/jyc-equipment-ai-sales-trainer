@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Award, ChevronUp, ChevronDown, Check, X, 
-  AlertTriangle, ThumbsUp, ThumbsDown, RotateCcw, FileText, Printer, ShieldCheck
+  AlertTriangle, ThumbsUp, ThumbsDown, RotateCcw, FileText, Printer, ShieldCheck,
+  Headphones, Download, ExternalLink
 } from 'lucide-react';
 import AudioPlayer from './AudioPlayer';
 
@@ -50,14 +51,53 @@ export default function Scorecard({
     text: t.text
   })) || [];
 
-  const effectiveAudioUrl = audioUrl || (conversationId ? `/api/elevenlabs/conversation-audio/${conversationId}` : undefined);
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const relativeAudioPath = audioUrl 
+    || (conversationId ? `/api/elevenlabs/conversation-audio/${conversationId}` : undefined)
+    || (audioId ? `/api/audios/${audioId}` : undefined);
+
+  const effectiveAudioUrl = relativeAudioPath;
+  const fullAudioDownloadUrl = relativeAudioPath 
+    ? (relativeAudioPath.startsWith('http') ? relativeAudioPath : `${origin}${relativeAudioPath}`)
+    : undefined;
+
   const isPassing = evaluation.score >= 70;
+
+  const handleDownloadPdf = () => {
+    // 1. Force transcript to be expanded in React DOM before printing
+    setShowTranscript(true);
+    document.body.classList.add('is-printing-pdf');
+
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove('is-printing-pdf');
+      }, 1000);
+    }, 150);
+  };
+
+  useEffect(() => {
+    const onBefore = () => {
+      setShowTranscript(true);
+      document.body.classList.add('is-printing-pdf');
+    };
+    const onAfter = () => {
+      document.body.classList.remove('is-printing-pdf');
+    };
+
+    window.addEventListener('beforeprint', onBefore);
+    window.addEventListener('afterprint', onAfter);
+    return () => {
+      window.removeEventListener('beforeprint', onBefore);
+      window.removeEventListener('afterprint', onAfter);
+    };
+  }, []);
 
   return (
     <div id="scorecard-print-area" className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-left text-slate-900">
       
       {/* Top Header Card */}
-      <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print-avoid-break">
         <div className="flex items-start sm:items-center gap-4">
           <div className={`p-3.5 rounded-2xl shrink-0 border ${
             isPassing 
@@ -89,7 +129,7 @@ export default function Scorecard({
 
         <div className="flex items-center gap-2.5 no-print shrink-0 w-full sm:w-auto">
           <button
-            onClick={() => window.print()}
+            onClick={handleDownloadPdf}
             className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition-colors cursor-pointer"
           >
             <Printer className="w-4 h-4 text-slate-500" />
@@ -105,7 +145,7 @@ export default function Scorecard({
         </div>
       </div>
 
-      {/* Audio Player Bar */}
+      {/* Interactive Audio Player Bar (Screen only) */}
       {(audioId || audioBlob || effectiveAudioUrl) && (
         <div className="no-print">
           <AudioPlayer 
@@ -115,6 +155,59 @@ export default function Scorecard({
             title="Call Recording"
             subtitle="Listen to the conversation to review your tone and responses"
           />
+        </div>
+      )}
+
+      {/* Audio Recording & Permanent Download Link (Prominent on screen and inside PDF) */}
+      {fullAudioDownloadUrl && (
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs print-avoid-break">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-200/60 flex items-center justify-center shrink-0">
+                <Headphones className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-display font-bold text-slate-900">
+                  Call Audio Recording
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Two-way audio dialogue between sales rep and prospect (MP3)
+                </p>
+              </div>
+            </div>
+
+            <div className="no-print">
+              <a
+                href={fullAudioDownloadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Audio (MP3)</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Dedicated Link for PDF Export & Printing */}
+          <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-1 text-xs">
+            <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+              <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+              Audio Download Link (Clickable in PDF):
+            </span>
+            <a
+              href={fullAudioDownloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline font-mono text-[11px] break-all select-all font-medium"
+            >
+              {fullAudioDownloadUrl}
+            </a>
+            <span className="text-[10px] text-slate-400 mt-0.5 print:text-slate-600">
+              Click the link above in this PDF or copy the URL into your browser to download the complete audio file.
+            </span>
+          </div>
         </div>
       )}
 
@@ -328,12 +421,12 @@ export default function Scorecard({
             </div>
           )}
 
-          {/* Transcripción completa */}
+          {/* Full Conversation Transcript (Forced onto Page 2+ in PDF and fully readable) */}
           {transcriptLines.length > 0 && (
-            <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs space-y-4">
+            <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs space-y-4 print-break-before print-avoid-break">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <span className="flex items-center gap-2 font-display font-bold text-slate-900 text-sm">
-                  <FileText className="w-4 h-4 text-slate-500" />
+                  <FileText className="w-4 h-4 text-blue-600" />
                   Full Conversation Transcript ({transcriptLines.length} turns)
                 </span>
                 <button
@@ -345,23 +438,28 @@ export default function Scorecard({
                 </button>
               </div>
 
-              <div className={`space-y-3 pt-1 max-h-[420px] overflow-y-auto print-always-visible ${showTranscript ? 'block' : 'hidden'}`}>
+              <div className={`scorecard-transcript-body space-y-3 pt-1 max-h-[460px] overflow-y-auto print-always-visible print:max-h-none print:overflow-visible ${showTranscript ? 'block' : 'hidden print:block'}`}>
                 {transcriptLines.map((msg: any, idx: number) => {
                   const isUser = msg.role === 'user' || msg.role === 'Trainee' || msg.role === 'Trainee (Sales Rep)' || msg.role === 'agent';
                   const roleLabel = isUser ? 'You (Sales Rep)' : 'Prospect';
                   return (
-                    <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm leading-relaxed ${
+                    <div key={idx} className={`print-dialogue-turn flex ${isUser ? 'justify-end print:justify-start' : 'justify-start'}`}>
+                      <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed border print:max-w-full print:w-full ${
                         isUser 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-slate-100 text-slate-800'
+                          ? 'bg-blue-600 text-white border-blue-600 print:bg-blue-50/70 print:text-slate-900 print:border-l-4 print:border-l-blue-600 print:border-slate-200' 
+                          : 'bg-slate-100 text-slate-800 border-slate-200 print:bg-slate-50 print:border-l-4 print:border-l-slate-400 print:border-slate-200'
                       }`}>
-                        <div className={`text-[11px] font-semibold mb-0.5 ${
-                          isUser ? 'text-blue-100' : 'text-slate-500'
-                        }`}>
-                          {roleLabel}
+                        <div className="flex items-center justify-between gap-2 mb-1 border-b border-white/20 print:border-slate-200 pb-1">
+                          <span className={`text-[11px] font-bold ${
+                            isUser ? 'text-blue-100 print:text-blue-800' : 'text-slate-600 print:text-slate-800'
+                          }`}>
+                            {roleLabel}
+                          </span>
+                          <span className="text-[10px] opacity-70 font-mono">
+                            Turn #{idx + 1}
+                          </span>
                         </div>
-                        <div>{msg.text}</div>
+                        <div className="whitespace-pre-wrap">{msg.text}</div>
                       </div>
                     </div>
                   );
