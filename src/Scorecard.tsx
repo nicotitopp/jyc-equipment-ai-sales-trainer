@@ -67,8 +67,7 @@ export default function Scorecard({
   const isPassing = evaluation.score >= 70;
 
   const effectiveDifficulty = difficulty 
-    || (evaluation as any)?.difficulty 
-    || (scenarioTitle && !scenarioTitle.toLowerCase().includes('audit') ? 'friendly' : undefined);
+    || (evaluation as any)?.difficulty;
 
   const difficultyConfig = effectiveDifficulty === 'hardcore'
     ? { label: 'Tough', badge: 'bg-rose-50 text-rose-700 border-rose-200', textClass: 'text-rose-700' }

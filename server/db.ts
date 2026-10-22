@@ -722,12 +722,26 @@ export async function getHistory(filter?: { role?: string; userId?: string; user
       query += ` ORDER BY timestamp DESC`;
 
       const res = await pool.query(query, params);
-      return res.rows.map(r => ({
-        ...r,
-        timestamp: Number(r.timestamp),
-        score: Number(r.score),
-        evaluation: typeof r.evaluation === 'string' ? JSON.parse(r.evaluation) : r.evaluation
-      }));
+      return res.rows.map(r => {
+        const evalObj = typeof r.evaluation === 'string' ? JSON.parse(r.evaluation) : r.evaluation;
+        return {
+          id: r.id,
+          userId: r.user_id,
+          userName: r.user_name,
+          userRole: r.user_role,
+          date: r.date,
+          timestamp: Number(r.timestamp),
+          type: r.type,
+          contactName: r.contact_name,
+          companyName: r.company_name,
+          score: Number(r.score),
+          evaluation: evalObj,
+          hasAudio: r.has_audio,
+          conversationId: r.conversation_id,
+          audioUrl: r.audio_url,
+          difficulty: evalObj?.difficulty || r.difficulty
+        };
+      });
     } catch (err) {
       console.error('[DB] Error during PG getHistory:', err);
     }
