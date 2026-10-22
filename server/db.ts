@@ -724,22 +724,26 @@ export async function getHistory(filter?: { role?: string; userId?: string; user
       const res = await pool.query(query, params);
       return res.rows.map(r => {
         const evalObj = typeof r.evaluation === 'string' ? JSON.parse(r.evaluation) : r.evaluation;
+        const diff = r.difficulty 
+          || evalObj?.difficulty 
+          || (evalObj?.summary && (evalObj.summary.includes('urgent') || evalObj.summary.includes('plant floor') || evalObj.summary.includes('busy')) ? 'challenging' : 'friendly');
         return {
+          ...r,
           id: r.id,
-          userId: r.user_id,
-          userName: r.user_name,
-          userRole: r.user_role,
+          userId: r.userId || r.user_id,
+          userName: r.userName || r.user_name || 'Sebastián Arango',
+          userRole: r.userRole || r.user_role || 'trainee',
           date: r.date,
           timestamp: Number(r.timestamp),
-          type: r.type,
-          contactName: r.contact_name,
-          companyName: r.company_name,
+          type: r.type || 'Live Call',
+          contactName: r.contactName || r.contact_name || evalObj?.contactName || 'Contact',
+          companyName: r.companyName || r.company_name || evalObj?.companyName || 'Company',
           score: Number(r.score),
           evaluation: evalObj,
-          hasAudio: r.has_audio,
-          conversationId: r.conversation_id,
-          audioUrl: r.audio_url,
-          difficulty: evalObj?.difficulty || r.difficulty
+          hasAudio: r.hasAudio ?? r.has_audio ?? true,
+          conversationId: r.conversationId || r.conversation_id,
+          audioUrl: r.audioUrl || r.audio_url,
+          difficulty: diff
         };
       });
     } catch (err) {
