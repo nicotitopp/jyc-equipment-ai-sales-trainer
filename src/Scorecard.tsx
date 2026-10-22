@@ -158,43 +158,27 @@ export default function Scorecard({
         </div>
       )}
 
-      {/* Audio Recording & Permanent Download Link (Prominent on screen and inside PDF) */}
+      {/* Audio Recording Download Link (PDF Export Only - Hidden on web screen) */}
       {fullAudioDownloadUrl && (
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs print-avoid-break">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-200/60 flex items-center justify-center shrink-0">
-                <Headphones className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-display font-bold text-slate-900">
-                  Call Audio Recording
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Two-way audio dialogue between sales rep and prospect (MP3)
-                </p>
-              </div>
+        <div className="hidden print:block print-only bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs print-avoid-break">
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 border border-blue-200/60 flex items-center justify-center shrink-0">
+              <Headphones className="w-4 h-4" />
             </div>
-
-            <div className="no-print">
-              <a
-                href={fullAudioDownloadUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                download
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download Audio (MP3)</span>
-              </a>
+            <div>
+              <h3 className="text-sm font-display font-bold text-slate-900">
+                Call Audio Recording (MP3)
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Two-way audio dialogue between sales rep and prospect
+              </p>
             </div>
           </div>
 
-          {/* Dedicated Link for PDF Export & Printing */}
-          <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-1 text-xs">
+          <div className="pt-2.5 border-t border-slate-100 flex flex-col gap-1 text-xs">
             <span className="font-semibold text-slate-700 flex items-center gap-1.5">
               <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
-              Audio Download Link (Clickable in PDF):
+              Download Audio Link (Clickable in PDF):
             </span>
             <a
               href={fullAudioDownloadUrl}
@@ -204,7 +188,7 @@ export default function Scorecard({
             >
               {fullAudioDownloadUrl}
             </a>
-            <span className="text-[10px] text-slate-400 mt-0.5 print:text-slate-600">
+            <span className="text-[10px] text-slate-500 mt-0.5">
               Click the link above in this PDF or copy the URL into your browser to download the complete audio file.
             </span>
           </div>

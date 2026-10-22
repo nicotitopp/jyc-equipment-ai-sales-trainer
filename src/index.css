@@ -123,8 +123,17 @@ body {
   animation: audio-pulse 0.9s ease-in-out 0.22s infinite;
 }
 
+/* Elements visible ONLY in print / PDF export (hidden on screen) */
+.print-only {
+  display: none !important;
+}
+
 /* Print styling for Scorecard PDF export */
 @media print {
+  .print-only {
+    display: block !important;
+  }
+
   @page {
     margin: 10mm 12mm;
     size: A4 portrait;
