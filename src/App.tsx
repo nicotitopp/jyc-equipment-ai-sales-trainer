@@ -117,7 +117,7 @@ export default function App() {
     contactName: string, 
     companyName: string, 
     type: 'Live Call' | 'Audio Upload',
-    options?: { id?: string; hasAudio?: boolean; conversationId?: string; audioUrl?: string }
+    options?: { id?: string; hasAudio?: boolean; conversationId?: string; audioUrl?: string; difficulty?: string }
   ) => {
     const newItem: HistoryItem = {
       id: options?.id || (Date.now().toString() + Math.random().toString().substring(2, 6)),
@@ -138,7 +138,8 @@ export default function App() {
       evaluation,
       hasAudio: options?.hasAudio ?? true,
       conversationId: options?.conversationId,
-      audioUrl: options?.audioUrl
+      audioUrl: options?.audioUrl,
+      difficulty: options?.difficulty || evaluation?.difficulty
     };
 
     setHistory(prev => {

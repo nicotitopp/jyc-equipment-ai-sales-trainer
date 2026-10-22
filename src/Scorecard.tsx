@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Award, ChevronUp, ChevronDown, Check, X, 
   AlertTriangle, ThumbsUp, ThumbsDown, RotateCcw, FileText, Printer, ShieldCheck,
-  Headphones, Download, ExternalLink
+  Headphones, Download, ExternalLink, Gauge
 } from 'lucide-react';
 import AudioPlayer from './AudioPlayer';
 
@@ -24,6 +24,7 @@ interface ScorecardProps {
     objectionsHandled: { objection: string; handledWell: boolean; feedback: string }[];
     recommendations: string[];
     transcript?: { role: string; text: string }[];
+    difficulty?: string;
   };
   onReset: () => void;
   customTranscripts?: { id: number | string; role: string; text: string }[];
@@ -32,6 +33,7 @@ interface ScorecardProps {
   audioUrl?: string;
   conversationId?: string;
   scenarioTitle?: string;
+  difficulty?: string;
 }
 
 export default function Scorecard({ 
@@ -42,7 +44,8 @@ export default function Scorecard({
   audioBlob,
   audioUrl,
   conversationId,
-  scenarioTitle
+  scenarioTitle,
+  difficulty
 }: ScorecardProps) {
   const [showTranscript, setShowTranscript] = useState(false);
 
@@ -62,6 +65,17 @@ export default function Scorecard({
     : undefined;
 
   const isPassing = evaluation.score >= 70;
+
+  const effectiveDifficulty = difficulty || (evaluation as any)?.difficulty;
+  const difficultyConfig = effectiveDifficulty === 'hardcore'
+    ? { label: 'Tough', badge: 'bg-rose-50 text-rose-700 border-rose-200' }
+    : effectiveDifficulty === 'challenging'
+      ? { label: 'Busy', badge: 'bg-amber-50 text-amber-700 border-amber-200' }
+      : effectiveDifficulty === 'friendly'
+        ? { label: 'Receptive', badge: 'bg-blue-50 text-blue-700 border-blue-200' }
+        : effectiveDifficulty
+          ? { label: effectiveDifficulty, badge: 'bg-slate-50 text-slate-700 border-slate-200' }
+          : null;
 
   const handleDownloadPdf = () => {
     // 1. Force transcript to be expanded in React DOM before printing
@@ -118,6 +132,13 @@ export default function Scorecard({
               }`}>
                 {isPassing ? 'Objective Achieved' : 'Opportunity to Improve'}
               </span>
+
+              {difficultyConfig && (
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${difficultyConfig.badge}`}>
+                  <Gauge className="w-3.5 h-3.5" />
+                  <span>Difficulty: {difficultyConfig.label}</span>
+                </span>
+              )}
             </div>
             <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
               {scenarioTitle 

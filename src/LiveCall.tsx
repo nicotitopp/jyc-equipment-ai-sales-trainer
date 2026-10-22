@@ -512,6 +512,7 @@ Output strictly valid JSON with this exact schema:
 
       const fullEvaluation = {
         ...parsedData,
+        difficulty: difficulty,
         transcript: parsedData.transcript || normalizedTranscript
       };
 
@@ -525,7 +526,8 @@ Output strictly valid JSON with this exact schema:
           id: currentCallId || undefined,
           hasAudio: hasSavedAudio,
           conversationId: currentConversationId || undefined,
-          audioUrl: currentConversationId ? `/api/elevenlabs/conversation-audio/${currentConversationId}` : undefined
+          audioUrl: currentConversationId ? `/api/elevenlabs/conversation-audio/${currentConversationId}` : undefined,
+          difficulty: difficulty
         }
       );
     } catch (err: any) {
@@ -582,6 +584,7 @@ Output strictly valid JSON with this exact schema:
           audioId={currentCallId || undefined}
           conversationId={currentConversationId || undefined}
           scenarioTitle={`${activeScenario.title} — ${companyName}`}
+          difficulty={difficulty}
         />
       </div>
     );

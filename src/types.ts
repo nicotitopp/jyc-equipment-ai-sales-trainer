@@ -26,4 +26,5 @@ export interface HistoryItem {
   hasAudio?: boolean;
   conversationId?: string;
   audioUrl?: string;
+  difficulty?: 'friendly' | 'challenging' | 'hardcore' | string;
 }

@@ -80,6 +80,7 @@ export default function HistoryDashboard({
           audioUrl={selectedItem.audioUrl}
           conversationId={selectedItem.conversationId}
           scenarioTitle={`${selectedItem.companyName} (${selectedItem.contactName})`}
+          difficulty={selectedItem.difficulty || selectedItem.evaluation?.difficulty}
         />
       </div>
     );
@@ -399,6 +400,16 @@ export default function HistoryDashboard({
                         <span className="text-xs text-slate-500">
                           · {item.type === 'Live Call' ? 'Live voice call' : 'Uploaded recording'}
                         </span>
+
+                        {(item.difficulty || item.evaluation?.difficulty) && (
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                            {item.difficulty === 'hardcore' || item.evaluation?.difficulty === 'hardcore'
+                              ? 'Tough'
+                              : item.difficulty === 'challenging' || item.evaluation?.difficulty === 'challenging'
+                                ? 'Busy'
+                                : 'Receptive'}
+                          </span>
+                        )}
 
                         {(item.hasAudio ?? true) && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
