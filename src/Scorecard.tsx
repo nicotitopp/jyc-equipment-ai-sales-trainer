@@ -66,15 +66,18 @@ export default function Scorecard({
 
   const isPassing = evaluation.score >= 70;
 
-  const effectiveDifficulty = difficulty || (evaluation as any)?.difficulty;
+  const effectiveDifficulty = difficulty 
+    || (evaluation as any)?.difficulty 
+    || (scenarioTitle && !scenarioTitle.toLowerCase().includes('audit') ? 'friendly' : undefined);
+
   const difficultyConfig = effectiveDifficulty === 'hardcore'
-    ? { label: 'Tough', badge: 'bg-rose-50 text-rose-700 border-rose-200' }
+    ? { label: 'Tough', badge: 'bg-rose-50 text-rose-700 border-rose-200', textClass: 'text-rose-700' }
     : effectiveDifficulty === 'challenging'
-      ? { label: 'Busy', badge: 'bg-amber-50 text-amber-700 border-amber-200' }
+      ? { label: 'Busy', badge: 'bg-amber-50 text-amber-700 border-amber-200', textClass: 'text-amber-700' }
       : effectiveDifficulty === 'friendly'
-        ? { label: 'Receptive', badge: 'bg-blue-50 text-blue-700 border-blue-200' }
+        ? { label: 'Receptive', badge: 'bg-blue-50 text-blue-700 border-blue-200', textClass: 'text-blue-700' }
         : effectiveDifficulty
-          ? { label: effectiveDifficulty, badge: 'bg-slate-50 text-slate-700 border-slate-200' }
+          ? { label: effectiveDifficulty, badge: 'bg-slate-50 text-slate-700 border-slate-200', textClass: 'text-slate-800' }
           : null;
 
   const handleDownloadPdf = () => {
@@ -264,6 +267,15 @@ export default function Scorecard({
                 <span className="text-xs text-slate-400 font-medium">out of 100</span>
               </div>
             </div>
+
+            {/* Selected Difficulty Badge in Overall Score Card */}
+            {difficultyConfig && (
+              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border bg-slate-50 border-slate-200">
+                <Gauge className="w-3.5 h-3.5 text-slate-500" />
+                <span className="text-slate-500 font-medium">Difficulty:</span>
+                <span className={`font-bold ${difficultyConfig.textClass}`}>{difficultyConfig.label}</span>
+              </div>
+            )}
 
             <div className="w-full border-t border-slate-100 pt-4 mt-4 text-left space-y-1.5">
               <div className="text-xs font-semibold text-slate-800">Executive Summary</div>
