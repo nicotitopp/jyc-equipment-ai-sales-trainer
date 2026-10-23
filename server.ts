@@ -141,8 +141,8 @@ Verify the following items and build the checklist of what details the trainee g
 - kpOpening: Did they use the correct script opening with the KP (asked if it was a bad time, introduced JYC Equipment, and checked if they have any equipment for sale right now or coming up this year)?
 - equipmentQualification: IF the prospect has equipment for sale: did they ask the qualification questions (Make, Model, Year, Condition/Repairs) for the machine mentioned by the prospect? (If no equipment was available, mark as true if they confirmed this).
 - futureReference: IF the prospect does NOT have equipment for sale: did they ask the reference questions to gather company information (process for surplus, if they buy used, branches, loaders/forklifts used)? (If equipment was available, mark as true).
-- priceAndAssets: Did they ask for a target price and request pictures of the machine, the data plate, and the hour meter?
-- objectionHandling: Did they address and try to overcome the prospect's objections (e.g., they prefer auctions, want to trade-in, have bank leases, already sold, or want a price first)?
+- priceAndAssets: Did they request pictures of the machine, the data plate, and the hour meter, or explain JYC's 24-hour formal appraisal process? (NOTE: The trainee should NEVER provide a ballpark or premature cash offer on the phone. Award TRUE if they requested photos/data plate and explained that JYC evaluates with specs before submitting an offer, or asked if the company has an internal asking price).
+- objectionHandling: Did they address and try to overcome the prospect's objections (e.g., they prefer auctions, want to trade-in, have bank leases, already sold, or demand a price first)?
 - nextStepsSecure: Did they successfully get the prospect's personal contact details (WhatsApp or email) and establish clear next steps for a follow-up or callback?
 
 You must return ONLY a JSON object with this exact structure:

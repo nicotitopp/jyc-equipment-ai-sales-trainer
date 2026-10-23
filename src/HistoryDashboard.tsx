@@ -95,7 +95,8 @@ export default function HistoryDashboard({
     ? Math.round((passedCalls / totalCalls) * 100) 
     : 0;
 
-  const chartItems = [...filteredHistory].slice(-10);
+  // Take the 10 most recent calls, and order them chronologically (oldest to newest) from left to right
+  const chartItems = [...filteredHistory].slice(0, 10).reverse();
 
   const handleClear = () => {
     if (window.confirm("Do you want to permanently delete call history?")) {
@@ -341,7 +342,7 @@ export default function HistoryDashboard({
                   className="flex-1 flex flex-col items-center group h-full justify-end cursor-pointer" 
                   onClick={() => setSelectedItem(item)}
                 >
-                  <span className="text-xs font-mono font-bold text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity mb-1">
+                  <span className="text-[11px] font-mono font-bold text-slate-700 mb-1">
                     {item.score}
                   </span>
                   <div 

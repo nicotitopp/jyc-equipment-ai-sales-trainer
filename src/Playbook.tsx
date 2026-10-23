@@ -140,7 +140,7 @@ export default function Playbook() {
                 { n: '4', title: 'Tonnage or capacity', desc: 'What is the tonnage or capacity? (e.g. 500 Ton, 1000 Ton, 45-Ton, or 30k lbs)' },
                 { n: '5', title: 'Year of manufacture & hours', desc: 'Do you know what year it is and approximate hours?' },
                 { n: '6', title: 'Condition & repairs', desc: 'Is it currently running or does it need any major repairs?' },
-                { n: '7', title: 'Target price & photos', desc: 'Do you have a price in mind for it? / Could you send me pictures including the data plate and control panel?' }
+                { n: '7', title: 'Photo request & 24h appraisal', desc: 'Could you send me pictures of the data plate and hour meter? Do you have an internal asking price, or would you prefer our formal cash offer within 24 hours?' }
               ].map((q) => (
                 <div key={q.n} className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-start gap-3">
                   <span className="w-6 h-6 rounded-lg bg-slate-900 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
@@ -281,9 +281,9 @@ export default function Playbook() {
         {activeTab === 'objections' && (
           <div className="space-y-3">
             <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1.5">
-              <p className="font-semibold text-slate-900 text-xs sm:text-sm">"Tell me your offer first / Give me a price"</p>
+              <p className="font-semibold text-slate-900 text-xs sm:text-sm">"Tell me your offer first / Give me a ballpark"</p>
               <p className="text-slate-600 text-xs">
-                "We can certainly send an inspector to review the equipment and prepare a formal cash offer. But to avoid wasting your time if it's not a model we buy, could you first confirm the make, model, tonnage, and year?"
+                "We never guess or throw out numbers without seeing the data plate and machine hours, because we don't want to mislead you. If you can snap 2 quick photos of the data plate and hour meter, our purchasing team will deliver a formal, guaranteed cash offer within 24 hours."
               </p>
             </div>
 

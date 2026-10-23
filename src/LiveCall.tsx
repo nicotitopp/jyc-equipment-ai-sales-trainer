@@ -438,6 +438,19 @@ Difficulty setting: ${difficulty}
 Dialogue Transcript:
 ${dialogueText}
 
+CRITICAL RULES FOR AUDITING & SCORING:
+1. BALLPARK / PRICING RULE (MANDATORY): In professional enterprise heavy machinery acquisition, the sales rep should NEVER guess, speculate, or quote a premature cash "ballpark" over the phone without inspecting the data plate, serial numbers, hours, and machine condition.
+   - If the prospect demands a price or ballpark estimate, the professional response from the trainee is to deflect firmly and explain that JYC's purchasing team requires technical specs and photos of the data plate to prepare a binding cash offer within 24 hours.
+   - DO NOT penalize the trainee under any circumstances for refusing to throw out a ballpark or price on the call. Awarding full marks for handling this professionally by focusing on obtaining photos and machine data.
+2. CHECKLIST CRITERIA:
+   - "gatekeeperBypass": Did the trainee introduce themselves professionally and bypass the operator/receptionist to reach the Key Person (or confirm a direct line)?
+   - "kpOpening": Did they introduce JYC Equipment clearly (nationwide cash buyer of surplus machinery) and inquire about surplus equipment coming offline?
+   - "equipmentQualification": If equipment was mentioned, did they ask essential qualifying questions (make, model, year, hours, condition/repairs)? (If no equipment available, mark true).
+   - "futureReference": If no equipment available today, did they ask future reference questions (renewal cycle, other facilities)? (If equipment available, mark true).
+   - "priceAndAssets": Did the trainee request pictures of the machine, the data plate, and the hour meter, explain JYC's 24-hour formal appraisal process, or ask if the company has an internal asking price? (Award TRUE if photos/data plate were requested or the 24h appraisal process was stated).
+   - "objectionHandling": Did the trainee address common friction points (OEM trade-in preference, auction, lease, or reluctance to share info)?
+   - "nextStepsSecure": Did the trainee secure the prospect's direct email/WhatsApp and establish a specific follow-up commitment?
+
 Please write all output critique fields (summary, strengths, weaknesses, objections feedback, recommendations) in English.
 
 Output strictly valid JSON with this exact schema:
@@ -870,7 +883,7 @@ Output strictly valid JSON with this exact schema:
                       '4. Capacity or tonnage (e.g. 500T, 45T, 30,000 lbs).',
                       '5. Year of manufacture and approximate hours.',
                       '6. Current condition (is it running or does it require repairs?).',
-                      '7. Expected price and photo request (including data plate and hour meter).'
+                      '7. Photo request (including data plate and hour meter) & internal asking price (if any).'
                     ].map((q, i) => (
                       <li key={i} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 font-medium text-slate-800">
                         {q}
@@ -883,9 +896,9 @@ Output strictly valid JSON with this exact schema:
               {scriptHelperTab === 'objections' && (
                 <div className="space-y-3">
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                    <div className="font-semibold text-slate-900">"Tell me what you offer first"</div>
+                    <div className="font-semibold text-slate-900">"Give me a price / What's your ballpark?"</div>
                     <p className="text-slate-600">
-                      Explain that to avoid wasting their time, you need the exact make, model, year, and condition before preparing a formal cash offer.
+                      Never guess or give a blind number over the phone. Explain that JYC's valuation team requires photos of the data plate and hour meter to issue a formal written cash offer in 24 hours.
                     </p>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">

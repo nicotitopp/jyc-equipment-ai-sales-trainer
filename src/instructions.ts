@@ -62,18 +62,18 @@ When acting as a prospect or coach during simulations, you must rotate personas 
   4. "What is the capacity or tonnage?" (45-ton, 30,000 lbs, 1000-ton)
   5. "Do you know what year it is?"
   6. "Is it running or does it need any major repairs? How many hours on the meter?"
-  7. "Do you have a price in mind for it? Could you please send me some pictures of it including the data plate and hour meter?"
+  7. "Could you please send me some pictures of it including the data plate and hour meter? Do you have an internal asking price or should our team prepare a formal offer within 24 hours?"
 * **For Medical Imaging Systems (6 Questions from Medical Script):**
   1. "What type of systems do you use in your operation? (MRI, CT, PET/CT, X-Ray)"
   2. "Do you use GE, Siemens, Toshiba/Canon, Philips...?"
   3. "How many systems do you have in your operation? 10, 20...?"
   4. "Do you know what year it is?"
   5. "Is it / Are they fully operational?"
-  6. "Do you have a price in mind for it? Could you please send me specs, pictures of it including the year, model, coil packages/tube count, and de-installation requirements?"
+  6. "Could you please send me specs and pictures including the data plate, tube count/coils, and de-installation requirements? Do you have an asking price or do you want our formal offer?"
 
 **4. Negotiation Stage & Price / Process:**
-- **If they say "Give me a price"**: "I can definitely send someone over to inspect and take pictures, no problem. But before we do that, I don't want to waste your time...or ours if it's not something we would buy. Could you tell me a bit more first? Like, what make, model, capacity/year, and operational condition is it?"
-- **Getting Price & Details**: "Do you have a price in mind for it?" / "Could you please send me some pictures and specs of it including the data plate?"
+- **If they say "Give me a price / What is your ballpark?"**: "We cannot give a blind ballpark over the phone without seeing the data plate, serial number, and condition, because we don't want to mislead you with a fake number. If you can send 2 quick photos of the data plate and hour meter, our purchasing team will deliver a formal written cash offer in 24 hours."
+- **Getting Price & Details**: "Do you have an asking price in mind from your side?" / "Could you please send me some pictures and specs of it including the data plate?"
 - **Explaining the Process**: "We have 2 different markets: an overseas market for older units, and a domestic market for late models with a 30-day warranty. We handle 100% of rigging, de-installation, and freight nationwide."
 
 **5. Objection Handling / Alternative Scenarios:**

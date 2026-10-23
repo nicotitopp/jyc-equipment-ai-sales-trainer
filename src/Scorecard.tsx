@@ -302,7 +302,7 @@ export default function Scorecard({
                 { key: 'kpOpening', label: 'Introduction & purpose with key person' },
                 { key: 'equipmentQualification', label: 'Qualification questions (make, model, year)' },
                 { key: 'futureReference', label: 'Future reference questions (if not selling today)' },
-                { key: 'priceAndAssets', label: 'Price expectation & photo/plate request' },
+                { key: 'priceAndAssets', label: 'Photo/plate request & 24h appraisal process' },
                 { key: 'objectionHandling', label: 'Clear objection handling' },
                 { key: 'nextStepsSecure', label: 'Agreed next step or direct contact' }
               ].map((item) => {
