@@ -157,8 +157,10 @@ const ElevenLabsCallView = ({
     setContactName(defaults.contact);
   }, [industry, language]);
 
-  // Evaluation States
+  // Evaluation & Disconnection States
   const [wasConnected, setWasConnected] = useState(false);
+  const [unexpectedDisconnect, setUnexpectedDisconnect] = useState(false);
+  const userEndedCallRef = useRef(false);
   const [evaluating, setEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<any>(null);
   const [showEvaluation, setShowEvaluation] = useState(false);
@@ -175,6 +177,7 @@ const ElevenLabsCallView = ({
   const conversation = useConversation({
     onConnect: ({ conversationId }: { conversationId?: string } = {}) => {
       setConnectionError(null);
+      setUnexpectedDisconnect(false);
       if (conversationId) {
         setCurrentConversationId(conversationId);
       }
@@ -195,29 +198,44 @@ const ElevenLabsCallView = ({
   const isConnected = conversation.status === "connected";
   const isConnecting = conversation.status === "connecting";
 
-  // Call timer effect
+  // Call timer & WebSocket keep-alive effect (prevents 60s inactivity disconnect code 1002 when muted or thinking)
   useEffect(() => {
     let interval: any;
+    let keepAliveInterval: any;
     if (isConnected) {
       interval = setInterval(() => {
         setCallDuration(prev => prev + 1);
       }, 1000);
-    } else {
+      keepAliveInterval = setInterval(() => {
+        try {
+          (conversation as any).sendUserActivity?.();
+        } catch {}
+      }, 20000);
+    } else if (!unexpectedDisconnect) {
       setCallDuration(0);
     }
-    return () => clearInterval(interval);
-  }, [isConnected]);
+    return () => {
+      clearInterval(interval);
+      clearInterval(keepAliveInterval);
+    };
+  }, [isConnected, unexpectedDisconnect]);
 
-  // Watch for session ending to trigger evaluation automatically
+  // Watch for session ending: distinguish between voluntary End Call and unexpected drop
   useEffect(() => {
     if (isConnected) {
       setWasConnected(true);
+      setUnexpectedDisconnect(false);
       setEvaluation(null);
       setShowEvaluation(false);
     } else if (wasConnected && !isConnected && conversation.status === "disconnected") {
       setWasConnected(false);
-      if (transcripts.length > 0) {
-        triggerEvaluation();
+      if (userEndedCallRef.current) {
+        userEndedCallRef.current = false;
+        if (transcripts.length > 0) {
+          triggerEvaluation();
+        }
+      } else if (transcripts.length > 0) {
+        setUnexpectedDisconnect(true);
       }
     }
   }, [isConnected, conversation.status, wasConnected, transcripts.length]);
@@ -231,6 +249,9 @@ const ElevenLabsCallView = ({
   const handleToggleMute = () => {
     const nextMuted = !conversation.isMuted;
     conversation.setMuted(nextMuted);
+    try {
+      (conversation as any).sendUserActivity?.();
+    } catch {}
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getAudioTracks().forEach(track => {
         track.enabled = !nextMuted;
@@ -240,6 +261,8 @@ const ElevenLabsCallView = ({
 
   const handleStartCall = async () => {
     try {
+      userEndedCallRef.current = false;
+      setUnexpectedDisconnect(false);
       setConnectionError(null);
       setTranscripts([]);
       const callId = Date.now().toString() + Math.random().toString().substring(2, 6);
@@ -247,38 +270,10 @@ const ElevenLabsCallView = ({
       setCurrentConversationId(null);
       audioChunksRef.current = [];
 
-      const audioConstraints = {
-        echoCancellation: true,
-        noiseSuppression: noiseSuppressionEnabled,
-        autoGainControl: true,
-      };
-
-      // Request microphone access & setup local recording
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
-        mediaStreamRef.current = stream;
-
-        let options: MediaRecorderOptions = { mimeType: 'audio/webm' };
-        if (!MediaRecorder.isTypeSupported('audio/webm')) {
-          if (MediaRecorder.isTypeSupported('audio/mp4')) {
-            options = { mimeType: 'audio/mp4' };
-          } else {
-            options = {};
-          }
-        }
-        const mediaRecorder = new MediaRecorder(stream, options);
-        mediaRecorderRef.current = mediaRecorder;
-
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-          }
-        };
-
-        mediaRecorder.start(250);
-      } catch (micErr) {
-        console.warn("MediaRecorder mic access error:", micErr);
-      }
+      // Note: Do not open a duplicate parallel getUserMedia + MediaRecorder stream here,
+      // as competing microphone streams on Windows USB/Bluetooth headsets can freeze
+      // audio packets to ElevenLabs and trigger a 60s inactivity disconnect.
+      // Full two-way call audio is automatically retrieved from ElevenLabs upon call completion.
 
       const greeting = language === 'English'
         ? `Good morning, thank you for calling ${companyName}. How can I help you?`
@@ -332,6 +327,8 @@ const ElevenLabsCallView = ({
 
   const handleEndCall = async () => {
     try {
+      userEndedCallRef.current = true;
+      setUnexpectedDisconnect(false);
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
       }
@@ -341,10 +338,15 @@ const ElevenLabsCallView = ({
       await conversation.endSession();
     } catch (err) {
       console.error("End call error:", err);
+      if (transcripts.length > 0) {
+        triggerEvaluation();
+      }
     }
   };
 
   const handleResetCall = () => {
+    userEndedCallRef.current = false;
+    setUnexpectedDisconnect(false);
     setShowEvaluation(false);
     setEvaluation(null);
     setTranscripts([]);
@@ -426,9 +428,8 @@ const ElevenLabsCallView = ({
     try {
       const dialogueText = transcripts.map(t => `${t.role === 'user' ? 'Trainee' : 'Prospect'}: ${t.text}`).join('\n');
 
-      const prompt = `You are an expert sales performance auditor specializing in heavy industrial machinery acquisitions for JYC Equipment.
-Audit the following live sales call between our trainee and a prospect.
-Evaluate if the trainee adhered strictly to the JYC equipment buying playbook.
+      const prompt = `You are an expert commercial performance auditor specializing in industrial heavy machinery acquisitions and sales for JYC Equipment / JYC Medical.
+Audit the following live sales call between our salesperson (Trainee) and an industrial decision-maker (Prospect).
 
 Language spoken in call: ${language}
 Target Company: ${companyName}
@@ -439,41 +440,53 @@ Dialogue Transcript:
 ${dialogueText}
 
 CRITICAL RULES FOR AUDITING & SCORING:
-1. BALLPARK / PRICING RULE (MANDATORY): In professional enterprise heavy machinery acquisition, the sales rep should NEVER guess, speculate, or quote a premature cash "ballpark" over the phone without inspecting the data plate, serial numbers, hours, and machine condition.
-   - If the prospect demands a price or ballpark estimate, the professional response from the trainee is to deflect firmly and explain that JYC's purchasing team requires technical specs and photos of the data plate to prepare a binding cash offer within 24 hours.
-   - DO NOT penalize the trainee under any circumstances for refusing to throw out a ballpark or price on the call. Awarding full marks for handling this professionally by focusing on obtaining photos and machine data.
-2. CHECKLIST CRITERIA:
-   - "gatekeeperBypass": Did the trainee introduce themselves professionally and bypass the operator/receptionist to reach the Key Person (or confirm a direct line)?
-   - "kpOpening": Did they introduce JYC Equipment clearly (nationwide cash buyer of surplus machinery) and inquire about surplus equipment coming offline?
-   - "equipmentQualification": If equipment was mentioned, did they ask essential qualifying questions (make, model, year, hours, condition/repairs)? (If no equipment available, mark true).
-   - "futureReference": If no equipment available today, did they ask future reference questions (renewal cycle, other facilities)? (If equipment available, mark true).
-   - "priceAndAssets": Did the trainee request pictures of the machine, the data plate, and the hour meter, explain JYC's 24-hour formal appraisal process, or ask if the company has an internal asking price? (Award TRUE if photos/data plate were requested or the 24h appraisal process was stated).
-   - "objectionHandling": Did the trainee address common friction points (OEM trade-in preference, auction, lease, or reluctance to share info)?
-   - "nextStepsSecure": Did the trainee secure the prospect's direct email/WhatsApp and establish a specific follow-up commitment?
+1. EVIDENCE-BASED EVALUATION (MANDATORY):
+   - Every score, strength, weakness, and objection critique MUST be backed by concrete, observable examples from the conversation transcript.
+   - Do NOT award a high score simply because the prospect ended up showing interest or agreeing to a next step; evaluate the actual quality, structure, and commercial rigor demonstrated by the salesperson.
+2. BUYING VS. SELLING OPPORTUNITY DETECTION:
+   - Evaluate whether the salesperson properly detected and managed an opportunity to BUY surplus equipment from the prospect, an opportunity to SELL/OFFER JYC machinery to the prospect, or both (cross-selling / pivoting).
+3. BALLPARK / PRICING RULE WHEN ACQUIRING EQUIPMENT:
+   - When the trainee is buying surplus equipment from the prospect, they should NEVER guess or quote a premature blind cash "ballpark" over the phone without inspecting the data plate, serial numbers, hours, and machine condition. Deflecting firmly and explaining JYC's 24-hour formal appraisal process upon receiving data plate/hour meter photos earns full marks.
+   - When the trainee is offering/selling a JYC machine to the prospect, evaluate how clearly they presented the machine's specs, condition, hours, warranty, availability, and price justification.
+4. 10 OBSERVABLE COMMERCIAL EVALUATION CRITERIA (CHECKLIST):
+   Evaluate each of the following 10 criteria as true/false based on observable behavior in the call:
+   - "openingAndPresentation": 1. Professional opening, clear identification, and effective gatekeeper navigation.
+   - "attentionGrabbing": 2. Ability to earn and hold the decision-maker's attention with a relevant commercial hook.
+   - "needsIdentification": 3. Identification of the prospect's operational situation, fleet needs, or surplus disposition plans.
+   - "activeListeningAndQuestions": 4. Active listening, continuity across turns, and asking relevant qualification/discovery questions without repeating already-given info.
+   - "proposalClarity": 5. Clarity of the machinery proposal (whether explaining JYC's acquisition process or presenting a specific machine offer with clear specs/terms).
+   - "commercialValueArgumentation": 6. Argumentation of commercial value (e.g., higher net cash than dealer trade-in, 24h payment, 100% turnkey rigging/freight, 0% commission, or 30-day warranty/financing on sales).
+   - "objectionHandling": 7. Effective, evidence-backed handling of contextual objections (price, need, condition, trust, timing, current supplier/dealer, or logistics).
+   - "negotiationWithoutPressure": 8. Ability to negotiate and advance the conversation professionally without exerting excessive or artificial pressure.
+   - "unexpectedOpportunities": 9. Detection and leveraging of unexpected commercial opportunities (identifying surplus units, future renewal cycles, or pivoting between buying and selling when appropriate).
+   - "closingAndNextStep": 10. Clear closing and definition of a concrete next step (securing direct email/WhatsApp, scheduling inspection/photos, or sending a formal quote).
 
-Please write all output critique fields (summary, strengths, weaknesses, objections feedback, recommendations) in English.
+Please write all output critique fields (summary, strengths, weaknesses, objections feedback, recommendations) in English, citing brief examples from the conversation.
 
 Output strictly valid JSON with this exact schema:
 {
   "score": number, // 0 to 100
   "contactName": "${contactName}",
   "companyName": "${companyName}",
-  "summary": "Executive summary in English...",
-  "strengths": ["Strength 1", "Strength 2"],
-  "weaknesses": ["Improvement area 1", "Improvement area 2"],
+  "summary": "Executive summary in English (include whether buying/selling opportunities were properly detected and cite concrete examples)...",
+  "strengths": ["Strength 1 backed by call example", "Strength 2 backed by call example"],
+  "weaknesses": ["Improvement area 1 backed by call example", "Improvement area 2 backed by call example"],
   "checklist": {
-    "gatekeeperBypass": boolean,
-    "kpOpening": boolean,
-    "equipmentQualification": boolean,
-    "futureReference": boolean,
-    "priceAndAssets": boolean,
+    "openingAndPresentation": boolean,
+    "attentionGrabbing": boolean,
+    "needsIdentification": boolean,
+    "activeListeningAndQuestions": boolean,
+    "proposalClarity": boolean,
+    "commercialValueArgumentation": boolean,
     "objectionHandling": boolean,
-    "nextStepsSecure": boolean
+    "negotiationWithoutPressure": boolean,
+    "unexpectedOpportunities": boolean,
+    "closingAndNextStep": boolean
   },
   "objectionsHandled": [
-    { "objection": "Objection name", "handledWell": boolean, "feedback": "Constructive feedback" }
+    { "objection": "Objection raised", "handledWell": boolean, "feedback": "Constructive feedback with example from the call" }
   ],
-  "recommendations": ["Recommendation 1", "Recommendation 2"]
+  "recommendations": ["Actionable recommendation 1", "Actionable recommendation 2"]
 }`;
 
       let response;
@@ -551,13 +564,16 @@ Output strictly valid JSON with this exact schema:
         strengths: [],
         weaknesses: [err.message],
         checklist: {
-          gatekeeperBypass: false,
-          kpOpening: false,
-          equipmentQualification: false,
-          futureReference: false,
-          priceAndAssets: false,
+          openingAndPresentation: false,
+          attentionGrabbing: false,
+          needsIdentification: false,
+          activeListeningAndQuestions: false,
+          proposalClarity: false,
+          commercialValueArgumentation: false,
           objectionHandling: false,
-          nextStepsSecure: false
+          negotiationWithoutPressure: false,
+          unexpectedOpportunities: false,
+          closingAndNextStep: false
         },
         objectionsHandled: [],
         recommendations: ["Check your connection and try repeating the call."]
@@ -604,7 +620,7 @@ Output strictly valid JSON with this exact schema:
   }
 
   // ACTIVE / CONNECTING CALL STUDIO VIEW
-  if (isConnected || isConnecting) {
+  if (isConnected || isConnecting || unexpectedDisconnect) {
     return (
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden bg-[#F4F6F9]">
         
@@ -638,11 +654,17 @@ Output strictly valid JSON with this exact schema:
               {/* Connection status & timer */}
               <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/90 border border-slate-700">
-                  <span className={`w-2 h-2 rounded-full ${isConnecting ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
+                  <span className={`w-2 h-2 rounded-full ${
+                    unexpectedDisconnect
+                      ? 'bg-red-400'
+                      : isConnecting
+                        ? 'bg-amber-400 animate-ping'
+                        : 'bg-emerald-400 animate-pulse'
+                  }`} />
                   <span className="text-xs font-medium text-slate-200">
-                    {isConnecting ? 'Connecting...' : 'In call'}
+                    {unexpectedDisconnect ? 'Line interrupted' : isConnecting ? 'Connecting...' : 'In call'}
                   </span>
-                  {isConnected && (
+                  {(isConnected || unexpectedDisconnect) && (
                     <span className="text-xs font-mono font-semibold text-white pl-1 border-l border-slate-700">
                       {formatDuration(callDuration)}
                     </span>
@@ -653,7 +675,42 @@ Output strictly valid JSON with this exact schema:
 
             {/* Center Voice Presence Indicator */}
             <div className="py-7 flex flex-col items-center justify-center text-center">
-              {isConnecting ? (
+              {unexpectedDisconnect ? (
+                <div className="space-y-4 max-w-md mx-auto">
+                  <div className="w-14 h-14 rounded-full bg-amber-500/15 border border-amber-500/40 flex items-center justify-center mx-auto text-amber-400">
+                    <AlertCircle className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <p className="text-base font-display font-semibold text-white">
+                      The voice connection was interrupted
+                    </p>
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                      Your conversation transcript ({transcripts.length} turns) has been preserved. You can evaluate the call up to this point or start a new session.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUnexpectedDisconnect(false);
+                        triggerEvaluation();
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Evaluate conversation so far</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleResetCall}
+                      className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <PhoneCall className="w-4 h-4" />
+                      <span>Start new call</span>
+                    </button>
+                  </div>
+                </div>
+              ) : isConnecting ? (
                 <div className="space-y-3">
                   <div className="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto">
                     <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
@@ -718,54 +775,56 @@ Output strictly valid JSON with this exact schema:
             </div>
 
             {/* Bottom Call Controls Bar */}
-            <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-center sm:justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={handleToggleMute}
-                  disabled={!isConnected}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 ${
-                    conversation.isMuted
-                      ? 'bg-red-500/20 text-red-200 border border-red-500/40 hover:bg-red-500/30'
-                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
-                  }`}
-                >
-                  {conversation.isMuted ? (
-                    <>
-                      <MicOff className="w-4 h-4 text-red-400" />
-                      <span>Unmute microphone</span>
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-4 h-4 text-emerald-400" />
-                      <span>Mute microphone</span>
-                    </>
-                  )}
-                </button>
+            {!unexpectedDisconnect && (
+              <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-center sm:justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={handleToggleMute}
+                    disabled={!isConnected}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 ${
+                      conversation.isMuted
+                        ? 'bg-red-500/20 text-red-200 border border-red-500/40 hover:bg-red-500/30'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                    }`}
+                  >
+                    {conversation.isMuted ? (
+                      <>
+                        <MicOff className="w-4 h-4 text-red-400" />
+                        <span>Unmute microphone</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="w-4 h-4 text-emerald-400" />
+                        <span>Mute microphone</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowScriptHelper(!showScriptHelper)}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer border ${
+                      showScriptHelper
+                        ? 'bg-amber-500 text-slate-950 border-amber-400'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>{showScriptHelper ? 'Hide script helper' : 'View script helper'}</span>
+                  </button>
+                </div>
 
                 <button
                   type="button"
-                  onClick={() => setShowScriptHelper(!showScriptHelper)}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer border ${
-                    showScriptHelper
-                      ? 'bg-amber-500 text-slate-950 border-amber-400'
-                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-                  }`}
+                  onClick={handleEndCall}
+                  className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-xs flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
                 >
-                  <BookOpen className="w-4 h-4" />
-                  <span>{showScriptHelper ? 'Hide script helper' : 'View script helper'}</span>
+                  <PhoneOff className="w-4 h-4" />
+                  <span>End & evaluate call</span>
                 </button>
               </div>
-
-              <button
-                type="button"
-                onClick={handleEndCall}
-                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-xs flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
-              >
-                <PhoneOff className="w-4 h-4" />
-                <span>End & evaluate call</span>
-              </button>
-            </div>
+            )}
           </div>
 
           {/* Live Conversation Transcript */}

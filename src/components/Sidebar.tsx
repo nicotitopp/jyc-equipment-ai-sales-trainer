@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Mode, User as UserType } from '../types';
 import { 
   PhoneCall, BookOpen, UploadCloud, BarChart3, 
-  RefreshCw, X, Shield, User, LogOut
+  RefreshCw, X, Shield, User, LogOut, Zap, AlertTriangle
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -71,6 +71,38 @@ export default function Sidebar({
   const isAdmin = currentUser?.role === 'admin';
   const primaryModes = MODES_LIST.filter(m => m.group === 'primary');
   const secondaryModes = MODES_LIST.filter(m => m.group === 'secondary');
+
+  const [credits, setCredits] = useState<{
+    tier: string;
+    used: number;
+    limit: number;
+    remaining: number;
+    percentUsed: number;
+    percentRemaining: number;
+    nextResetUnix: number | null;
+  } | null>(null);
+  const [loadingCredits, setLoadingCredits] = useState(false);
+
+  const fetchCredits = useCallback(async () => {
+    try {
+      setLoadingCredits(true);
+      const res = await fetch('/api/elevenlabs/credits');
+      if (res.ok) {
+        const data = await res.json();
+        setCredits(data);
+      }
+    } catch {
+      // Ignore silent network errors
+    } finally {
+      setLoadingCredits(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCredits();
+    const interval = setInterval(fetchCredits, 60000);
+    return () => clearInterval(interval);
+  }, [fetchCredits, currentMode]);
 
   return (
     <>
@@ -229,6 +261,82 @@ export default function Sidebar({
             </div>
           )}
         </div>
+
+        {/* ElevenLabs Credit Usage Meter */}
+        {credits && (
+          <div className="px-3.5 pb-3">
+            <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Zap className={`w-3.5 h-3.5 shrink-0 ${
+                    credits.percentUsed >= 95
+                      ? 'text-rose-400'
+                      : credits.percentUsed >= 75
+                        ? 'text-amber-400'
+                        : 'text-emerald-400'
+                  }`} />
+                  <span className="text-[11px] font-semibold text-slate-200 truncate">
+                    ElevenLabs Credits
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className={`text-[11px] font-mono font-bold px-1.5 py-0.5 rounded-md ${
+                    credits.percentUsed >= 95
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      : credits.percentUsed >= 75
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  }`}>
+                    {credits.percentUsed}% used
+                  </span>
+                  <button
+                    type="button"
+                    onClick={fetchCredits}
+                    title="Refresh credit usage"
+                    className="p-1 text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${loadingCredits ? 'animate-spin text-amber-400' : ''}`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    credits.percentUsed >= 95
+                      ? 'bg-rose-500'
+                      : credits.percentUsed >= 75
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                  }`}
+                  style={{ width: `${Math.min(100, Math.max(0, credits.percentUsed))}%` }}
+                />
+              </div>
+
+              {/* Numbers & Remaining */}
+              <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                <span>{credits.used.toLocaleString()} / {credits.limit.toLocaleString()}</span>
+                <span className={credits.remaining === 0 ? 'text-rose-400 font-semibold' : 'text-slate-300'}>
+                  {credits.remaining.toLocaleString()} left ({credits.percentRemaining}%)
+                </span>
+              </div>
+
+              {credits.remaining === 0 && (
+                <div className="flex items-center gap-1.5 pt-1 text-[10px] text-rose-300 font-medium">
+                  <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0" />
+                  <span>0 credits remaining — calls may disconnect</span>
+                </div>
+              )}
+
+              {credits.nextResetUnix && (
+                <div className="text-[10px] text-slate-500">
+                  Resets: {new Date(credits.nextResetUnix * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* User Profile Footer */}
         <div className="p-3.5 border-t border-slate-800/80 bg-slate-900/60">

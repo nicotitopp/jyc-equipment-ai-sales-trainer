@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { User as UserType, Mode } from '../types';
 import { MODES_LIST } from './Sidebar';
-import { Menu, Volume2, VolumeX, PhoneCall } from 'lucide-react';
+import { Menu, Volume2, VolumeX, PhoneCall, Zap, RefreshCw } from 'lucide-react';
 
 interface HeaderProps {
   mode: Mode;
@@ -24,6 +24,35 @@ export default function Header({
 }: HeaderProps) {
   const modeInfo = MODES_LIST.find(m => m.id === mode);
   const title = modeInfo?.shortTitle || mode;
+
+  const [credits, setCredits] = useState<{
+    used: number;
+    limit: number;
+    remaining: number;
+    percentUsed: number;
+  } | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadCredits = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      const res = await fetch('/api/elevenlabs/credits');
+      if (res.ok) {
+        const data = await res.json();
+        setCredits(data);
+      }
+    } catch {
+      // Ignore silent errors
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCredits();
+    const timer = setInterval(loadCredits, 60000);
+    return () => clearInterval(timer);
+  }, [loadCredits, mode]);
 
   return (
     <header className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 flex items-center justify-between shrink-0 z-20">
@@ -50,6 +79,50 @@ export default function Header({
 
       {/* Right: Contextual Actions */}
       <div className="flex items-center gap-2.5 shrink-0">
+
+        {/* ElevenLabs Credit Usage Percentage Pill */}
+        {credits && (
+          <button
+            type="button"
+            onClick={loadCredits}
+            title={`ElevenLabs Credits: ${credits.used.toLocaleString()} / ${credits.limit.toLocaleString()} used (${credits.remaining.toLocaleString()} remaining). Click to refresh.`}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+              credits.percentUsed >= 95
+                ? 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100/70'
+                : credits.percentUsed >= 75
+                  ? 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100/70'
+                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <Zap className={`w-3.5 h-3.5 shrink-0 ${
+              credits.percentUsed >= 95
+                ? 'text-rose-600'
+                : credits.percentUsed >= 75
+                  ? 'text-amber-600'
+                  : 'text-emerald-600'
+            }`} />
+            <div className="flex items-center gap-2">
+              <span className="hidden lg:inline text-slate-600 font-medium">Credits:</span>
+              <span className="font-mono font-bold">{credits.percentUsed}%</span>
+              <div className="hidden sm:block w-14 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    credits.percentUsed >= 95
+                      ? 'bg-rose-600'
+                      : credits.percentUsed >= 75
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                  }`}
+                  style={{ width: `${Math.min(100, Math.max(0, credits.percentUsed))}%` }}
+                />
+              </div>
+              <span className="hidden md:inline font-mono text-[11px] opacity-80">
+                ({credits.remaining.toLocaleString()} left)
+              </span>
+            </div>
+            <RefreshCw className={`w-3 h-3 opacity-60 ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+        )}
         
         {/* Quick CTA to start a practice call when in other sections */}
         {mode !== 'Live Call Simulation' && onSelectMode && (

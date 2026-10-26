@@ -13,13 +13,22 @@ interface ScorecardProps {
     strengths: string[];
     weaknesses: string[];
     checklist: {
-      gatekeeperBypass: boolean;
-      kpOpening: boolean;
-      equipmentQualification: boolean;
-      futureReference: boolean;
-      priceAndAssets: boolean;
-      objectionHandling: boolean;
-      nextStepsSecure: boolean;
+      openingAndPresentation?: boolean;
+      attentionGrabbing?: boolean;
+      needsIdentification?: boolean;
+      activeListeningAndQuestions?: boolean;
+      proposalClarity?: boolean;
+      commercialValueArgumentation?: boolean;
+      objectionHandling?: boolean;
+      negotiationWithoutPressure?: boolean;
+      unexpectedOpportunities?: boolean;
+      closingAndNextStep?: boolean;
+      gatekeeperBypass?: boolean;
+      kpOpening?: boolean;
+      equipmentQualification?: boolean;
+      futureReference?: boolean;
+      priceAndAssets?: boolean;
+      nextStepsSecure?: boolean;
     };
     objectionsHandled: { objection: string; handledWell: boolean; feedback: string }[];
     recommendations: string[];
@@ -297,15 +306,29 @@ export default function Scorecard({
             </div>
             
             <div className="space-y-2">
-              {[
-                { key: 'gatekeeperBypass', label: 'Gatekeeper bypass (reception filter)' },
-                { key: 'kpOpening', label: 'Introduction & purpose with key person' },
-                { key: 'equipmentQualification', label: 'Qualification questions (make, model, year)' },
-                { key: 'futureReference', label: 'Future reference questions (if not selling today)' },
-                { key: 'priceAndAssets', label: 'Photo/plate request & 24h appraisal process' },
-                { key: 'objectionHandling', label: 'Clear objection handling' },
-                { key: 'nextStepsSecure', label: 'Agreed next step or direct contact' }
-              ].map((item) => {
+              {((evaluation.checklist as any)?.openingAndPresentation !== undefined
+                ? [
+                    { key: 'openingAndPresentation', label: '1. Professional opening & presentation' },
+                    { key: 'attentionGrabbing', label: '2. Ability to capture attention' },
+                    { key: 'needsIdentification', label: '3. Identification of operational needs' },
+                    { key: 'activeListeningAndQuestions', label: '4. Active listening & question quality' },
+                    { key: 'proposalClarity', label: '5. Clarity of machinery proposal' },
+                    { key: 'commercialValueArgumentation', label: '6. Commercial value argumentation' },
+                    { key: 'objectionHandling', label: '7. Contextual objection handling' },
+                    { key: 'negotiationWithoutPressure', label: '8. Negotiation without excessive pressure' },
+                    { key: 'unexpectedOpportunities', label: '9. Leveraging unexpected opportunities' },
+                    { key: 'closingAndNextStep', label: '10. Closing & concrete next step' }
+                  ]
+                : [
+                    { key: 'gatekeeperBypass', label: 'Gatekeeper bypass (reception filter)' },
+                    { key: 'kpOpening', label: 'Introduction & purpose with key person' },
+                    { key: 'equipmentQualification', label: 'Qualification questions (make, model, year)' },
+                    { key: 'futureReference', label: 'Future reference questions (if not selling today)' },
+                    { key: 'priceAndAssets', label: 'Photo/plate request & 24h appraisal process' },
+                    { key: 'objectionHandling', label: 'Clear objection handling' },
+                    { key: 'nextStepsSecure', label: 'Agreed next step or direct contact' }
+                  ]
+              ).map((item) => {
                 const checked = (evaluation.checklist as any)?.[item.key] === true;
                 return (
                   <div key={item.key} className="flex items-center justify-between py-2 px-3 rounded-xl bg-slate-50/80 border border-slate-100 text-xs">

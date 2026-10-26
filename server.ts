@@ -130,42 +130,50 @@ async function startServer() {
               }
             },
             {
-              text: `Please listen to and evaluate this cold call audio recording. The representative (Trainee) is a buyer from JYC Equipment contacting a prospect (Key Person) representing a business regarding used heavy machinery.
-The representative's primary goal is to BUY used heavy equipment (forklifts, wheel loaders, reach stackers, empty container handlers, standard or electric forklifts, excavators, etc.) from the company.
+              text: `Please listen to and evaluate this sales call audio recording. The representative (Trainee) from JYC Equipment / JYC Medical is speaking with an industrial decision-maker (Prospect) regarding heavy machinery or medical imaging systems (buying surplus equipment from the company, offering/selling machinery to the company, or both).
 
 First, transcribe the entire call dialogue accurately as a list of spoken lines, separating the "Trainee" and the "Prospect", and include it in the "transcript" property of the output JSON.
-Listen to the audio to determine the language spoken, but write all critique details (summary, strengths, weaknesses, objectionsHandled feedback, recommendations) in Spanish.
+Listen to the audio to determine the language spoken, but write all critique details (summary, strengths, weaknesses, objectionsHandled feedback, recommendations) in Spanish, backing every point with concrete examples from the conversation.
+Do NOT award a high score simply because the prospect showed interest; evaluate the real commercial skill demonstrated by the salesperson.
 
-Verify the following items and build the checklist of what details the trainee gathered/asked:
-- gatekeeperBypass: Did they introduce themselves to the operator and successfully reach/bypass to the Key Person (KP) of the company?
-- kpOpening: Did they use the correct script opening with the KP (asked if it was a bad time, introduced JYC Equipment, and checked if they have any equipment for sale right now or coming up this year)?
-- equipmentQualification: IF the prospect has equipment for sale: did they ask the qualification questions (Make, Model, Year, Condition/Repairs) for the machine mentioned by the prospect? (If no equipment was available, mark as true if they confirmed this).
-- futureReference: IF the prospect does NOT have equipment for sale: did they ask the reference questions to gather company information (process for surplus, if they buy used, branches, loaders/forklifts used)? (If equipment was available, mark as true).
-- priceAndAssets: Did they request pictures of the machine, the data plate, and the hour meter, or explain JYC's 24-hour formal appraisal process? (NOTE: The trainee should NEVER provide a ballpark or premature cash offer on the phone. Award TRUE if they requested photos/data plate and explained that JYC evaluates with specs before submitting an offer, or asked if the company has an internal asking price).
-- objectionHandling: Did they address and try to overcome the prospect's objections (e.g., they prefer auctions, want to trade-in, have bank leases, already sold, or demand a price first)?
-- nextStepsSecure: Did they successfully get the prospect's personal contact details (WhatsApp or email) and establish clear next steps for a follow-up or callback?
+Evaluate the following 10 observable commercial criteria (checklist):
+- openingAndPresentation: 1. Apertura y presentación profesional (bypass de recepción e identificación clara).
+- attentionGrabbing: 2. Capacidad para captar la atención del tomador de decisiones.
+- needsIdentification: 3. Identificación de necesidades operativas, de flota o de desincorporación de equipos.
+- activeListeningAndQuestions: 4. Escucha activa, continuidad y formulación de preguntas relevantes sin repetir datos ya dados.
+- proposalClarity: 5. Claridad de la propuesta de maquinaria (ya sea explicando el proceso de compra de JYC o presentando una oferta de venta de equipo con especificaciones y condiciones claras).
+- commercialValueArgumentation: 6. Argumentación del valor comercial (mayor pago neto que trade-in, pago en 24h, cobertura del 100% de desmontaje/flete, 0% comisión, o garantía/financiamiento en venta).
+- objectionHandling: 7. Manejo sólido de objeciones contextuales (precio, necesidad, condición, confianza, tiempo, proveedor actual o logística).
+- negotiationWithoutPressure: 8. Capacidad de negociar y avanzar sin ejercer presión excesiva.
+- unexpectedOpportunities: 9. Aprovechamiento y detección de oportunidades comerciales inesperadas (compra o venta de maquinaria).
+- closingAndNextStep: 10. Cierre y definición de un siguiente paso concreto (obtención de correo/WhatsApp directo, envío de fotos de placa/horómetro o envío de cotización).
+
+NOTE ON PRICING WHEN BUYING SURPLUS: When buying surplus equipment from the prospect, the salesperson should NEVER invent a blind "ballpark" price on the phone without seeing photos of the data plate and hours. Requesting photos/specs for a 24h formal appraisal earns full credit.
 
 You must return ONLY a JSON object with this exact structure:
 {
   "score": number, // 0 to 100
   "contactName": "The name of the Key Person/Prospect detected in the call (or 'Unknown' if none)",
   "companyName": "The name of the company detected in the call (or 'Unknown' if none)",
-  "summary": "Brief summary of the call performance in Spanish.",
-  "strengths": ["Strength 1 in Spanish", "Strength 2 in Spanish", ...],
-  "weaknesses": ["Weakness 1 in Spanish", "Weakness 2 in Spanish", ...],
+  "summary": "Brief summary of the call performance in Spanish, indicating if buying/selling opportunities were properly detected and citing examples.",
+  "strengths": ["Strength 1 in Spanish with example", "Strength 2 in Spanish with example"],
+  "weaknesses": ["Weakness 1 in Spanish with example", "Weakness 2 in Spanish with example"],
   "checklist": {
-    "gatekeeperBypass": boolean,
-    "kpOpening": boolean,
-    "equipmentQualification": boolean,
-    "futureReference": boolean,
-    "priceAndAssets": boolean,
+    "openingAndPresentation": boolean,
+    "attentionGrabbing": boolean,
+    "needsIdentification": boolean,
+    "activeListeningAndQuestions": boolean,
+    "proposalClarity": boolean,
+    "commercialValueArgumentation": boolean,
     "objectionHandling": boolean,
-    "nextStepsSecure": boolean
+    "negotiationWithoutPressure": boolean,
+    "unexpectedOpportunities": boolean,
+    "closingAndNextStep": boolean
   },
   "objectionsHandled": [
-    { "objection": "Name of objection (e.g. Auction, Lease, Trade-in) in Spanish", "handledWell": boolean, "feedback": "Brief feedback in Spanish" }
+    { "objection": "Name of objection in Spanish", "handledWell": boolean, "feedback": "Brief feedback in Spanish with example" }
   ],
-  "recommendations": ["Recommendation 1 in Spanish", "Recommendation 2 in Spanish", ...],
+  "recommendations": ["Recommendation 1 in Spanish", "Recommendation 2 in Spanish"],
   "transcript": [
     { "role": "user", "text": "Trainee line..." },
     { "role": "prospect", "text": "Prospect line..." }
@@ -232,6 +240,43 @@ You must return ONLY a JSON object with this exact structure:
     } catch (error: any) {
       console.error("Error generating ElevenLabs signed URL:", error);
       res.status(500).json({ error: error.message || "Failed to generate signed URL" });
+    }
+  });
+
+  app.get("/api/elevenlabs/credits", async (req, res) => {
+    try {
+      const apiKey = process.env.ELEVENLABS_API_KEY || "sk_a1f695335cad3cea6e3f15491969d029aa71f353f01754e0";
+      const response = await fetch("https://api.elevenlabs.io/v1/user/subscription", {
+        headers: {
+          "xi-api-key": apiKey
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return res.status(response.status).json({ error: errorText });
+      }
+
+      const data = await response.json();
+      const used = Number(data.character_count || 0);
+      const limit = Number(data.character_limit || 0);
+      const remaining = Math.max(0, limit - used);
+      const percentUsed = limit > 0 ? Math.min(100, Math.round((used / limit) * 1000) / 10) : 0;
+      const percentRemaining = limit > 0 ? Math.max(0, Math.round((remaining / limit) * 1000) / 10) : 0;
+
+      res.json({
+        tier: data.tier || "standard",
+        status: data.status || "active",
+        used,
+        limit,
+        remaining,
+        percentUsed,
+        percentRemaining,
+        nextResetUnix: data.next_character_count_reset_unix || null
+      });
+    } catch (error: any) {
+      console.error("Error fetching ElevenLabs credits:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch ElevenLabs credits" });
     }
   });
 
