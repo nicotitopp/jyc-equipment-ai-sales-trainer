@@ -136,8 +136,8 @@ export default function Playbook() {
               {[
                 { n: '1', title: 'Equipment type', desc: 'And what type of equipment is it? Is it an injection molding machine, blow molder, reach stacker, or forklift?' },
                 { n: '2', title: 'Exact model', desc: "What's the model?" },
-                { n: '3', title: 'Make / manufacturer', desc: "What's the make? (Cincinnati Milacron, Krauss Maffei, Engel, Kalmar, Taylor, CAT...)" },
-                { n: '4', title: 'Tonnage or capacity', desc: 'What is the tonnage or capacity? (e.g. 500 Ton, 1000 Ton, 45-Ton, or 30k lbs)' },
+                { n: '3', title: 'Make / manufacturer', desc: "What's the make? (Engel, Krauss Maffei, Husky, Cincinnati Milacron, Arburg, JSW, Nissei, Sumitomo, UBE, Toshiba, Kalmar, Taylor, CAT...)" },
+                { n: '4', title: 'Tonnage, capacity, shot size & screw size', desc: 'What is the tonnage or capacity? (e.g. 500–2000 Ton; for injection molders also ask Shot Size in oz: 20 oz, 50 oz, 100 oz and Screw Diameter in mm: 50 mm, 70 mm, 135 mm)' },
                 { n: '5', title: 'Year of manufacture & hours', desc: 'Do you know what year it is and approximate hours?' },
                 { n: '6', title: 'Condition & repairs', desc: 'Is it currently running or does it need any major repairs?' },
                 { n: '7', title: 'Photo request & 24h appraisal', desc: 'Could you send me pictures of the data plate and hour meter? Do you have an internal asking price, or would you prefer our formal cash offer within 24 hours?' }
@@ -170,16 +170,18 @@ export default function Playbook() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <p className="font-semibold text-slate-900">Injection Molding (500–2,000T)</p>
-                <p className="text-slate-600">Cincinnati Milacron, Krauss Maffei, Engel, Husky, Sumitomo, Nissei, Toshiba, Arburg.</p>
+                <p className="font-semibold text-slate-900">Injection Molding Brands (500–2,000T)</p>
+                <p className="text-slate-600">Engel, Krauss Maffei, Husky, Cincinnati Milacron, Arburg, JSW, Nissei, Sumitomo, UBE, Toshiba.</p>
               </div>
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <p className="font-semibold text-slate-900">Blow Molders & Extruders</p>
-                <p className="text-slate-600">Continuous and accumulator blow molders, single and twin-screw extruders.</p>
+                <p className="font-semibold text-slate-900">Shot Size & Screw Diameter Specs</p>
+                <p className="text-slate-600">
+                  <strong>Shot Size (OZ):</strong> 20 oz, 50 oz, 100 oz · <strong>Screw Size (mm):</strong> 50 mm, 70 mm, 135 mm.
+                </p>
               </div>
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <p className="font-semibold text-slate-900">Auxiliary Equipment</p>
-                <p className="text-slate-600">Chillers, desiccant dryers, granulators, and mold temperature controllers.</p>
+                <p className="font-semibold text-slate-900">Blow Molders & Auxiliary</p>
+                <p className="text-slate-600">Blow molders, extruders, chillers, desiccant dryers, granulators, and temperature controllers.</p>
               </div>
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
                 <p className="font-semibold text-slate-900">Plant Forklifts</p>

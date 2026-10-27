@@ -42,9 +42,9 @@ const SCENARIOS: ScenarioConfig[] = [
   {
     id: 'plastic',
     title: 'Plastics & Injection Molding',
-    machinery: '500 to 2,000 Ton injection molders, extruders, and chillers',
-    context: 'Plastic molding plant upgrading large-tonnage injection lines.',
-    objective: 'Reach operations director, highlight JYC covers full turnkey rigging/removal, and qualify available units.',
+    machinery: '500–2,000T injection molders (Shot: 20/50/100 oz · Screw: 50/70/135 mm), extruders & chillers',
+    context: 'Plastic molding plant upgrading large-tonnage injection lines (Engel, Krauss Maffei, Husky, Milacron, Arburg, JSW, Nissei, Sumitomo, UBE, Toshiba).',
+    objective: 'Reach operations director, qualify tonnage, shot size (oz), screw diameter (mm) & asking price, and highlight turnkey rigging.',
     defaults: {
       English: { company: 'Matrix Plastics', contact: 'Sophie', roleTitle: 'Operations Director' },
       Spanish: { company: 'Plásticos y Polímeros', contact: 'Sofía', roleTitle: 'Directora de Operaciones' }
@@ -938,11 +938,11 @@ Output strictly valid JSON with this exact schema:
                     {[
                       '1. Equipment type (injection molder, loader, forklift, reach stacker).',
                       '2. Exact model.',
-                      '3. Make / manufacturer (CAT, Kalmar, Krauss Maffei, Taylor...).',
-                      '4. Capacity or tonnage (e.g. 500T, 45T, 30,000 lbs).',
+                      '3. Make / manufacturer (Engel, Krauss Maffei, Husky, Milacron, Arburg, JSW, Nissei, Sumitomo, UBE, Toshiba, CAT, Kalmar...).',
+                      '4. Capacity or tonnage (e.g. 500–2000T; for injection molders also Shot Size: 20/50/100 oz & Screw Diameter: 50/70/135 mm).',
                       '5. Year of manufacture and approximate hours.',
                       '6. Current condition (is it running or does it require repairs?).',
-                      '7. Photo request (including data plate and hour meter) & internal asking price (if any).'
+                      '7. Asking price in mind & photo request (data plate and hour meter) for 24h offer.'
                     ].map((q, i) => (
                       <li key={i} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 font-medium text-slate-800">
                         {q}
