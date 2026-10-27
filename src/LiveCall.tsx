@@ -296,14 +296,16 @@ const ElevenLabsCallView = ({
         }
       };
 
+      const branchId = "agtbrch_4801kw2zj0c7fej8qh66cv2x5are";
       let sessionConfig: any = {
         agentId: "agent_2501kw2zhyq8ewg9ntqm1613vhek",
+        branchId,
         dynamicVariables,
         overrides
       };
 
       try {
-        const res = await fetch("/api/elevenlabs/signed-url");
+        const res = await fetch(`/api/elevenlabs/signed-url?branchId=${encodeURIComponent(branchId)}`);
         if (res.ok) {
           const data = await res.json();
           if (data.signedUrl) {

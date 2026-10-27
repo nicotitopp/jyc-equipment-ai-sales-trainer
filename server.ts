@@ -222,8 +222,14 @@ You must return ONLY a JSON object with this exact structure:
     try {
       const apiKey = process.env.ELEVENLABS_API_KEY || "sk_a1f695335cad3cea6e3f15491969d029aa71f353f01754e0";
       const agentId = process.env.ELEVENLABS_AGENT_ID || "agent_2501kw2zhyq8ewg9ntqm1613vhek";
+      const branchId = (req.query.branchId as string) || process.env.ELEVENLABS_BRANCH_ID || "agtbrch_4801kw2zj0c7fej8qh66cv2x5are";
 
-      const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`, {
+      const urlParams = new URLSearchParams({ agent_id: agentId });
+      if (branchId) {
+        urlParams.set("branch_id", branchId);
+      }
+
+      const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?${urlParams.toString()}`, {
         headers: {
           "xi-api-key": apiKey
         }
@@ -236,7 +242,7 @@ You must return ONLY a JSON object with this exact structure:
       }
 
       const data = await response.json();
-      res.json({ signedUrl: data.signed_url, agentId });
+      res.json({ signedUrl: data.signed_url, agentId, branchId });
     } catch (error: any) {
       console.error("Error generating ElevenLabs signed URL:", error);
       res.status(500).json({ error: error.message || "Failed to generate signed URL" });
