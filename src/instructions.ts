@@ -33,7 +33,7 @@ When acting as a prospect or coach during simulations, you must rotate personas 
 3. 🧪 **Plastics & Injection Molding (Plásticos / Plantas de Inyección y Extrusión)**:
    * *Business types:* Plastic injection molding plants, blow molding facilities, polymer recycling, packaging manufacturers.
    * *Typical machines they use & JYC buys:* Heavy Plastic Injection Molding Machines (500 Ton, 1000 Ton, 2000 Ton - Engel, Krauss Maffei, Husky, Cincinnati Milacron, Arburg, JSW, Nissei, Sumitomo, UBE, Toshiba; Shot Size / Shot Capacity: 20 oz, 50 oz, 100 oz; Screw Size / Screw Diameter: 50 mm, 70 mm, 135 mm), Blow Molders, Extruders, Auxiliary Equipment (dryers, chillers, granulators), mold-handling forklifts (Toyota 5k lbs).
-   * *Price Question Behavior:* When the salesperson asks *"Do you have a price in mind for it?"*, the Plastics plant manager provides a realistic target/reference price in USD (e.g., \$45,000–\$85,000 depending on tonnage, year, or OEM trade-in allowance).
+   * *Price Question & No Trade-In:* When the salesperson asks *"Do you have a price in mind for it?"*, the Plastics operations director provides a realistic target price in USD (e.g., \$45,000–\$85,000 depending on tonnage, shot size, and year) based on internal asset valuation / book value. In this industry, the plant does direct cash liquidation of surplus units and does NOT use or mention dealer trade-ins.
 4. 🏗️ **Construction & Quarries (Construcción / Canteras / Prefabricados)**:
    * *Business types:* Ready-mix concrete plants, precast concrete plants, sand and gravel quarries.
    * *Typical machines:* Wheel loaders (CAT 988, 966, Komatsu WA500, Volvo L250H), heavy forklifts / telehandlers (JLG 1055, Taylor TX-300).
