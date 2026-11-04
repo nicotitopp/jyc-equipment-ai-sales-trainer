@@ -452,16 +452,16 @@ CRITICAL RULES FOR AUDITING & SCORING:
    - When the trainee is offering/selling a JYC machine to the prospect, evaluate how clearly they presented the machine's specs, condition, hours, warranty, availability, and price justification.
 4. 10 OBSERVABLE COMMERCIAL EVALUATION CRITERIA (CHECKLIST):
    Evaluate each of the following 10 criteria as true/false based on observable behavior in the call:
-   - "openingAndPresentation": 1. Professional opening, clear identification, and effective gatekeeper navigation.
-   - "attentionGrabbing": 2. Ability to earn and hold the decision-maker's attention with a relevant commercial hook.
-   - "needsIdentification": 3. Identification of the prospect's operational situation, fleet needs, or surplus disposition plans.
-   - "activeListeningAndQuestions": 4. Active listening, continuity across turns, and asking relevant qualification/discovery questions without repeating already-given info.
-   - "proposalClarity": 5. Clarity of the machinery proposal (whether explaining JYC's acquisition process or presenting a specific machine offer with clear specs/terms).
-   - "commercialValueArgumentation": 6. Argumentation of commercial value (e.g., higher net cash than dealer trade-in, 24h payment, 100% turnkey rigging/freight, 0% commission, or 30-day warranty/financing on sales).
-   - "objectionHandling": 7. Effective, evidence-backed handling of contextual objections (price, need, condition, trust, timing, current supplier/dealer, or logistics).
-   - "negotiationWithoutPressure": 8. Ability to negotiate and advance the conversation professionally without exerting excessive or artificial pressure.
-   - "unexpectedOpportunities": 9. Detection and leveraging of unexpected commercial opportunities (identifying surplus units, future renewal cycles, or pivoting between buying and selling when appropriate).
-   - "closingAndNextStep": 10. Clear closing and definition of a concrete next step (securing direct email/WhatsApp, scheduling inspection/photos, or sending a formal quote).
+   - "openingAndPresentation": 1. Professional opening, gatekeeper navigation using training script rebuttals, and bad-time check with key person.
+   - "attentionGrabbing": 2. Ability to earn and hold the decision-maker's attention with a compelling commercial hook (nationwide direct cash buyers, global export, turnkey logistics).
+   - "needsIdentification": 3. Methodical identification of fleet needs, surplus disposition plans, or upcoming replacement cycles.
+   - "activeListeningAndQuestions": 4. Deep technical qualification and active listening (qualifying make/model, capacity, hours/condition, cushion/pneumatic tires, fuel, mast stages, attachments, leaks, or plastics shot size/screw diameter).
+   - "proposalClarity": 5. Clarity of machinery proposal (explaining JYC's buying process: 24h bank wire transfer before equipment pickup, 100% turnkey freight/rigging; or equipment specs/terms if selling).
+   - "commercialValueArgumentation": 6. Clear articulation of commercial advantages (24h cash payment, 0% auction fees vs 10–15%, paying more than dealer trade-in, or lease buyout coverage).
+   - "objectionHandling": 7. Effective, evidence-backed handling of objections (deflecting blind ballparks, location/Miami objection, in-person inspection objection, phone number source, or lease buyout).
+   - "negotiationWithoutPressure": 8. Ability to advance professionally without artificial pushiness or desperation.
+   - "unexpectedOpportunities": 9. Detecting unexpected commercial opportunities (identifying when a client wants to buy machinery to activate the SELL! flow, or requesting local referrals).
+   - "closingAndNextStep": 10. Concrete closing (requesting the 6 mandatory photo angles: front, sides, back, data plate, hour meter, cab for a 24h appraisal; securing direct email; or booking a quote follow-up).
 
 Please write all output critique fields (summary, strengths, weaknesses, objections feedback, recommendations) in English, citing brief examples from the conversation.
 
@@ -909,25 +909,34 @@ Output strictly valid JSON with this exact schema:
 
             <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs leading-relaxed text-slate-700">
               {scriptHelperTab === 'opening' && (
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                     <div className="font-semibold text-slate-900">Step 1: Bypass Reception (Gatekeeper)</div>
                     <p className="italic text-slate-800">
                       {language === 'English'
-                        ? `"Good morning, could you please transfer me to the person in charge of plant operations or the used machinery?"`
-                        : `"Buenos días, ¿me podría comunicar con el encargado de planta, operaciones o la maquinaria usada?"`}
+                        ? `"Good morning, I am trying to reach the person who takes care of the sales of the surplus equipment such as: forklifts and wheel loaders?"`
+                        : `"Buenos días, ¿me podría comunicar con la persona encargada de la venta de equipos excedentes como montacargas y cargadores frontales?"`}
                     </p>
                     <p className="text-[11px] text-amber-800 bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-200/70">
-                      Always ask for the <strong>Plant or Operations Manager</strong> so reception avoids transferring you to sales.
+                      If asked <strong>"What is this in regards to?"</strong>: "We buy used heavy equipment. I wanted to check if you have anything for sale or coming up for renewal this year. Do you know who would be the person to talk to?"
                     </p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                    <div className="font-semibold text-slate-900">Quick Gatekeeper Rebuttals:</div>
+                    <ul className="space-y-1 text-[11px] text-slate-700">
+                      <li>• <strong>"Not available":</strong> "May I have his name, email address, and best number to reach him?"</li>
+                      <li>• <strong>"We are not interested":</strong> "We're not selling you anything, we are major cash buyers and pay more since we export. Who would be the person to contact?"</li>
+                      <li>• <strong>"How do you work from Miami?":</strong> "We buy all over the US and Canada. We wire the money in 24h before picking up the equipment."</li>
+                    </ul>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                     <div className="font-semibold text-slate-900">Step 2: Opening with {contactName}</div>
                     <p className="italic text-slate-800">
                       {language === 'English'
-                        ? `"Hi ${contactName}, this is ${currentUser?.name || 'Alex'} with JYC Equipment. Did I catch you at a bad time? ... We are nationwide buyers of used industrial machinery. Do you have any surplus units for sale right now or coming up this year?"`
-                        : `"Hola ${contactName}, habla ${currentUser?.name || 'Alex'} de JYC Equipment. ¿Lo tomo en un mal momento? ... Somos compradores nacionales de maquinaria pesada usada. ¿Tienen algún equipo disponible para la venta ahora o por renovar este año?"`}
+                        ? `"Good morning, who am I speaking with? ... Hi ${contactName}. This is ${currentUser?.name || 'Alex'} with JYC Equipment. Did I catch you at a bad time? ... We usually pay more than local companies because we export. Do you have any forklifts or wheel loaders for sale at the moment?"`
+                        : `"Buenos días, ¿con quién tengo el gusto? ... Hola ${contactName}, habla ${currentUser?.name || 'Alex'} de JYC Equipment. ¿Lo tomo en un mal momento? ... Pagamos de contado y cubrimos toda la logística. ¿Tienen algún montacargas o cargador disponible para la venta en este momento?"`}
                     </p>
                   </div>
                 </div>
@@ -935,43 +944,60 @@ Output strictly valid JSON with this exact schema:
 
               {scriptHelperTab === 'qualify' && (
                 <div className="space-y-2.5">
-                  <p className="text-slate-600">Ask these 7 questions in order when they confirm having machinery:</p>
-                  <ol className="space-y-2">
+                  <p className="text-slate-600">Qualify all technical parameters below:</p>
+                  <div className="space-y-1.5">
                     {[
-                      '1. Equipment type (injection molder, loader, forklift, reach stacker).',
-                      '2. Exact model.',
-                      '3. Make / manufacturer (Engel, Krauss Maffei, Husky, Milacron, Arburg, JSW, Nissei, Sumitomo, UBE, Toshiba, CAT, Kalmar...).',
-                      '4. Capacity or tonnage (e.g. 500–2000T; for injection molders also Shot Size: 20/50/100 oz & Screw Diameter: 50/70/135 mm).',
-                      '5. Year of manufacture and approximate hours.',
-                      '6. Current condition (is it running or does it require repairs?).',
-                      '7. Asking price in mind & photo request (data plate and hour meter) for 24h offer.'
+                      '1. Make & Exact Model (Hyster, Taylor, Kalmar, CAT, Engel, Husky...).',
+                      '2. Capacity / Tonnage (e.g. 30k–50k lbs; for injection molders 500–2000T).',
+                      '3. Year model & Operating Hours on meter.',
+                      '4. Running conditions (any repairs needed to engine/transmission?).',
+                      '5. Tires (Cushion vs. Pneumatic tires).',
+                      '6. Fuel type (Diesel, Propane / LPG, or Gasoline).',
+                      '7. Mast stages (Two-stage vs. Three-stage mast).',
+                      '8. Attachments (Side-Shift or Fork-Positioner).',
+                      '9. Leaks (Does it show any fluid or hydraulic leaks?).',
+                      '10. For Plastics: Shot Size in OZ (20, 50, 100 oz) & Screw in mm (50, 70, 135 mm).',
+                      '11. Required 6 Photo Angles: Front, Sides, Back, Data plate, Hour meter, Cab.',
+                      '12. Price & Close: "Do you have an asking price?" (Never give a blind price over phone!).'
                     ].map((q, i) => (
-                      <li key={i} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 font-medium text-slate-800">
+                      <div key={i} className="p-2 rounded-lg bg-slate-50 border border-slate-200 font-medium text-slate-800 text-[11px]">
                         {q}
-                      </li>
+                      </div>
                     ))}
-                  </ol>
+                  </div>
                 </div>
               )}
 
               {scriptHelperTab === 'objections' && (
-                <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                    <div className="font-semibold text-slate-900">"Give me a price / What's your ballpark?"</div>
-                    <p className="text-slate-600">
-                      Never guess or give a blind number over the phone. Explain that JYC's valuation team requires photos of the data plate and hour meter to issue a formal written cash offer in 24 hours.
+                <div className="space-y-2.5">
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                    <div className="font-semibold text-slate-900">"Give me a price first / What's your ballpark?"</div>
+                    <p className="text-slate-600 text-[11px]">
+                      "In order to make a good, guaranteed offer, we need photos of the unit, data plate, and hour meter so we don't mislead you with a fake number. Once emailed, our purchasing team issues a written cash offer in 24 hours."
                     </p>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                    <div className="font-semibold text-slate-900">"We send everything to auction"</div>
-                    <p className="text-slate-600">
-                      Remind them auctions charge 10% to 15% in seller commissions and freight. JYC pays within 24 hours, zero commissions, and handles all rigging/removal and transport.
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                    <div className="font-semibold text-slate-900">"How do you buy from Miami? / Send someone here"</div>
+                    <p className="text-slate-600 text-[11px]">
+                      "We buy nationwide. We wire transfer 100% of the funds to your bank within 24 hours before any pickup, and we handle all rigging and freight. We request 6 quick photos first so neither party wastes time."
                     </p>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                    <div className="font-semibold text-slate-900">"We don't have anything for sale today"</div>
-                    <p className="text-slate-600">
-                      Ask future reference questions: how do they handle surplus machines, do they buy used equipment, and when (3, 6, or 12 months) would be best to check back.
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                    <div className="font-semibold text-slate-900">"The equipment is leased (Buyout Option)"</div>
+                    <p className="text-slate-600 text-[11px]">
+                      "Do you have a buyout option at the end of the term? We buy end-of-lease equipment and pay more than the buyout as-is/where-is, sparing you return freight and repair fees."
+                    </p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                    <div className="font-semibold text-slate-900">"We send everything to auction / Trade-in"</div>
+                    <p className="text-slate-600 text-[11px]">
+                      "Auctions charge 10–15% seller commission and trade-ins offer low allowances. JYC pays cash in 24 hours with 0% commission and assumes all logistics." <em>(No trade-in in Plastics).</em>
+                    </p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                    <div className="font-semibold text-slate-900">"How did you get my phone number?"</div>
+                    <p className="text-slate-600 text-[11px]">
+                      "We're currently contacting companies in your area that operate heavy machinery. You likely spoke with one of my colleagues in the past as your company was on our fleet records."
                     </p>
                   </div>
                 </div>

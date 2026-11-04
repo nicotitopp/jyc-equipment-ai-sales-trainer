@@ -308,16 +308,16 @@ export default function Scorecard({
             <div className="space-y-2">
               {((evaluation.checklist as any)?.openingAndPresentation !== undefined
                 ? [
-                    { key: 'openingAndPresentation', label: '1. Professional opening & presentation' },
-                    { key: 'attentionGrabbing', label: '2. Ability to capture attention' },
-                    { key: 'needsIdentification', label: '3. Identification of operational needs' },
-                    { key: 'activeListeningAndQuestions', label: '4. Active listening & question quality' },
-                    { key: 'proposalClarity', label: '5. Clarity of machinery proposal' },
-                    { key: 'commercialValueArgumentation', label: '6. Commercial value argumentation' },
-                    { key: 'objectionHandling', label: '7. Contextual objection handling' },
+                    { key: 'openingAndPresentation', label: '1. Professional opening & Gatekeeper bypass' },
+                    { key: 'attentionGrabbing', label: '2. Commercial hook & attention grabbing' },
+                    { key: 'needsIdentification', label: '3. Fleet & surplus needs identification' },
+                    { key: 'activeListeningAndQuestions', label: '4. Deep technical specs & active listening' },
+                    { key: 'proposalClarity', label: '5. Proposal clarity (24h wire / turnkey logistics)' },
+                    { key: 'commercialValueArgumentation', label: '6. Commercial value argumentation (0% commission / cash)' },
+                    { key: 'objectionHandling', label: '7. Advanced objection handling (Miami / photos / lease)' },
                     { key: 'negotiationWithoutPressure', label: '8. Negotiation without excessive pressure' },
-                    { key: 'unexpectedOpportunities', label: '9. Leveraging unexpected opportunities' },
-                    { key: 'closingAndNextStep', label: '10. Closing & concrete next step' }
+                    { key: 'unexpectedOpportunities', label: '9. Cross-selling & unexpected opportunities (SELL!)' },
+                    { key: 'closingAndNextStep', label: '10. Closing & 6 photo angles commitment' }
                   ]
                 : [
                     { key: 'gatekeeperBypass', label: 'Gatekeeper bypass (reception filter)' },

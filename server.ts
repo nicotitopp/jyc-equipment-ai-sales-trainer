@@ -137,18 +137,18 @@ Listen to the audio to determine the language spoken, but write all critique det
 Do NOT award a high score simply because the prospect showed interest; evaluate the real commercial skill demonstrated by the salesperson.
 
 Evaluate the following 10 observable commercial criteria (checklist):
-- openingAndPresentation: 1. Apertura y presentación profesional (bypass de recepción e identificación clara).
-- attentionGrabbing: 2. Capacidad para captar la atención del tomador de decisiones.
-- needsIdentification: 3. Identificación de necesidades operativas, de flota o de desincorporación de equipos.
-- activeListeningAndQuestions: 4. Escucha activa, continuidad y formulación de preguntas relevantes sin repetir datos ya dados.
-- proposalClarity: 5. Claridad de la propuesta de maquinaria (ya sea explicando el proceso de compra de JYC o presentando una oferta de venta de equipo con especificaciones y condiciones claras).
-- commercialValueArgumentation: 6. Argumentación del valor comercial (mayor pago neto que trade-in, pago en 24h, cobertura del 100% de desmontaje/flete, 0% comisión, o garantía/financiamiento en venta).
-- objectionHandling: 7. Manejo sólido de objeciones contextuales (precio, necesidad, condición, confianza, tiempo, proveedor actual o logística).
-- negotiationWithoutPressure: 8. Capacidad de negociar y avanzar sin ejercer presión excesiva.
-- unexpectedOpportunities: 9. Aprovechamiento y detección de oportunidades comerciales inesperadas (compra o venta de maquinaria).
-- closingAndNextStep: 10. Cierre y definición de un siguiente paso concreto (obtención de correo/WhatsApp directo, envío de fotos de placa/horómetro o envío de cotización).
+- openingAndPresentation: 1. Apertura y presentación profesional (bypass efectivo de recepción usando los argumentos del manual, saludo sin titubeos y verificación de mal momento).
+- attentionGrabbing: 2. Capacidad para captar la atención del tomador de decisiones con un gancho comercial claro (compradores directos de contado que exportan y cubren flete/maniobra).
+- needsIdentification: 3. Identificación metódica de necesidades de flota o desincorporación de equipos (si tienen excedentes o si necesitan comprar unidades).
+- activeListeningAndQuestions: 4. Calificación técnica profunda y escucha activa sin repetir datos (preguntar make/model, capacidad, año/horas, llantas cushion/pneumatic, combustible, mástil 2/3 etapas, side-shift/fork-positioner, fugas; o shot size/screw en plásticos).
+- proposalClarity: 5. Claridad de la propuesta de maquinaria (explicar con precisión el proceso de compra de JYC: transferencia bancaria en 24h antes de retirar y 100% logística a cargo de JYC, o especificaciones/garantía si vende equipo).
+- commercialValueArgumentation: 6. Argumentación del valor comercial diferenciador (pago en 24h, 0% comisión vs 10-15% subastas, mayor neto que trade-in, o cobertura de buyout en leasing as-is/where-is).
+- objectionHandling: 7. Manejo sólido de objeciones reales del manual (precio a ciegas, "¿Cómo compran desde Miami?", "Manden un inspector en persona", "¿De dónde sacaron mi número?", leasing buyout o subasta).
+- negotiationWithoutPressure: 8. Capacidad de negociar y avanzar profesionalmente sin presionar de forma artificial ni mostrar debilidad.
+- unexpectedOpportunities: 9. Detección de oportunidades inesperadas (detectar si el cliente busca comprar equipo para activar el flujo SELL!, o pedir referidos locales si no usan maquinaria).
+- closingAndNextStep: 10. Cierre concreto con compromiso verificable (obtener correo directo, solicitar los 6 ángulos de fotos: frontal, laterales, trasera, placa, horómetro y cabina para avalúo en 24h, o envío de cotización).
 
-NOTE ON PRICING WHEN BUYING SURPLUS: When buying surplus equipment from the prospect, the salesperson should NEVER invent a blind "ballpark" price on the phone without seeing photos of the data plate and hours. Requesting photos/specs for a 24h formal appraisal earns full credit.
+NOTE ON PRICING & PHOTOS: When buying surplus equipment, the salesperson must NEVER invent a blind "ballpark" price over the phone without seeing photos of the data plate and hours. Deflecting firmly, explaining the 24h formal appraisal process, and asking for the required photos earns full credit. Giving a blind phone price is an automatic commercial defect.
 
 You must return ONLY a JSON object with this exact structure:
 {
