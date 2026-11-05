@@ -61,9 +61,11 @@ Trained on real commercial sales playbooks, objection matrices, and gatekeeper d
   10. Follow-up Timeline & CRM Data Completeness
 * **Actionable Coaching Feedback:** Exact timestamps of strengths, critical mistakes, and executive summary recommendations, exportable to printable PDF scorecards.
 
-### 🗄️ 6. Cloud Persistence & Local Fallback
-* Dual-mode data persistence adapter supporting **PostgreSQL** (Render PostgreSQL, Supabase, Neon) with automated schema migrations.
-* Seamless automatic fallback to local atomic JSON storage (`data/database.json`) when operating in offline or isolated environments.
+### 🗄️ 6. Neon PostgreSQL Cloud Persistence & Local Fallback
+* **Neon Serverless PostgreSQL:** All trainee accounts, call records, AI evaluation scorecards, and audio files are permanently preserved in Neon PostgreSQL (`AWS us-east-2`) via PgBouncer connection pooling (`-pooler`).
+* **Automated Bootstrap & Schema Migrations:** Auto-creates relational tables (`users`, `history`, `call_audios`) and synchronizes local records upon application boot.
+* **Resilient Local Fallback:** Automatic fallback to local atomic JSON storage (`data/database.json`) when offline or operating without database credentials.
+* 📖 *Full database architectural documentation, SQL schemas & queries:* [docs/DATABASE_NEON.md](docs/DATABASE_NEON.md).
 
 ---
 
@@ -93,6 +95,7 @@ jyc-equipment-ai-sales-trainer/
 │   ├── audios/                   # Uploaded audio recordings for AI call auditing
 │   └── database.json             # Local JSON fallback store (users, sessions, reviews)
 ├── docs/                         # Architecture, UI specs & training resources
+│   ├── DATABASE_NEON.md          # Neon PostgreSQL architecture, schemas & console guide
 │   ├── DESIGN.md                 # Design system tokens, color palettes & typography specs
 │   └── training-materials/       # Original industrial training manuals & reference scripts
 │       ├── README.md             # Materials index and industrial scope catalog
