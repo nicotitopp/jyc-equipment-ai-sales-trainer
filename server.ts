@@ -220,7 +220,10 @@ You must return ONLY a JSON object with this exact structure:
 
   app.get("/api/elevenlabs/signed-url", async (req, res) => {
     try {
-      const apiKey = process.env.ELEVENLABS_API_KEY || "sk_a1f695335cad3cea6e3f15491969d029aa71f353f01754e0";
+      const apiKey = process.env.ELEVENLABS_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "ELEVENLABS_API_KEY is not configured in server environment" });
+      }
       const agentId = process.env.ELEVENLABS_AGENT_ID || "agent_2501kw2zhyq8ewg9ntqm1613vhek";
       const branchId = (req.query.branchId as string) || process.env.ELEVENLABS_BRANCH_ID || "agtbrch_4801kw2zj0c7fej8qh66cv2x5are";
 
@@ -251,7 +254,10 @@ You must return ONLY a JSON object with this exact structure:
 
   app.get("/api/elevenlabs/credits", async (req, res) => {
     try {
-      const apiKey = process.env.ELEVENLABS_API_KEY || "sk_a1f695335cad3cea6e3f15491969d029aa71f353f01754e0";
+      const apiKey = process.env.ELEVENLABS_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "ELEVENLABS_API_KEY is not configured in server environment" });
+      }
       const response = await fetch("https://api.elevenlabs.io/v1/user/subscription", {
         headers: {
           "xi-api-key": apiKey
@@ -289,7 +295,10 @@ You must return ONLY a JSON object with this exact structure:
   app.get("/api/elevenlabs/conversation-audio/:conversationId", async (req, res) => {
     try {
       const { conversationId } = req.params;
-      const apiKey = process.env.ELEVENLABS_API_KEY || "sk_a1f695335cad3cea6e3f15491969d029aa71f353f01754e0";
+      const apiKey = process.env.ELEVENLABS_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "ELEVENLABS_API_KEY is not configured in server environment" });
+      }
 
       let retries = 4;
       let lastResponse;

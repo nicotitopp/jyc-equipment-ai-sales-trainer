@@ -38,11 +38,13 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'database.json');
 const AUDIOS_DIR = path.join(DATA_DIR, 'audios');
 
+const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_DEFAULT_PASSWORD || 'JYC!@2026*!!@';
+
 const DEFAULT_USERS: UserAccount[] = [
   {
     id: 'admin_default',
     username: 'admin',
-    password: 'JYC!@2026*!!@',
+    password: DEFAULT_ADMIN_PASSWORD,
     name: 'Administrador JYC',
     role: 'admin',
     createdAt: 'Registrado por Sistema',
@@ -176,7 +178,7 @@ export async function initDatabase() {
     `, [
       'admin_default',
       'admin',
-      'JYC!@2026*!!@',
+      DEFAULT_ADMIN_PASSWORD,
       'Administrador JYC',
       'admin',
       'Registrado por Sistema',
