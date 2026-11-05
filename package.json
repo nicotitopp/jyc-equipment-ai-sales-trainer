@@ -1,7 +1,7 @@
 {
-  "name": "react-example",
-  "private": true,
-  "version": "0.0.0",
+  "name": "jyc-equipment-ai-sales-trainer",
+  "description": "AI-Powered Real-Time Sales Simulation & Coaching Platform for Heavy Industrial Equipment and Medical Systems",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
