@@ -24,6 +24,28 @@ import {
 
 dotenv.config();
 
+function getElevenLabsApiKey(): string | undefined {
+  if (process.env.ELEVENLABS_API_KEY?.trim()) return process.env.ELEVENLABS_API_KEY.trim();
+  for (const [k, v] of Object.entries(process.env)) {
+    const norm = k.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if ((norm === 'ELEVENLABSAPIKEY' || norm === 'ELEVENLABSKEY' || norm === 'ELEVENLABS') && v && v.trim()) {
+      return v.trim();
+    }
+  }
+  return undefined;
+}
+
+function getElevenLabsAgentId(): string {
+  if (process.env.ELEVENLABS_AGENT_ID?.trim()) return process.env.ELEVENLABS_AGENT_ID.trim();
+  for (const [k, v] of Object.entries(process.env)) {
+    const norm = k.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if ((norm === 'ELEVENLABSAGENTID' || norm === 'ELEVENLABSAGENT') && v && v.trim()) {
+      return v.trim();
+    }
+  }
+  return "agent_2501kw2zhyq8ewg9ntqm1613vhek";
+}
+
 async function startServer() {
   await initDatabase();
   const app = express();
@@ -36,11 +58,24 @@ async function startServer() {
   app.get("/api/status", async (req, res) => {
     try {
       const dbStatus = await getDatabaseStatus();
+      const apiKey = getElevenLabsApiKey();
+      const detectedEnvKeys = Object.keys(process.env)
+        .map(k => k.trim())
+        .filter(k => {
+          const upper = k.toUpperCase();
+          return upper.includes('ELEVEN') || upper.includes('GEMINI') || upper.includes('DATABASE') || upper.includes('NODE_ENV');
+        });
+
       res.json({
         status: "ok",
         service: "JYC Equipment Sales Trainer",
         timestamp: new Date().toISOString(),
-        database: dbStatus
+        database: dbStatus,
+        elevenlabs: {
+          keyConfigured: Boolean(apiKey),
+          agentId: getElevenLabsAgentId()
+        },
+        detectedEnvKeys
       });
     } catch (err: any) {
       res.status(500).json({ status: "error", error: err.message });
@@ -220,11 +255,11 @@ You must return ONLY a JSON object with this exact structure:
 
   app.get("/api/elevenlabs/signed-url", async (req, res) => {
     try {
-      const apiKey = process.env.ELEVENLABS_API_KEY;
+      const apiKey = getElevenLabsApiKey();
       if (!apiKey) {
         return res.status(500).json({ error: "ELEVENLABS_API_KEY is not configured in server environment" });
       }
-      const agentId = process.env.ELEVENLABS_AGENT_ID || "agent_2501kw2zhyq8ewg9ntqm1613vhek";
+      const agentId = getElevenLabsAgentId();
       const branchId = (req.query.branchId as string) || process.env.ELEVENLABS_BRANCH_ID || "agtbrch_4801kw2zj0c7fej8qh66cv2x5are";
 
       const urlParams = new URLSearchParams({ agent_id: agentId });
@@ -254,7 +289,7 @@ You must return ONLY a JSON object with this exact structure:
 
   app.get("/api/elevenlabs/credits", async (req, res) => {
     try {
-      const apiKey = process.env.ELEVENLABS_API_KEY;
+      const apiKey = getElevenLabsApiKey();
       if (!apiKey) {
         return res.status(500).json({ error: "ELEVENLABS_API_KEY is not configured in server environment" });
       }
@@ -295,7 +330,7 @@ You must return ONLY a JSON object with this exact structure:
   app.get("/api/elevenlabs/conversation-audio/:conversationId", async (req, res) => {
     try {
       const { conversationId } = req.params;
-      const apiKey = process.env.ELEVENLABS_API_KEY;
+      const apiKey = getElevenLabsApiKey();
       if (!apiKey) {
         return res.status(500).json({ error: "ELEVENLABS_API_KEY is not configured in server environment" });
       }
