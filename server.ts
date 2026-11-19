@@ -105,26 +105,29 @@ async function startServer() {
         parts: [{ text: m.content }]
       }));
 
-      const fallbackModels = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash"];
+      const fallbackModels = ["gemini-2.5-flash", "gemini-3-flash-preview", "gemini-3.1-flash-lite"];
       let response;
       let lastError;
 
       for (const modelName of fallbackModels) {
         try {
-          response = await ai.models.generateContent({
-            model: modelName,
-            contents: contents,
-            config: {
-              systemInstruction: systemInstruction,
-            }
-          });
+          response = await Promise.race([
+            ai.models.generateContent({
+              model: modelName,
+              contents: contents,
+              config: {
+                systemInstruction: systemInstruction,
+              }
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout on model ${modelName} after 12s`)), 12000))
+          ]) as any;
           if (response && response.text) {
             break;
           }
         } catch (error: any) {
           console.warn(`Model ${modelName} chat attempt failed:`, error.message);
           lastError = error;
-          await new Promise(r => setTimeout(r, 800));
+          await new Promise(r => setTimeout(r, 400));
         }
       }
 
@@ -219,26 +222,29 @@ You must return ONLY a JSON object with this exact structure:
         }
       ];
 
-      const fallbackModels = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash"];
+      const fallbackModels = ["gemini-2.5-flash", "gemini-3-flash-preview", "gemini-3.1-flash-lite"];
       let response;
       let lastError;
 
       for (const modelName of fallbackModels) {
         try {
-          response = await ai.models.generateContent({
-            model: modelName,
-            contents: contents,
-            config: {
-              systemInstruction: "You are a strict machinery sales auditor. Analyze the audio and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
-            }
-          });
+          response = await Promise.race([
+            ai.models.generateContent({
+              model: modelName,
+              contents: contents,
+              config: {
+                systemInstruction: "You are a strict machinery sales auditor. Analyze the audio and output ONLY valid JSON matching the requested schema. Do not write any markdown code blocks, just raw JSON."
+              }
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout on model ${modelName} after 20s`)), 20000))
+          ]) as any;
           if (response && response.text) {
             break;
           }
         } catch (error: any) {
           console.warn(`Model ${modelName} audio audit attempt failed:`, error.message);
           lastError = error;
-          await new Promise(r => setTimeout(r, 800));
+          await new Promise(r => setTimeout(r, 400));
         }
       }
 
