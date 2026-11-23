@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, UserPlus, Key, Trash2, X, 
   CheckCircle2, AlertCircle, Loader2, Eye, EyeOff,
-  Copy, PhoneCall, ChevronRight, ArrowLeft, Check, Ban
+  Copy, PhoneCall, ChevronRight, ArrowLeft, Check, Ban,
+  DollarSign, Clock, Zap
 } from 'lucide-react';
 
 interface AdminUserManagerProps {
@@ -31,6 +32,9 @@ interface DetailedUser {
   bestScore: number;
   passRate: number;
   lastActive?: string;
+  totalCostUsd?: number;
+  totalMinutes?: number;
+  totalCredits?: number;
   recentCalls: RecentCallSummary[];
 }
 
@@ -471,6 +475,59 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                 </div>
               </div>
 
+              {/* Consumption & AI Spend */}
+              <div className="bg-gradient-to-br from-emerald-50/70 to-teal-50/40 border border-emerald-200/80 rounded-2xl p-4 sm:p-5 space-y-3">
+                <div className="flex items-center justify-between border-b border-emerald-200/60 pb-2.5">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-950">
+                    <DollarSign className="w-4 h-4 text-emerald-600" />
+                    <span>Inversión y Consumo de IA (ElevenLabs)</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-emerald-800 font-semibold">
+                    {selectedUser.callCount > 0 
+                      ? `Prom. $${((selectedUser.totalCostUsd || 0) / selectedUser.callCount).toFixed(2)} USD / práctica` 
+                      : '$0.00 USD'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-white p-3.5 rounded-xl border border-emerald-100 flex items-center gap-3 shadow-2xs">
+                    <div className="p-2.5 rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
+                      <DollarSign className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[11px] font-medium text-slate-500 block">Gasto Total Acumulado</span>
+                      <span className="text-lg font-display font-bold font-mono text-emerald-950">
+                        ${(selectedUser.totalCostUsd || 0).toFixed(2)} <span className="text-xs font-sans font-medium text-slate-500">USD</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-xl border border-emerald-100 flex items-center gap-3 shadow-2xs">
+                    <div className="p-2.5 rounded-lg bg-indigo-100 text-indigo-800 shrink-0">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[11px] font-medium text-slate-500 block">Tiempo en Voz / Llamada</span>
+                      <span className="text-lg font-display font-bold font-mono text-indigo-950">
+                        {selectedUser.totalMinutes || 0} <span className="text-xs font-sans font-medium text-slate-500">min</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-xl border border-emerald-100 flex items-center gap-3 shadow-2xs">
+                    <div className="p-2.5 rounded-lg bg-purple-100 text-purple-800 shrink-0">
+                      <Zap className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[11px] font-medium text-slate-500 block">Créditos ElevenLabs</span>
+                      <span className="text-lg font-display font-bold font-mono text-purple-950">
+                        {(selectedUser.totalCredits || 0).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Recent Calls */}
               <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
                 <div className="p-4 border-b border-slate-100 flex items-center justify-between">
@@ -674,12 +731,17 @@ export default function AdminUserManager({ onClose }: AdminUserManagerProps) {
                             )}
                           </div>
 
-                          <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1 text-xs text-slate-500">
                             <span>{u.callCount} {u.callCount === 1 ? 'practice' : 'practices'}</span>
                             {u.callCount > 0 && (
                               <>
                                 <span>·</span>
-                                <span>Average: <strong className="text-slate-700">{u.avgScore}/100</strong></span>
+                                <span>Prom: <strong className="text-slate-700">{u.avgScore}/100</strong></span>
+                                <span>·</span>
+                                <span className="inline-flex items-center gap-1 font-mono font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60 text-[11px]">
+                                  <DollarSign className="w-3 h-3 text-emerald-600" />
+                                  ${(u.totalCostUsd || 0).toFixed(2)} USD · {u.totalMinutes || 0} min
+                                </span>
                               </>
                             )}
                           </div>

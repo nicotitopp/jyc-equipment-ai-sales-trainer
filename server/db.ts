@@ -27,6 +27,9 @@ export interface DbHistoryItem {
   hasAudio?: boolean;
   conversationId?: string;
   audioUrl?: string;
+  durationSecs?: number;
+  costUsd?: number;
+  creditsUsed?: number;
 }
 
 interface DatabaseSchema {
@@ -159,8 +162,15 @@ export async function initDatabase() {
         evaluation JSONB NOT NULL,
         has_audio BOOLEAN DEFAULT TRUE,
         conversation_id TEXT,
-        audio_url TEXT
+        audio_url TEXT,
+        duration_secs INTEGER DEFAULT 0,
+        cost_usd NUMERIC(10,4) DEFAULT 0,
+        credits_used INTEGER DEFAULT 0
       );
+
+      ALTER TABLE history ADD COLUMN IF NOT EXISTS duration_secs INTEGER DEFAULT 0;
+      ALTER TABLE history ADD COLUMN IF NOT EXISTS cost_usd NUMERIC(10,4) DEFAULT 0;
+      ALTER TABLE history ADD COLUMN IF NOT EXISTS credits_used INTEGER DEFAULT 0;
 
       CREATE TABLE IF NOT EXISTS call_audios (
         id TEXT PRIMARY KEY,
@@ -557,6 +567,9 @@ export interface DetailedUserRecord {
   bestScore: number;
   passRate: number;
   lastActive?: string;
+  totalCostUsd: number;
+  totalMinutes: number;
+  totalCredits: number;
   recentCalls: {
     id: string;
     date: string;
@@ -564,7 +577,39 @@ export interface DetailedUserRecord {
     contactName: string;
     score: number;
     type: string;
+    durationSecs?: number;
+    costUsd?: number;
   }[];
+}
+
+export interface UserSpendStat {
+  userId: string;
+  username: string;
+  name: string;
+  role: string;
+  callCount: number;
+  totalDurationSecs: number;
+  totalMinutes: number;
+  totalCostUsd: number;
+  totalCredits: number;
+  avgCostPerCall: number;
+  avgMinutesPerCall: number;
+  percentageOfTotalCost: number;
+  percentageOfTotalTime: number;
+  lastActive?: string;
+}
+
+export interface SpendAnalyticsResponse {
+  summary: {
+    totalCostUsd: number;
+    totalMinutes: number;
+    totalHours: number;
+    totalCalls: number;
+    totalCredits: number;
+    avgCostPerCall: number;
+    avgMinutesPerCall: number;
+  };
+  users: UserSpendStat[];
 }
 
 export async function getAllUsersWithStats(): Promise<DetailedUserRecord[]> {
@@ -572,7 +617,23 @@ export async function getAllUsersWithStats(): Promise<DetailedUserRecord[]> {
   if (pool) {
     try {
       const usersRes = await pool.query('SELECT id, username, password, name, role, created_at as "createdAt", blocked FROM users ORDER BY role ASC, created_at DESC');
-      const historyRes = await pool.query('SELECT id, user_id, user_name, date, timestamp, type, contact_name, company_name, score FROM history ORDER BY timestamp DESC');
+      const historyRes = await pool.query(`
+        SELECT 
+          id, 
+          user_id, 
+          user_name, 
+          date, 
+          timestamp, 
+          type, 
+          contact_name, 
+          company_name, 
+          score,
+          COALESCE(duration_secs, 0) as "durationSecs",
+          COALESCE(cost_usd, 0) as "costUsd",
+          COALESCE(credits_used, 0) as "creditsUsed"
+        FROM history 
+        ORDER BY timestamp DESC
+      `);
 
       const allUsers = usersRes.rows;
       const allHistory = historyRes.rows;
@@ -581,7 +642,8 @@ export async function getAllUsersWithStats(): Promise<DetailedUserRecord[]> {
         const userCalls = allHistory.filter(h =>
           h.user_id === u.id ||
           h.user_name?.toLowerCase() === u.name.toLowerCase() ||
-          h.user_name?.toLowerCase() === u.username.toLowerCase()
+          h.user_name?.toLowerCase() === u.username.toLowerCase() ||
+          (u.username === 'laurat' && h.user_name?.toLowerCase() === 'laura herrera')
         );
 
         const count = userCalls.length;
@@ -591,13 +653,20 @@ export async function getAllUsersWithStats(): Promise<DetailedUserRecord[]> {
         const passRate = count > 0 ? Math.round((passedCount / count) * 100) : 0;
         const lastActive = count > 0 ? userCalls[0].date : undefined;
 
+        const totalCostUsd = Number(userCalls.reduce((acc, curr) => acc + (Number(curr.costUsd || curr.cost_usd) || 0), 0).toFixed(2));
+        const totalDurationSecs = userCalls.reduce((acc, curr) => acc + (Number(curr.durationSecs || curr.duration_secs) || 0), 0);
+        const totalMinutes = Number((totalDurationSecs / 60).toFixed(1));
+        const totalCredits = Math.round(userCalls.reduce((acc, curr) => acc + (Number(curr.creditsUsed || curr.credits_used) || 0), 0));
+
         const recentCalls = userCalls.slice(0, 5).map(c => ({
           id: c.id,
           date: c.date,
           companyName: c.company_name,
           contactName: c.contact_name,
           score: Number(c.score) || 0,
-          type: c.type
+          type: c.type,
+          durationSecs: Number(c.durationSecs || c.duration_secs || 0),
+          costUsd: Number(Number(c.costUsd || c.cost_usd || 0).toFixed(4))
         }));
 
         return {
@@ -613,6 +682,9 @@ export async function getAllUsersWithStats(): Promise<DetailedUserRecord[]> {
           bestScore,
           passRate,
           lastActive,
+          totalCostUsd,
+          totalMinutes,
+          totalCredits,
           recentCalls
         };
       });
@@ -637,13 +709,20 @@ export async function getAllUsersWithStats(): Promise<DetailedUserRecord[]> {
     const passRate = count > 0 ? Math.round((passedCount / count) * 100) : 0;
     const lastActive = count > 0 ? userCalls[0].date : undefined;
 
+    const totalCostUsd = Number(userCalls.reduce((acc, curr) => acc + (Number(curr.costUsd) || 0), 0).toFixed(2));
+    const totalDurationSecs = userCalls.reduce((acc, curr) => acc + (Number(curr.durationSecs) || 0), 0);
+    const totalMinutes = Number((totalDurationSecs / 60).toFixed(1));
+    const totalCredits = Math.round(userCalls.reduce((acc, curr) => acc + (Number(curr.creditsUsed) || 0), 0));
+
     const recentCalls = userCalls.slice(0, 5).map(c => ({
       id: c.id,
       date: c.date,
       companyName: c.companyName,
       contactName: c.contactName,
       score: c.score,
-      type: c.type
+      type: c.type,
+      durationSecs: c.durationSecs,
+      costUsd: c.costUsd
     }));
 
     return {
@@ -659,9 +738,163 @@ export async function getAllUsersWithStats(): Promise<DetailedUserRecord[]> {
       bestScore,
       passRate,
       lastActive,
+      totalCostUsd,
+      totalMinutes,
+      totalCredits,
       recentCalls
     };
   });
+}
+
+export async function getSpendAnalytics(): Promise<SpendAnalyticsResponse> {
+  const pool = getPgPool();
+  if (pool) {
+    try {
+      const historyRes = await pool.query(`
+        SELECT 
+          id, 
+          user_id as "userId", 
+          user_name as "userName", 
+          user_role as "userRole", 
+          date, 
+          timestamp, 
+          COALESCE(duration_secs, 0) as "durationSecs", 
+          COALESCE(cost_usd, 0) as "costUsd", 
+          COALESCE(credits_used, 0) as "creditsUsed" 
+        FROM history 
+        ORDER BY timestamp DESC
+      `);
+      const usersRes = await pool.query(`SELECT id, username, name, role FROM users`);
+      const usersList = usersRes.rows;
+      const history = historyRes.rows;
+
+      const grandTotalCalls = history.length;
+      const grandTotalCostUsd = Number(history.reduce((sum, h) => sum + (Number(h.costUsd) || 0), 0).toFixed(2));
+      const grandTotalSecs = history.reduce((sum, h) => sum + (Number(h.durationSecs) || 0), 0);
+      const grandTotalMinutes = Number((grandTotalSecs / 60).toFixed(1));
+      const grandTotalHours = Number((grandTotalSecs / 3600).toFixed(1));
+      const grandTotalCredits = Math.round(history.reduce((sum, h) => sum + (Number(h.creditsUsed) || 0), 0));
+
+      const userMap = new Map<string, {
+        userId: string;
+        username: string;
+        name: string;
+        role: string;
+        calls: any[];
+      }>();
+
+      for (const u of usersList) {
+        userMap.set(u.id, {
+          userId: u.id,
+          username: u.username,
+          name: u.name,
+          role: u.role,
+          calls: []
+        });
+      }
+
+      for (const h of history) {
+        let matchedKey: string | null = null;
+        for (const [uid, u] of userMap.entries()) {
+          if (
+            h.userId === uid ||
+            h.userName?.toLowerCase() === u.name.toLowerCase() ||
+            h.userName?.toLowerCase() === u.username.toLowerCase() ||
+            (u.username === 'laurat' && h.userName?.toLowerCase() === 'laura herrera')
+          ) {
+            matchedKey = uid;
+            break;
+          }
+        }
+
+        if (matchedKey) {
+          userMap.get(matchedKey)!.calls.push(h);
+        } else {
+          const fallbackKey = h.userId || h.userName || 'unknown';
+          if (!userMap.has(fallbackKey)) {
+            userMap.set(fallbackKey, {
+              userId: h.userId || fallbackKey,
+              username: (h.userName || 'user').toLowerCase().replace(/\s+/g, '_'),
+              name: h.userName || 'Unknown Rep',
+              role: h.userRole || 'trainee',
+              calls: []
+            });
+          }
+          userMap.get(fallbackKey)!.calls.push(h);
+        }
+      }
+
+      const userStats: UserSpendStat[] = Array.from(userMap.values())
+        .map(u => {
+          const callCount = u.calls.length;
+          const cost = Number(u.calls.reduce((sum, c) => sum + (Number(c.costUsd) || 0), 0).toFixed(2));
+          const secs = u.calls.reduce((sum, c) => sum + (Number(c.durationSecs) || 0), 0);
+          const mins = Number((secs / 60).toFixed(1));
+          const credits = Math.round(u.calls.reduce((sum, c) => sum + (Number(c.creditsUsed) || 0), 0));
+          const avgCost = callCount > 0 ? Number((cost / callCount).toFixed(2)) : 0;
+          const avgMins = callCount > 0 ? Number((mins / callCount).toFixed(1)) : 0;
+          const costPct = grandTotalCostUsd > 0 ? Number(((cost / grandTotalCostUsd) * 100).toFixed(1)) : 0;
+          const timePct = grandTotalSecs > 0 ? Number(((secs / grandTotalSecs) * 100).toFixed(1)) : 0;
+          const lastActive = callCount > 0 ? u.calls[0].date : undefined;
+
+          return {
+            userId: u.userId,
+            username: u.username,
+            name: u.name,
+            role: u.role,
+            callCount,
+            totalDurationSecs: secs,
+            totalMinutes: mins,
+            totalCostUsd: cost,
+            totalCredits: credits,
+            avgCostPerCall: avgCost,
+            avgMinutesPerCall: avgMins,
+            percentageOfTotalCost: costPct,
+            percentageOfTotalTime: timePct,
+            lastActive
+          };
+        })
+        .filter(u => u.callCount > 0 || u.role !== 'admin')
+        .sort((a, b) => b.totalCostUsd - a.totalCostUsd || b.callCount - a.callCount);
+
+      return {
+        summary: {
+          totalCostUsd: grandTotalCostUsd,
+          totalMinutes: grandTotalMinutes,
+          totalHours: grandTotalHours,
+          totalCalls: grandTotalCalls,
+          totalCredits: grandTotalCredits,
+          avgCostPerCall: grandTotalCalls > 0 ? Number((grandTotalCostUsd / grandTotalCalls).toFixed(2)) : 0,
+          avgMinutesPerCall: grandTotalCalls > 0 ? Number((grandTotalMinutes / grandTotalCalls).toFixed(1)) : 0,
+        },
+        users: userStats
+      };
+    } catch (err) {
+      console.error('[DB] Error during PG getSpendAnalytics:', err);
+    }
+  }
+
+  // Fallback local JSON
+  const history = await getHistory();
+  const grandTotalCalls = history.length;
+  const grandTotalCostUsd = Number(history.reduce((sum, h) => sum + (Number(h.costUsd) || 0), 0).toFixed(2));
+  const grandTotalSecs = history.reduce((sum, h) => sum + (Number(h.durationSecs) || 0), 0);
+  const grandTotalMinutes = Number((grandTotalSecs / 60).toFixed(1));
+  const grandTotalHours = Number((grandTotalSecs / 3600).toFixed(1));
+  const grandTotalCredits = Math.round(history.reduce((sum, h) => sum + (Number(h.creditsUsed) || 0), 0));
+
+  return {
+    summary: {
+      totalCostUsd: grandTotalCostUsd,
+      totalMinutes: grandTotalMinutes,
+      totalHours: grandTotalHours,
+      totalCalls: grandTotalCalls,
+      totalCredits: grandTotalCredits,
+      avgCostPerCall: grandTotalCalls > 0 ? Number((grandTotalCostUsd / grandTotalCalls).toFixed(2)) : 0,
+      avgMinutesPerCall: grandTotalCalls > 0 ? Number((grandTotalMinutes / grandTotalCalls).toFixed(1)) : 0,
+    },
+    users: []
+  };
 }
 
 export async function getAllUsers(): Promise<{ id: string; username: string; name: string; role: 'trainee' | 'admin' }[]> {
@@ -706,7 +939,10 @@ export async function getHistory(filter?: { role?: string; userId?: string; user
           evaluation, 
           has_audio as "hasAudio", 
           conversation_id as "conversationId", 
-          audio_url as "audioUrl"
+          audio_url as "audioUrl",
+          COALESCE(duration_secs, 0) as "durationSecs",
+          COALESCE(cost_usd, 0) as "costUsd",
+          COALESCE(credits_used, 0) as "creditsUsed"
         FROM history
       `;
       const params: any[] = [];
@@ -745,6 +981,9 @@ export async function getHistory(filter?: { role?: string; userId?: string; user
           hasAudio: r.hasAudio ?? r.has_audio ?? true,
           conversationId: r.conversationId || r.conversation_id,
           audioUrl: r.audioUrl || r.audio_url,
+          durationSecs: Number(r.durationSecs || r.duration_secs || 0),
+          costUsd: Number(Number(r.costUsd || r.cost_usd || 0).toFixed(4)),
+          creditsUsed: Math.round(Number(r.creditsUsed || r.credits_used || 0)),
           difficulty: diff
         };
       });
@@ -770,19 +1009,53 @@ export async function getHistory(filter?: { role?: string; userId?: string; user
 export async function saveHistoryItem(item: Omit<DbHistoryItem, 'timestamp'> & { timestamp?: number }): Promise<DbHistoryItem> {
   const fullItem: DbHistoryItem = {
     ...item,
-    timestamp: item.timestamp || Date.now()
+    timestamp: item.timestamp || Date.now(),
+    durationSecs: Number(item.durationSecs || 0),
+    costUsd: Number(item.costUsd || 0),
+    creditsUsed: Math.round(Number(item.creditsUsed || 0))
   };
+
+  // If conversationId is present and costs are missing, attempt to fetch exact metrics from ElevenLabs API
+  if (fullItem.conversationId && (!fullItem.costUsd || !fullItem.durationSecs) && process.env.ELEVENLABS_API_KEY) {
+    try {
+      const elRes = await fetch(`https://api.elevenlabs.io/v1/convai/conversations/${fullItem.conversationId}`, {
+        headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY }
+      });
+      if (elRes.ok) {
+        const elData: any = await elRes.json();
+        const durationSecs = Number(elData.metadata?.call_duration_secs) || 0;
+        const charging = elData.analysis?.charging || {};
+        const llmPrice = Number(charging.llm_price) || 0;
+        const platformPrice = Number(charging.platform_price) || 0;
+        const costUsd = Number((llmPrice + platformPrice).toFixed(4));
+        const creditsUsed = Number(charging.dev_discount_tier_credits || charging.credits_used || 0) || Math.round(durationSecs * 9.1);
+
+        if (durationSecs > 0) fullItem.durationSecs = durationSecs;
+        if (costUsd > 0) fullItem.costUsd = costUsd;
+        if (creditsUsed > 0) fullItem.creditsUsed = creditsUsed;
+      }
+    } catch (elErr) {
+      console.warn('[DB] Non-critical ElevenLabs call sync notice:', elErr);
+    }
+  }
 
   const pool = getPgPool();
   if (pool) {
     try {
       await pool.query(`
-        INSERT INTO history (id, user_id, user_name, user_role, date, timestamp, type, contact_name, company_name, score, evaluation, has_audio, conversation_id, audio_url)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        INSERT INTO history (
+          id, user_id, user_name, user_role, date, timestamp, type, contact_name, 
+          company_name, score, evaluation, has_audio, conversation_id, audio_url,
+          duration_secs, cost_usd, credits_used
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
         ON CONFLICT (id) DO UPDATE SET
           score = EXCLUDED.score,
           evaluation = EXCLUDED.evaluation,
-          audio_url = COALESCE(EXCLUDED.audio_url, history.audio_url)
+          audio_url = COALESCE(EXCLUDED.audio_url, history.audio_url),
+          duration_secs = CASE WHEN EXCLUDED.duration_secs > 0 THEN EXCLUDED.duration_secs ELSE history.duration_secs END,
+          cost_usd = CASE WHEN EXCLUDED.cost_usd > 0 THEN EXCLUDED.cost_usd ELSE history.cost_usd END,
+          credits_used = CASE WHEN EXCLUDED.credits_used > 0 THEN EXCLUDED.credits_used ELSE history.credits_used END
       `, [
         fullItem.id,
         fullItem.userId,
@@ -797,7 +1070,10 @@ export async function saveHistoryItem(item: Omit<DbHistoryItem, 'timestamp'> & {
         JSON.stringify(fullItem.evaluation),
         fullItem.hasAudio ?? true,
         fullItem.conversationId || null,
-        fullItem.audioUrl || null
+        fullItem.audioUrl || null,
+        fullItem.durationSecs || 0,
+        fullItem.costUsd || 0,
+        fullItem.creditsUsed || 0
       ]);
       return fullItem;
     } catch (err) {

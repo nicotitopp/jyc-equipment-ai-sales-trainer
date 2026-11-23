@@ -1,4 +1,4 @@
-import { Message, HistoryItem, User } from '../types';
+import { Message, HistoryItem, User, SpendAnalytics } from '../types';
 
 export interface UserStats {
   id: string;
@@ -13,6 +13,9 @@ export interface UserStats {
   bestScore: number;
   passRate: number;
   lastActive?: string;
+  totalCostUsd?: number;
+  totalMinutes?: number;
+  totalCredits?: number;
   recentCalls: {
     id: string;
     date: string;
@@ -20,6 +23,8 @@ export interface UserStats {
     contactName: string;
     score: number;
     type: string;
+    durationSecs?: number;
+    costUsd?: number;
   }[];
 }
 
@@ -152,5 +157,11 @@ export const api = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to delete user');
+  },
+
+  async fetchSpendAnalytics(): Promise<SpendAnalytics> {
+    const res = await fetch('/api/admin/spend-analytics');
+    if (!res.ok) throw new Error('Failed to fetch spend analytics');
+    return res.json();
   },
 };

@@ -19,7 +19,8 @@ import {
   createUser,
   deleteUser,
   getAllUsersWithStats,
-  toggleUserBlock
+  toggleUserBlock,
+  getSpendAnalytics
 } from "./server/db";
 
 dotenv.config();
@@ -497,6 +498,16 @@ You must return ONLY a JSON object with this exact structure:
     } catch (error: any) {
       console.error("Error changing password:", error);
       res.status(500).json({ error: "Error interno al actualizar la contraseña" });
+    }
+  });
+
+  app.get("/api/admin/spend-analytics", async (req, res) => {
+    try {
+      const analytics = await getSpendAnalytics();
+      res.json(analytics);
+    } catch (error: any) {
+      console.error("Error fetching spend analytics:", error);
+      res.status(500).json({ error: "Failed to load spend analytics" });
     }
   });
 
